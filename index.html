@@ -83,7 +83,7 @@
             </div>
         </div>
 
-        <!-- Main Trend Chart -->
+        <!-- Main Trend Chart Section -->
         <div class="bg-white p-5 rounded-2xl shadow-sm">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b pb-4">
                 <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">แนวโน้มเวลาสูญเสีย (เวลา / จำนวนครั้ง)</h3>
@@ -103,7 +103,7 @@
                 <div class="chart-container"><canvas id="mainChartFactor"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-red-100">
-                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase tracking-tighter">Top 10 Stations (นาที)</h3>
+                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase tracking-tighter">Top 10 Stations (นาที/ครั้ง)</h3>
                 <div class="chart-container"><canvas id="mainChartStation"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-amber-100 lg:col-span-2 xl:col-span-1">
@@ -114,7 +114,7 @@
 
         <!-- Table Log -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
-            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">History Log</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
+            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">Detailed Log</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
             <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-gray-600"></tbody></table></div>
         </div>
     </div>
@@ -123,7 +123,7 @@
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
+                <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Select Operator</label><select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ (Shift)</label><select id="op-filter-shift"><option value="">ทั้งหมด</option></select></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Start Date</label><input type="date" id="op-start-date"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">End Date</label><input type="date" id="op-end-date"></div>
@@ -142,7 +142,7 @@
 
         <div class="bg-white p-5 rounded-2xl shadow-sm mb-10">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b pb-4">
-                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">แนวโน้มเวลาสูญเสียรายบุคคล</h3>
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">กราฟวิเคราะห์แนวโน้มรายบุคคล</h3>
                 <div class="inline-flex rounded-lg shadow-sm">
                     <button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active rounded-l-lg border-r-0">รายวัน</button>
                     <button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn border-x-0">รายวีค</button>
@@ -212,7 +212,7 @@
                     weekNum: getISOWeek(dateObj), machine: clean(cells[2]), station: clean(cells[3]),
                     stops: parseInt(clean(cells[4])) || 0, duration: parseFloat(clean(cells[5])) || 0,
                     problem: clean(cells[6]), operator: clean(cells[7]), factor: clean(cells[8]),
-                    shift: clean(cells[9]), // แก้ไข Index จาก 10 เป็น 9 (เพื่อให้ได้ A/B)
+                    shift: clean(cells[9]), 
                     time: clean(cells[1])
                 };
             }).filter(d => d);
@@ -236,6 +236,19 @@
             s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>';
             items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); });
             s.value = val;
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            const last7Days = new Date();
+            last7Days.setDate(today.getDate() - 7);
+
+            const format = (date) => date.toISOString().split('T')[0];
+
+            document.getElementById('main-start-date').value = format(last7Days);
+            document.getElementById('main-end-date').value = format(today);
+            document.getElementById('op-start-date').value = format(last7Days);
+            document.getElementById('op-end-date').value = format(today);
         }
 
         function setMainTrendMode(m) {
@@ -285,11 +298,20 @@
         }
 
         function renderMainDistribution(data) {
+            // Factor Distribution
             const f = {}; data.forEach(d => f[d.factor] = (f[d.factor]||0) + d.duration);
             updateChart('mainChartFactor', 'doughnut', Object.keys(f), Object.values(f));
-            const st = {}; data.forEach(d => st[d.station] = (st[d.station]||0) + d.duration);
-            const topSt = Object.entries(st).sort((a,b) => b[1]-a[1]).slice(0, 10);
-            updateChart('mainChartStation', 'bar', topSt.map(x=>x[0]), topSt.map(x=>x[1]), true);
+            
+            // Station Distribution (Top 10)
+            const st = {}; data.forEach(d => {
+                if (!st[d.station]) st[d.station] = { time: 0, count: 0 };
+                st[d.station].time += d.duration;
+                st[d.station].count += d.stops;
+            });
+            const topSt = Object.entries(st).sort((a,b) => b[1].time - a[1].time).slice(0, 10);
+            updateChart('mainChartStation', 'bar', topSt.map(x=>x[0]), topSt.map(x=>x[1].time), true, topSt.map(x=>x[1].count));
+            
+            // Operator Distribution (Top 5)
             const opMap = {}; data.forEach(d => {
                 if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
                     if (!opMap[d.operator]) opMap[d.operator] = { time: 0, count: 0 };
@@ -378,7 +400,9 @@
 
         function updateChart(id, type, labels, data, horizontal = false, countData = null) {
             if(charts[id]) charts[id].destroy();
-            charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            charts[id] = new Chart(canvas.getContext('2d'), {
                 type: type,
                 data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#64748b','#06b6d4'], borderRadius: 4, customCounts: countData }] },
                 options: {
@@ -399,7 +423,10 @@
             });
         }
 
-        window.onload = syncData;
+        window.onload = function() {
+            setDefaultDates();
+            syncData();
+        };
     </script>
 </body>
 </html>
