@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downtime & Operator Analysis</title>
+    <title>Downtime & Operator Analysis PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- เพิ่ม Plugin สำหรับแสดงตัวเลขบนกราฟ -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -26,7 +25,7 @@
 
     <div id="loading" class="loading-overlay">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p class="text-blue-600 font-semibold">กำลังซิงค์ข้อมูลล่าสุด...</p>
+        <p class="text-blue-600 font-semibold text-sm">กำลังเชื่อมต่อข้อมูล...</p>
     </div>
 
     <!-- ลิงก์ข้อมูล CSV -->
@@ -52,24 +51,20 @@
         <!-- KPI Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Downtime</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Minutes</p>
                 <p id="main-total-min" class="text-2xl font-black text-gray-800">0</p>
-                <p class="text-[10px] text-blue-500 uppercase">Minutes</p>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-red-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Stops</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Counts</p>
                 <p id="main-total-count" class="text-2xl font-black text-gray-800">0</p>
-                <p class="text-[10px] text-red-500 uppercase">Times</p>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Avg per Stop</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Avg Min/Stop</p>
                 <p id="main-avg-min" class="text-2xl font-black text-gray-800">0</p>
-                <p class="text-[10px] text-amber-500 uppercase">Minutes</p>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Records</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Records</p>
                 <p id="main-rows" class="text-2xl font-black text-gray-800">0</p>
-                <p class="text-[10px] text-indigo-500 uppercase">Total Items</p>
             </div>
         </div>
 
@@ -79,56 +74,65 @@
             <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่สิ้นสุด</label><input type="date" id="main-end-date"></div>
             <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
             <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหาเพิ่มเติม</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา, Station..."></div>
+            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="Station, พนักงาน, ปัญหา..."></div>
         </div>
 
-        <!-- Charts Overview -->
+        <!-- Main Trend Chart Section -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm">
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b pb-4">
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">แนวโน้มเวลาสูญเสียและจำนวนครั้ง (ภาพรวม)</h3>
+                <div class="inline-flex rounded-lg shadow-sm">
+                    <button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active rounded-l-lg border-r-0">รายวัน</button>
+                    <button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn border-x-0">รายวีค</button>
+                    <button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn rounded-r-lg border-l-0">รายเดือน</button>
+                </div>
+            </div>
+            <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
+        </div>
+
+        <!-- Secondary Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-center text-sm font-bold text-gray-600 mb-4 uppercase">Downtime by Factors (Minutes)</h3><div class="chart-container"><canvas id="mainChartFactor"></canvas></div></div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-center text-sm font-bold text-gray-600 mb-4 uppercase">Top 10 Stations Downtime (Minutes)</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-center text-sm font-bold text-gray-600 mb-4 uppercase">Downtime by Factors</h3><div class="chart-container"><canvas id="mainChartFactor"></canvas></div></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-center text-sm font-bold text-gray-600 mb-4 uppercase">Top 10 Stations</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
         </div>
 
-        <!-- Table Overview -->
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-xs">Downtime History</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
-            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs"></tbody></table></div>
+        <!-- Table -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
+            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-xs tracking-widest">History Log</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
+            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-gray-600"></tbody></table></div>
         </div>
     </div>
 
     <!-- PAGE 2: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
-        <!-- Operator Selection & Date Filter -->
+        <!-- Operator Info -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="md:col-span-1">
-                    <label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label>
-                    <select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- กรุณาเลือกพนักงาน --</option></select>
-                </div>
+                <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Select Operator</label><select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- กรุณาเลือกพนักงาน --</option></select></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Start Date</label><input type="date" id="op-start-date"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">End Date</label><input type="date" id="op-end-date"></div>
             </div>
-            
-            <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-                <div class="text-center"><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Total Time</p><p id="op-kpi-time" class="text-xl font-black text-gray-700">0</p><p class="text-[9px] text-gray-400 uppercase">Min</p></div>
-                <div class="text-center"><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Total Counts</p><p id="op-kpi-count" class="text-xl font-black text-gray-700">0</p><p class="text-[9px] text-gray-400 uppercase">Times</p></div>
-                <div class="text-center"><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Problem Types</p><p id="op-kpi-types" class="text-xl font-black text-gray-700">0</p><p class="text-[9px] text-gray-400 uppercase">Unique</p></div>
+            <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 text-center">
+                <div><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Minutes</p><p id="op-kpi-time" class="text-xl font-black text-gray-700">0</p></div>
+                <div><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Times</p><p id="op-kpi-count" class="text-xl font-black text-gray-700">0</p></div>
+                <div><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Problems</p><p id="op-kpi-types" class="text-xl font-black text-gray-700">0</p></div>
             </div>
         </div>
 
-        <!-- Detailed Table -->
+        <!-- Table Operator -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div class="p-4 bg-blue-50 border-b flex justify-between items-center"><h3 class="font-bold text-blue-800 uppercase text-xs">Operator Problem Details</h3><span id="op-badge-count" class="text-[10px] bg-blue-200 text-blue-800 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
-            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหาที่พบ</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div>
+            <div class="p-4 bg-blue-50 border-b flex justify-between items-center"><h3 class="font-bold text-blue-800 uppercase text-xs">Operator Problem Details</h3><span id="op-badge-count" class="text-[10px] bg-blue-200 text-blue-800 px-3 py-1 rounded-full font-bold uppercase">0 Records</span></div>
+            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div>
         </div>
 
-        <!-- Trend Chart (With Data Labels) -->
-        <div class="bg-white p-5 rounded-2xl shadow-sm">
+        <!-- Operator Trend Chart -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm mb-10">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b pb-4">
-                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">กราฟวิเคราะห์แนวโน้มเวลาสูญเสีย (Data Included)</h3>
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">แนวโน้มวิเคราะห์พนักงานรายบุคคล</h3>
                 <div class="inline-flex rounded-lg shadow-sm">
-                    <button onclick="setOpTrendMode('daily')" id="btn-trend-daily" class="view-btn active rounded-l-lg border-r-0">รายวัน</button>
-                    <button onclick="setOpTrendMode('weekly')" id="btn-trend-weekly" class="view-btn border-x-0">รายสัปดาห์</button>
-                    <button onclick="setOpTrendMode('monthly')" id="btn-trend-monthly" class="view-btn rounded-r-lg border-l-0">รายเดือน</button>
+                    <button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active rounded-l-lg border-r-0">รายวัน</button>
+                    <button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn border-x-0">รายวีค</button>
+                    <button onclick="setOpTrendMode('monthly')" id="btn-op-trend-monthly" class="view-btn rounded-r-lg border-l-0">รายเดือน</button>
                 </div>
             </div>
             <div class="chart-container"><canvas id="opTrendChart"></canvas></div>
@@ -136,21 +140,17 @@
     </div>
 
     <script>
-        // ลงทะเบียน Plugin สำหรับแสดงตัวเลข
         Chart.register(ChartDataLabels);
 
         let rawData = [];
         let charts = {};
+        let mainTrendMode = 'daily';
         let opTrendMode = 'daily';
 
         function formatToISO(dateStr) {
             if (!dateStr || !dateStr.includes('/')) return '';
             const parts = dateStr.split('/');
-            if (parts.length !== 3) return '';
-            const day = parts[0].padStart(2, '0');
-            const month = parts[1].padStart(2, '0');
-            const year = parts[2];
-            return `${year}-${month}-${day}`;
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
         }
 
         function switchPage(page) {
@@ -171,7 +171,7 @@
                 parseCSV(csvText);
                 initFilters();
                 updateMainUI();
-            } catch (err) { alert('ซิงค์ข้อมูลไม่สำเร็จ!'); }
+            } catch (err) { console.error(err); alert('ไม่สามารถดึงข้อมูลได้!'); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
@@ -182,214 +182,171 @@
                 if (cells.length < 5) return null;
                 const clean = (v) => v ? v.trim().replace(/"/g, '') : '';
                 return {
-                    date: clean(cells[0]),
-                    isoDate: formatToISO(clean(cells[0])),
-                    time: clean(cells[1]),
-                    machine: clean(cells[2]),
-                    station: clean(cells[3]),
-                    stops: parseInt(clean(cells[4])) || 0,
-                    duration: parseFloat(clean(cells[5])) || 0,
-                    problem: clean(cells[6]),
-                    operator: clean(cells[7]),
-                    factor: clean(cells[8]),
-                    week: clean(cells[9]),
-                    shift: clean(cells[10]),
-                    month: clean(cells[17])
+                    date: clean(cells[0]), isoDate: formatToISO(clean(cells[0])),
+                    machine: clean(cells[2]), station: clean(cells[3]),
+                    stops: parseInt(clean(cells[4])) || 0, duration: parseFloat(clean(cells[5])) || 0,
+                    problem: clean(cells[6]), operator: clean(cells[7]), factor: clean(cells[8]),
+                    week: clean(cells[9]), shift: clean(cells[10]), month: clean(cells[17]), time: clean(cells[1])
                 };
             }).filter(d => d && d.date);
         }
 
         function initFilters() {
-            const unique = (key) => [...new Set(rawData.map(d => d[key]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
-            fillSelect('main-filter-mc', unique('machine'));
-            fillSelect('main-filter-factor', unique('factor'));
-            fillSelect('op-select', unique('operator'));
+            const getUnique = (key) => [...new Set(rawData.map(d => d[key]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
+            fillSelect('main-filter-mc', getUnique('machine'));
+            fillSelect('main-filter-factor', getUnique('factor'));
+            fillSelect('op-select', getUnique('operator'));
 
             document.querySelectorAll('#page-main input, #page-main select').forEach(el => el.addEventListener('change', updateMainUI));
             document.querySelectorAll('#page-operator input, #page-operator select').forEach(el => el.addEventListener('change', updateOperatorUI));
         }
 
         function fillSelect(id, items) {
-            const select = document.getElementById(id);
-            const current = select.value;
-            select.innerHTML = id === 'op-select' ? '<option value="">-- กรุณาเลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>';
-            items.forEach(it => {
-                const opt = document.createElement('option');
-                opt.value = it; opt.textContent = it; select.appendChild(opt);
-            });
-            select.value = current;
+            const s = document.getElementById(id);
+            const val = s.value;
+            s.innerHTML = id === 'op-select' ? '<option value="">-- กรุณาเลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>';
+            items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); });
+            s.value = val;
         }
 
-        function updateMainUI() {
-            const start = document.getElementById('main-start-date').value;
-            const end = document.getElementById('main-end-date').value;
-            const mc = document.getElementById('main-filter-mc').value;
-            const factor = document.getElementById('main-filter-factor').value;
-            const search = document.getElementById('main-filter-search').value.toLowerCase();
-
-            const filtered = rawData.filter(d => {
-                const dateMatch = (!start || d.isoDate >= start) && (!end || d.isoDate <= end);
-                const mcMatch = !mc || d.machine === mc;
-                const factorMatch = !factor || d.factor === factor;
-                const searchMatch = !search || d.problem.toLowerCase().includes(search) || d.operator.toLowerCase().includes(search) || d.station.toLowerCase().includes(search);
-                return dateMatch && mcMatch && factorMatch && searchMatch;
-            });
-
-            document.getElementById('main-total-min').textContent = filtered.reduce((s,d) => s + d.duration, 0).toLocaleString();
-            document.getElementById('main-total-count').textContent = filtered.reduce((s,d) => s + d.stops, 0).toLocaleString();
-            const tCount = filtered.reduce((s,d) => s + d.stops, 0);
-            document.getElementById('main-avg-min').textContent = tCount ? (filtered.reduce((s,d) => s+d.duration,0)/tCount).toFixed(1) : 0;
-            document.getElementById('main-rows').textContent = rawData.length.toLocaleString();
-            document.getElementById('main-badge-count').textContent = `${filtered.length} รายการ`;
-
-            renderMainCharts(filtered);
-            document.getElementById('main-table-body').innerHTML = filtered.slice(0, 50).map(d => `
-                <tr class="border-b hover:bg-gray-50 transition-colors text-[11px] sm:text-xs">
-                    <td class="p-3 sm:p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td>
-                    <td class="p-3 sm:p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-gray-400">${d.station}</span></td>
-                    <td class="p-3 sm:p-4 text-gray-600 leading-snug">${d.problem}</td>
-                    <td class="p-3 sm:p-4 text-center font-black text-red-500">${d.duration}</td>
-                    <td class="p-3 sm:p-4 text-[9px] text-gray-400 font-bold uppercase">${d.operator}</td>
-                </tr>
-            `).join('');
+        function setMainTrendMode(m) {
+            mainTrendMode = m;
+            document.querySelectorAll('#page-main .view-btn').forEach(b => b.classList.toggle('active', b.id === `btn-main-trend-${m}`));
+            updateMainUI();
         }
 
-        function renderMainCharts(data) {
-            const fData = {}; data.forEach(d => fData[d.factor] = (fData[d.factor]||0) + d.duration);
-            updateChart('mainChartFactor', 'doughnut', Object.keys(fData), Object.values(fData));
-
-            const sData = {}; data.forEach(d => sData[d.station] = (sData[d.station]||0) + d.duration);
-            const topS = Object.entries(sData).sort((a,b) => b[1]-a[1]).slice(0, 10);
-            updateChart('mainChartStation', 'bar', topS.map(x=>x[0]), topS.map(x=>x[1]), true);
-        }
-
-        function setOpTrendMode(mode) {
-            opTrendMode = mode;
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn-trend-${mode}`).classList.add('active');
+        function setOpTrendMode(m) {
+            opTrendMode = m;
+            document.querySelectorAll('#page-operator .view-btn').forEach(b => b.classList.toggle('active', b.id === `btn-op-trend-${m}`));
             updateOperatorUI();
         }
 
-        function updateOperatorUI() {
-            const name = document.getElementById('op-select').value;
-            const start = document.getElementById('op-start-date').value;
-            const end = document.getElementById('op-end-date').value;
+        function updateMainUI() {
+            const s = document.getElementById('main-start-date').value;
+            const e = document.getElementById('main-end-date').value;
+            const mc = document.getElementById('main-filter-mc').value;
+            const fc = document.getElementById('main-filter-factor').value;
+            const sr = document.getElementById('main-filter-search').value.toLowerCase();
 
-            if (!name) {
-                document.getElementById('op-table-body').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 font-bold italic text-sm">-- กรุณาเลือกรายชื่อพนักงาน --</td></tr>';
-                return;
-            }
-
-            const opData = rawData.filter(d => {
-                const nameMatch = d.operator === name;
-                const dateMatch = (!start || d.isoDate >= start) && (!end || d.isoDate <= end);
-                return nameMatch && dateMatch;
+            const filtered = rawData.filter(d => {
+                const dm = (!s || d.isoDate >= s) && (!e || d.isoDate <= e);
+                return dm && (!mc || d.machine === mc) && (!fc || d.factor === fc) &&
+                       (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr));
             });
 
-            document.getElementById('op-kpi-time').textContent = opData.reduce((s,d) => s + d.duration, 0).toLocaleString();
-            document.getElementById('op-kpi-count').textContent = opData.reduce((s,d) => s + d.stops, 0).toLocaleString();
+            document.getElementById('main-total-min').textContent = filtered.reduce((a,b) => a+b.duration, 0).toLocaleString();
+            document.getElementById('main-total-count').textContent = filtered.reduce((a,b) => a+b.stops, 0).toLocaleString();
+            const cnt = filtered.reduce((a,b) => a+b.stops, 0);
+            document.getElementById('main-avg-min').textContent = cnt ? (filtered.reduce((a,b) => a+b.duration, 0)/cnt).toFixed(1) : 0;
+            document.getElementById('main-rows').textContent = rawData.length.toLocaleString();
+            document.getElementById('main-badge-count').textContent = `${filtered.length} รายการ`;
+
+            renderTrend('mainTrendChart', filtered, mainTrendMode);
+            renderMainDistribution(filtered);
+            document.getElementById('main-table-body').innerHTML = filtered.slice(0, 50).map(d => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold">กะ ${d.shift} ${d.time}</span></td>
+                    <td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-gray-500">${d.station}</span></td>
+                    <td class="p-4 text-gray-600 leading-snug">${d.problem}</td>
+                    <td class="p-4 text-center font-black text-red-500">${d.duration}</td>
+                    <td class="p-4 text-[9px] text-gray-400 font-bold uppercase">${d.operator}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderMainDistribution(data) {
+            const f = {}; data.forEach(d => f[d.factor] = (f[d.factor]||0) + d.duration);
+            updateChart('mainChartFactor', 'doughnut', Object.keys(f), Object.values(f));
+            const st = {}; data.forEach(d => st[d.station] = (st[d.station]||0) + d.duration);
+            const top = Object.entries(st).sort((a,b) => b[1]-a[1]).slice(0, 10);
+            updateChart('mainChartStation', 'bar', top.map(x=>x[0]), top.map(x=>x[1]), true);
+        }
+
+        function updateOperatorUI() {
+            const n = document.getElementById('op-select').value;
+            const s = document.getElementById('op-start-date').value;
+            const e = document.getElementById('op-end-date').value;
+            if (!n) { document.getElementById('op-table-body').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 italic">-- กรุณาเลือกรายชื่อพนักงาน --</td></tr>'; return; }
+
+            const opData = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
+            document.getElementById('op-kpi-time').textContent = opData.reduce((a,b) => a+b.duration, 0).toLocaleString();
+            document.getElementById('op-kpi-count').textContent = opData.reduce((a,b) => a+b.stops, 0).toLocaleString();
             document.getElementById('op-kpi-types').textContent = [...new Set(opData.map(d => d.problem))].length;
             document.getElementById('op-badge-count').textContent = `${opData.length} รายการ`;
 
-            document.getElementById('op-table-body').innerHTML = opData.sort((a,b) => new Date(b.isoDate) - new Date(a.isoDate)).map(d => `
-                <tr class="border-b hover:bg-blue-50 transition-colors">
-                    <td class="p-3 sm:p-4 font-bold text-gray-800">${d.date}</td>
-                    <td class="p-3 sm:p-4 text-gray-500">${d.station}</td>
-                    <td class="p-3 sm:p-4 font-medium text-gray-700 leading-snug">${d.problem}</td>
-                    <td class="p-3 sm:p-4 text-center font-black text-red-600">${d.duration}</td>
-                    <td class="p-3 sm:p-4"><span class="px-2 py-1 bg-gray-100 border rounded-md text-[9px] font-bold text-gray-500 uppercase">${d.factor}</span></td>
+            document.getElementById('op-table-body').innerHTML = opData.sort((a,b) => new Date(b.isoDate)-new Date(a.isoDate)).map(d => `
+                <tr class="border-b hover:bg-blue-50">
+                    <td class="p-4 font-bold text-gray-800">${d.date}</td>
+                    <td class="p-4 text-gray-500">${d.station}</td>
+                    <td class="p-4 font-medium text-gray-700 leading-snug">${d.problem}</td>
+                    <td class="p-4 text-center font-black text-red-600">${d.duration}</td>
+                    <td class="p-4"><span class="px-2 py-1 bg-gray-100 border rounded-md text-[9px] font-bold text-gray-500 uppercase">${d.factor}</span></td>
                 </tr>
             `).join('');
 
-            renderOperatorTrendChart(opData);
+            renderTrend('opTrendChart', opData, opTrendMode);
         }
 
-        function renderOperatorTrendChart(data) {
-            let aggregated = {};
-            let chartType = 'line';
+        function renderTrend(id, data, mode) {
+            let agg = {};
+            data.forEach(d => {
+                let k = mode === 'daily' ? d.date : (mode === 'weekly' ? `Wk ${d.week}` : `Month ${d.month}`);
+                if (!agg[k]) agg[k] = { time: 0, count: 0 };
+                agg[k].time += d.duration;
+                agg[k].count += d.stops;
+            });
 
-            if (opTrendMode === 'daily') {
-                data.sort((a,b) => new Date(a.isoDate) - new Date(b.isoDate)).forEach(d => {
-                    aggregated[d.date] = (aggregated[d.date] || 0) + d.duration;
-                });
-                chartType = 'line';
-            } else if (opTrendMode === 'weekly') {
-                data.forEach(d => {
-                    const key = `Wk ${d.week}`;
-                    aggregated[key] = (aggregated[key] || 0) + d.duration;
-                });
-                chartType = 'bar';
-            } else if (opTrendMode === 'monthly') {
-                data.forEach(d => {
-                    const key = `Month ${d.month}`;
-                    aggregated[key] = (aggregated[key] || 0) + d.duration;
-                });
-                chartType = 'bar';
-            }
-            updateChart('opTrendChart', chartType, Object.keys(aggregated), Object.values(aggregated));
-        }
+            const labels = mode === 'daily' ? Object.keys(agg).sort((a,b) => new Date(formatToISO(a)) - new Date(formatToISO(b))) : Object.keys(agg);
+            const timeData = labels.map(l => agg[l].time);
+            const countData = labels.map(l => agg[l].count);
 
-        // 5. Chart Core พร้อม Data Labels
-        function updateChart(id, type, labels, data, horizontal = false) {
-            if(charts[id]) charts[id].destroy();
-            const canvas = document.getElementById(id);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            
+            if (charts[id]) charts[id].destroy();
+            const ctx = document.getElementById(id).getContext('2d');
             charts[id] = new Chart(ctx, {
-                type: type,
+                type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'เวลาสูญเสีย (นาที)',
-                        data: data,
-                        backgroundColor: type === 'line' ? 'rgba(59, 130, 246, 0.1)' : [
-                            '#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b', '#06b6d4', '#d946ef', '#f43f5e'
-                        ],
-                        borderColor: '#3b82f6',
-                        borderWidth: type === 'line' ? 2 : 0,
-                        borderRadius: type === 'bar' ? 6 : 0,
-                        fill: type === 'line',
-                        tension: 0.3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#3b82f6'
-                    }]
+                    datasets: [
+                        { label: 'Downtime (Min)', data: timeData, backgroundColor: '#3b82f6', borderRadius: 4, yAxisID: 'y' },
+                        { label: 'Stop Counts', data: countData, type: 'line', borderColor: '#ef4444', backgroundColor: '#ef4444', borderWidth: 2, pointRadius: 4, tension: 0.3, yAxisID: 'y1' }
+                    ]
                 },
                 options: {
-                    indexAxis: horizontal ? 'y' : 'x',
                     maintainAspectRatio: false,
-                    responsive: true,
-                    plugins: { 
-                        legend: { 
-                            display: type === 'doughnut', 
-                            position: 'bottom', 
-                            labels: { boxWidth: 10, font: { size: 10, family: 'Kanit' } } 
-                        },
-                        // การตั้งค่า Data Labels (ตัวเลขบนกราฟ)
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10, family: 'Kanit' } } },
                         datalabels: {
-                            color: '#444',
-                            anchor: 'end',
-                            align: type === 'doughnut' ? 'center' : (horizontal ? 'right' : 'top'),
-                            offset: 4,
-                            font: { weight: 'bold', size: 10, family: 'Kanit' },
-                            formatter: (value) => value > 0 ? value.toLocaleString() : '',
-                            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                            borderRadius: 4,
-                            padding: 2
-                        },
-                        tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, titleFont: { family: 'Kanit' }, bodyFont: { family: 'Kanit' } }
+                            anchor: 'end', align: 'top', offset: 2,
+                            font: { weight: 'bold', size: 9, family: 'Kanit' },
+                            formatter: (v) => v > 0 ? v.toLocaleString() : '',
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: 3
+                        }
                     },
-                    scales: (type === 'bar' || type === 'line') ? { 
-                        x: { grid: { display: false }, ticks: { font: { size: 9, family: 'Kanit' } } }, 
-                        y: { 
-                            grid: { borderDash: [5, 5] }, 
-                            beginAtZero: true, 
-                            ticks: { font: { size: 9, family: 'Kanit' } },
-                            // เพิ่มที่ว่างด้านบนเพื่อให้ตัวเลขไม่โดนตัด
-                            grace: '15%' 
-                        } 
-                    } : {}
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 9, family: 'Kanit' } } },
+                        y: { position: 'left', beginAtZero: true, grace: '20%', title: { display: true, text: 'Minutes', font: { size: 10 } }, ticks: { font: { size: 9 } } },
+                        y1: { position: 'right', beginAtZero: true, grace: '20%', grid: { display: false }, title: { display: true, text: 'Counts', font: { size: 10 } }, ticks: { font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        function updateChart(id, type, labels, data, horizontal = false) {
+            if(charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
+                type: type,
+                data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#64748b','#06b6d4'], borderRadius: 4 }] },
+                options: {
+                    indexAxis: horizontal ? 'y' : 'x', maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: type==='doughnut', position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Kanit' } } },
+                        datalabels: {
+                            anchor: 'end', align: horizontal ? 'right' : 'top', font: { weight: 'bold', size: 9 },
+                            formatter: (v) => v > 0 ? v.toLocaleString() : '', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 3
+                        }
+                    },
+                    scales: type==='bar' ? { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { grace: '15%', ticks: { font: { size: 9 } } } } : {}
                 }
             });
         }
