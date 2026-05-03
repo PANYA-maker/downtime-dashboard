@@ -28,7 +28,6 @@
         <p class="text-blue-600 font-semibold text-sm">กำลังเชื่อมต่อข้อมูล...</p>
     </div>
 
-    <!-- ลิงก์ข้อมูล CSV -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
 
     <!-- Navigation Bar -->
@@ -69,12 +68,19 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่เริ่มต้น</label><input type="date" id="main-start-date"></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่สิ้นสุด</label><input type="date" id="main-end-date"></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="Station, พนักงาน, ปัญหา..."></div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่เริ่มต้น</label><input type="date" id="main-start-date"></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่สิ้นสุด</label><input type="date" id="main-end-date"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div>
+            </div>
         </div>
 
         <!-- Main Trend Chart Section -->
@@ -105,10 +111,10 @@
 
     <!-- PAGE 2: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
-        <!-- Operator Info -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Select Operator</label><select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- กรุณาเลือกพนักงาน --</option></select></div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ</label><select id="op-filter-shift"><option value="">ทั้งหมด</option></select></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Start Date</label><input type="date" id="op-start-date"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">End Date</label><input type="date" id="op-end-date"></div>
             </div>
@@ -119,13 +125,11 @@
             </div>
         </div>
 
-        <!-- Table Operator -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div class="p-4 bg-blue-50 border-b flex justify-between items-center"><h3 class="font-bold text-blue-800 uppercase text-xs">Operator Problem Details</h3><span id="op-badge-count" class="text-[10px] bg-blue-200 text-blue-800 px-3 py-1 rounded-full font-bold uppercase">0 Records</span></div>
             <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div>
         </div>
 
-        <!-- Operator Trend Chart -->
         <div class="bg-white p-5 rounded-2xl shadow-sm mb-10">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b pb-4">
                 <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">กราฟแนวโน้มเวลาสูญเสียรายบุคคล</h3>
@@ -195,7 +199,9 @@
             const getUnique = (key) => [...new Set(rawData.map(d => d[key]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
             fillSelect('main-filter-mc', getUnique('machine'));
             fillSelect('main-filter-factor', getUnique('factor'));
+            fillSelect('main-filter-shift', getUnique('shift'));
             fillSelect('op-select', getUnique('operator'));
+            fillSelect('op-filter-shift', getUnique('shift'));
 
             document.querySelectorAll('#page-main input, #page-main select').forEach(el => el.addEventListener('change', updateMainUI));
             document.querySelectorAll('#page-operator input, #page-operator select').forEach(el => el.addEventListener('change', updateOperatorUI));
@@ -204,7 +210,7 @@
         function fillSelect(id, items) {
             const s = document.getElementById(id);
             const val = s.value;
-            s.innerHTML = id === 'op-select' ? '<option value="">-- กรุณาเลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>';
+            s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>';
             items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); });
             s.value = val;
         }
@@ -225,12 +231,13 @@
             const s = document.getElementById('main-start-date').value;
             const e = document.getElementById('main-end-date').value;
             const mc = document.getElementById('main-filter-mc').value;
+            const sh = document.getElementById('main-filter-shift').value;
             const fc = document.getElementById('main-filter-factor').value;
             const sr = document.getElementById('main-filter-search').value.toLowerCase();
 
             const filtered = rawData.filter(d => {
                 const dm = (!s || d.isoDate >= s) && (!e || d.isoDate <= e);
-                return dm && (!mc || d.machine === mc) && (!fc || d.factor === fc) &&
+                return dm && (!mc || d.machine === mc) && (!fc || d.factor === fc) && (!sh || d.shift === sh) &&
                        (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr));
             });
 
@@ -243,7 +250,7 @@
 
             renderTrend('mainTrendChart', filtered, mainTrendMode);
             renderMainDistribution(filtered);
-            document.getElementById('main-table-body').innerHTML = filtered.slice(0, 50).map(d => `
+            document.getElementById('main-table-body').innerHTML = filtered.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold">กะ ${d.shift} ${d.time}</span></td>
                     <td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-gray-400">${d.station}</span></td>
@@ -264,11 +271,12 @@
 
         function updateOperatorUI() {
             const n = document.getElementById('op-select').value;
+            const sh = document.getElementById('op-filter-shift').value;
             const s = document.getElementById('op-start-date').value;
             const e = document.getElementById('op-end-date').value;
             if (!n) { document.getElementById('op-table-body').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 italic">-- กรุณาเลือกรายชื่อพนักงาน --</td></tr>'; return; }
 
-            const opData = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
+            const opData = rawData.filter(d => d.operator === n && (!sh || d.shift === sh) && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
             document.getElementById('op-kpi-time').textContent = opData.reduce((a,b) => a+b.duration, 0).toLocaleString();
             document.getElementById('op-kpi-count').textContent = opData.reduce((a,b) => a+b.stops, 0).toLocaleString();
             document.getElementById('op-kpi-types').textContent = [...new Set(opData.map(d => d.problem))].length;
@@ -287,7 +295,6 @@
             renderTrend('opTrendChart', opData, opTrendMode);
         }
 
-        // ปรับปรุงฟังก์ชัน renderTrend ให้โชว์กราฟเวลาอย่างเดียว และโชว์ตัวเลขทั้งเวลาและจำนวนครั้ง
         function renderTrend(id, data, mode) {
             let agg = {};
             data.forEach(d => {
@@ -297,7 +304,23 @@
                 agg[k].count += d.stops;
             });
 
-            const labels = mode === 'daily' ? Object.keys(agg).sort((a,b) => new Date(formatToISO(a)) - new Date(formatToISO(b))) : Object.keys(agg);
+            let labels = [];
+            if (mode === 'daily') {
+                labels = Object.keys(agg).sort((a,b) => new Date(formatToISO(a)) - new Date(formatToISO(b)));
+            } else if (mode === 'weekly') {
+                labels = Object.keys(agg).sort((a, b) => {
+                    const wa = parseInt(a.replace('Wk ', '')) || 0;
+                    const wb = parseInt(b.replace('Wk ', '')) || 0;
+                    return wa - wb;
+                });
+            } else {
+                labels = Object.keys(agg).sort((a, b) => {
+                    const ma = parseInt(a.replace('Month ', '')) || 0;
+                    const mb = parseInt(b.replace('Month ', '')) || 0;
+                    return ma - mb;
+                });
+            }
+
             const timeData = labels.map(l => agg[l].time);
             const countData = labels.map(l => agg[l].count);
 
@@ -318,7 +341,6 @@
                             fill: mode === 'daily',
                             tension: 0.3,
                             pointRadius: mode === 'daily' ? 4 : 0,
-                            // เก็บข้อมูลจำนวนครั้งไว้ใน dataset เพื่อให้ datalabels ดึงไปใช้ได้
                             customCounts: countData 
                         }
                     ]
@@ -332,7 +354,6 @@
                             align: 'top',
                             offset: 5,
                             font: { weight: 'bold', size: 10, family: 'Kanit' },
-                            // ฟอร์แมตตัวเลขให้แสดง: เวลา / จำนวนครั้ง
                             formatter: (value, context) => {
                                 const index = context.dataIndex;
                                 const count = context.dataset.customCounts[index];
@@ -350,7 +371,7 @@
                         x: { grid: { display: false }, ticks: { font: { size: 9, family: 'Kanit' } } },
                         y: { 
                             beginAtZero: true, 
-                            grace: '20%', 
+                            grace: '25%', 
                             title: { display: true, text: 'Minutes (นาที)', font: { size: 10 } }, 
                             ticks: { font: { size: 9 } },
                             grid: { borderDash: [5, 5] }
