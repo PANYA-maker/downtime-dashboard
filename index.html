@@ -83,7 +83,7 @@
             </div>
         </div>
 
-        <!-- Trend Chart Section -->
+        <!-- Main Trend Chart -->
         <div class="bg-white p-5 rounded-2xl shadow-sm">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b pb-4">
                 <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">แนวโน้มเวลาสูญเสีย (เวลา / จำนวนครั้ง)</h3>
@@ -106,7 +106,6 @@
                 <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase tracking-tighter">Top 10 Stations (นาที)</h3>
                 <div class="chart-container"><canvas id="mainChartStation"></canvas></div>
             </div>
-            <!-- กราฟใหม่: Top 5 Operators -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-amber-100 lg:col-span-2 xl:col-span-1">
                 <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase tracking-tighter">Top 5 รายชื่อที่มี Downtime สูงสุด</h3>
                 <div class="chart-container"><canvas id="mainChartOperator"></canvas></div>
@@ -115,17 +114,16 @@
 
         <!-- Table Log -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
-            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">Detailed Log</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
+            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">History Log</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
             <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-gray-600"></tbody></table></div>
         </div>
     </div>
 
     <!-- PAGE 2: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
-        <!-- Operator Selection -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Select Operator</label><select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
+                <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ (Shift)</label><select id="op-filter-shift"><option value="">ทั้งหมด</option></select></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Start Date</label><input type="date" id="op-start-date"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">End Date</label><input type="date" id="op-end-date"></div>
@@ -133,20 +131,18 @@
             <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 text-center">
                 <div><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Minutes</p><p id="op-kpi-time" class="text-xl font-black text-gray-700">0</p></div>
                 <div><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Times</p><p id="op-kpi-count" class="text-xl font-black text-gray-700">0</p></div>
-                <div><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Problem Unique</p><p id="op-kpi-types" class="text-xl font-black text-gray-700">0</p></div>
+                <div><p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Unique Probs</p><p id="op-kpi-types" class="text-xl font-black text-gray-700">0</p></div>
             </div>
         </div>
 
-        <!-- Operator Table -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div class="p-4 bg-blue-50 border-b flex justify-between items-center"><h3 class="font-bold text-blue-800 uppercase text-xs">Operator Downtime History</h3><span id="op-badge-count" class="text-[10px] bg-blue-200 text-blue-800 px-3 py-1 rounded-full font-bold uppercase">0 Records</span></div>
             <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div>
         </div>
 
-        <!-- Operator Trend Chart -->
         <div class="bg-white p-5 rounded-2xl shadow-sm mb-10">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b pb-4">
-                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">กราฟวิเคราะห์แนวโน้มรายบุคคล</h3>
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">แนวโน้มเวลาสูญเสียรายบุคคล</h3>
                 <div class="inline-flex rounded-lg shadow-sm">
                     <button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active rounded-l-lg border-r-0">รายวัน</button>
                     <button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn border-x-0">รายวีค</button>
@@ -205,7 +201,7 @@
             const lines = text.split(/\r?\n/);
             rawData = lines.slice(1).map(line => {
                 const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cells.length < 5) return null;
+                if (cells.length < 9) return null;
                 const clean = (v) => v ? v.trim().replace(/"/g, '') : '';
                 const isoDate = formatToISO(clean(cells[0]));
                 if (!isoDate) return null;
@@ -216,7 +212,8 @@
                     weekNum: getISOWeek(dateObj), machine: clean(cells[2]), station: clean(cells[3]),
                     stops: parseInt(clean(cells[4])) || 0, duration: parseFloat(clean(cells[5])) || 0,
                     problem: clean(cells[6]), operator: clean(cells[7]), factor: clean(cells[8]),
-                    shift: clean(cells[10]), time: clean(cells[1])
+                    shift: clean(cells[9]), // แก้ไข Index จาก 10 เป็น 9 (เพื่อให้ได้ A/B)
+                    time: clean(cells[1])
                 };
             }).filter(d => d);
         }
@@ -276,7 +273,7 @@
 
             renderTrend('mainTrendChart', filtered, mainTrendMode);
             renderMainDistribution(filtered);
-            document.getElementById('main-table-body').innerHTML = filtered.slice(0, 80).map(d => `
+            document.getElementById('main-table-body').innerHTML = filtered.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-gray-50 transition-colors">
                     <td class="p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td>
                     <td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-gray-400 uppercase">${d.station}</span></td>
@@ -288,28 +285,18 @@
         }
 
         function renderMainDistribution(data) {
-            // Factors
             const f = {}; data.forEach(d => f[d.factor] = (f[d.factor]||0) + d.duration);
             updateChart('mainChartFactor', 'doughnut', Object.keys(f), Object.values(f));
-            
-            // Stations
             const st = {}; data.forEach(d => st[d.station] = (st[d.station]||0) + d.duration);
             const topSt = Object.entries(st).sort((a,b) => b[1]-a[1]).slice(0, 10);
             updateChart('mainChartStation', 'bar', topSt.map(x=>x[0]), topSt.map(x=>x[1]), true);
-
-            // Operators (Top 5)
-            const opMap = {};
-            data.forEach(d => {
+            const opMap = {}; data.forEach(d => {
                 if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
                     if (!opMap[d.operator]) opMap[d.operator] = { time: 0, count: 0 };
-                    opMap[d.operator].time += d.duration;
-                    opMap[d.operator].count += d.stops;
+                    opMap[d.operator].time += d.duration; opMap[d.operator].count += d.stops;
                 }
             });
-            const topOp = Object.entries(opMap)
-                .sort((a,b) => b[1].time - a[1].time)
-                .slice(0, 5);
-            
+            const topOp = Object.entries(opMap).sort((a,b) => b[1].time - a[1].time).slice(0, 5);
             updateChart('mainChartOperator', 'bar', topOp.map(x=>x[0]), topOp.map(x=>x[1].time), true, topOp.map(x=>x[1].count));
         }
 
@@ -318,7 +305,7 @@
             const sh = document.getElementById('op-filter-shift').value;
             const s = document.getElementById('op-start-date').value;
             const e = document.getElementById('op-end-date').value;
-            if (!n) { document.getElementById('op-table-body').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 italic">-- เลือกพนักงานเพื่อวิเคราะห์แนวโน้ม --</td></tr>'; return; }
+            if (!n) { document.getElementById('op-table-body').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 italic">-- เลือกพนักงาน --</td></tr>'; return; }
             const opData = rawData.filter(d => d.operator === n && (!sh || d.shift === sh) && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
             document.getElementById('op-kpi-time').textContent = opData.reduce((a,b) => a+b.duration, 0).toLocaleString();
             document.getElementById('op-kpi-count').textContent = opData.reduce((a,b) => a+b.stops, 0).toLocaleString();
@@ -339,18 +326,19 @@
         function renderTrend(id, data, mode) {
             let agg = {};
             data.forEach(d => {
-                let k = mode === 'daily' ? d.date : (mode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2, '0')}` : `${d.year}-${d.month.toString().padStart(2, '0')}`);
+                let k = '';
+                if (mode === 'daily') k = d.date;
+                else if (mode === 'weekly') k = `${d.year}-W${d.weekNum.toString().padStart(2, '0')}`;
+                else k = `${d.year}-${d.month.toString().padStart(2, '0')}`;
                 if (!agg[k]) agg[k] = { time: 0, count: 0 };
-                agg[k].time += d.duration;
-                agg[k].count += d.stops;
+                agg[k].time += d.duration; agg[k].count += d.stops;
             });
             const labels = Object.keys(agg).sort((a, b) => mode === 'daily' ? new Date(formatToISO(a)) - new Date(formatToISO(b)) : a.localeCompare(b));
             const displayLabels = labels.map(l => {
                 if (mode === 'weekly') return l.replace('-W', ' Wk ');
                 if (mode === 'monthly') {
-                    const [y, m] = l.split('-');
                     const months = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-                    return `${months[parseInt(m)]} ${y}`;
+                    const [y, m] = l.split('-'); return `${months[parseInt(m)]} ${y}`;
                 }
                 return l;
             });
@@ -374,11 +362,9 @@
                     plugins: {
                         legend: { display: false },
                         datalabels: {
-                            anchor: 'end', align: 'top', offset: 5,
-                            font: { weight: 'bold', size: 10, family: 'Kanit' },
+                            anchor: 'end', align: 'top', offset: 5, font: { weight: 'bold', size: 10, family: 'Kanit' },
                             formatter: (v, ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.customCounts[ctx.dataIndex].toLocaleString()}ค.`,
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: 4,
-                            padding: { top: 2, bottom: 2, left: 4, right: 4 },
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: 4, padding: { top: 2, bottom: 2, left: 4, right: 4 },
                             color: '#1e293b', borderWidth: 1, borderColor: '#e2e8f0'
                         }
                     },
@@ -392,9 +378,7 @@
 
         function updateChart(id, type, labels, data, horizontal = false, countData = null) {
             if(charts[id]) charts[id].destroy();
-            const canvas = document.getElementById(id);
-            if (!canvas) return;
-            charts[id] = new Chart(canvas.getContext('2d'), {
+            charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
                 type: type,
                 data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#64748b','#06b6d4'], borderRadius: 4, customCounts: countData }] },
                 options: {
@@ -403,12 +387,7 @@
                         legend: { display: type==='doughnut', position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Kanit' } } },
                         datalabels: {
                             anchor: 'end', align: horizontal ? 'right' : 'top', font: { weight: 'bold', size: 9 },
-                            formatter: (v, ctx) => {
-                                if (ctx.dataset.customCounts) {
-                                    return `${v.toLocaleString()}น. / ${ctx.dataset.customCounts[ctx.dataIndex].toLocaleString()}ค.`;
-                                }
-                                return v.toLocaleString();
-                            },
+                            formatter: (v, ctx) => ctx.dataset.customCounts ? `${v.toLocaleString()}น. / ${ctx.dataset.customCounts[ctx.dataIndex].toLocaleString()}ค.` : v.toLocaleString(),
                             backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 3
                         }
                     },
