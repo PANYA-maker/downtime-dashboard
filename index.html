@@ -3,178 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downtime Performance Dashboard</title>
-    <!-- นำเข้า Tailwind CSS และ Chart.js -->
+    <title>Downtime & Operator Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
-        .chart-container { position: relative; height: 280px; width: 100%; }
-        .table-responsive { overflow-x: auto; max-height: 500px; }
-        input, select { border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.6rem; font-size: 0.875rem; width: 100%; }
-        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
+        .chart-container { position: relative; height: 260px; width: 100%; }
+        .table-responsive { overflow-x: auto; max-height: 450px; }
+        input, select { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.6rem; font-size: 0.875rem; width: 100%; transition: border 0.2s; }
+        input:focus, select:focus { border-color: #3b82f6; outline: none; }
+        .nav-btn { transition: all 0.2s; border-radius: 0.75rem; }
+        .nav-btn.active { background-color: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="p-2 md:p-6 pb-20">
 
-    <!-- หน้าจอ Loading -->
     <div id="loading" class="loading-overlay">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p class="text-blue-600 font-semibold">กำลังดึงข้อมูลล่าสุดจาก Google Sheets...</p>
+        <p class="text-blue-600 font-semibold">กำลังซิงค์ข้อมูลล่าสุด...</p>
     </div>
 
-    <!-- ส่วนหัวและปุ่มอัปเดต -->
-    <div class="max-w-7xl mx-auto mb-6">
-        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-gray-800">Downtime Performance Dashboard</h1>
-                    <p class="text-sm text-gray-500">ข้อมูลอัปเดตอัตโนมัติจากระบบรายงาน</p>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <!-- ลิงก์ Google Sheet ที่คุณให้มา -->
-                    <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
-                    <button onclick="syncData()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        รีเฟรชข้อมูลล่าสุด
-                    </button>
-                </div>
+    <!-- ลิงก์ข้อมูล CSV -->
+    <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
+
+    <!-- Navigation Bar -->
+    <div class="max-w-7xl mx-auto mb-6 flex bg-white p-2 rounded-2xl shadow-sm gap-2">
+        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-3 font-semibold text-sm flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            ภาพรวมระบบ
+        </button>
+        <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-3 font-semibold text-sm flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            วิเคราะห์พนักงาน
+        </button>
+        <button onclick="syncData()" class="bg-gray-100 hover:bg-gray-200 px-4 rounded-xl text-gray-600 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+    </div>
+
+    <!-- PAGE 1: MAIN DASHBOARD -->
+    <div id="page-main" class="max-w-7xl mx-auto space-y-6">
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Downtime</p>
+                <p id="main-total-min" class="text-2xl font-black text-gray-800">0</p>
+                <p class="text-[10px] text-blue-500">Minutes</p>
             </div>
-            
-            <!-- การแสดงผล KPI -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <p class="text-[10px] text-blue-600 font-bold uppercase tracking-wider">เวลาหยุดรวม (นาที)</p>
-                    <p id="total-min" class="text-2xl font-black text-blue-800">0</p>
-                </div>
-                <div class="bg-red-50 p-4 rounded-xl border border-red-100">
-                    <p class="text-[10px] text-red-600 font-bold uppercase tracking-wider">จำนวนครั้งที่หยุด</p>
-                    <p id="total-count" class="text-2xl font-black text-red-800">0</p>
-                </div>
-                <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                    <p class="text-[10px] text-amber-600 font-bold uppercase tracking-wider">เฉลี่ยต่อครั้ง (นาที)</p>
-                    <p id="avg-min" class="text-2xl font-black text-amber-800">0</p>
-                </div>
-                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                    <p class="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">จำนวนรายการทั้งหมด</p>
-                    <p id="total-rows" class="text-2xl font-black text-indigo-800">0</p>
-                </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-red-500">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Stops</p>
+                <p id="main-total-count" class="text-2xl font-black text-gray-800">0</p>
+                <p class="text-[10px] text-red-500">Times</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Avg per Stop</p>
+                <p id="main-avg-min" class="text-2xl font-black text-gray-800">0</p>
+                <p class="text-[10px] text-amber-500">Minutes</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Data Points</p>
+                <p id="main-rows" class="text-2xl font-black text-gray-800">0</p>
+                <p class="text-[10px] text-indigo-500">Records</p>
             </div>
         </div>
-    </div>
 
-    <!-- ส่วนตัวกรอง (Filters) -->
-    <div class="max-w-7xl mx-auto mb-6 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-gray-400 mb-1 uppercase">จากวันที่</label>
-                <input type="date" id="start-date">
-            </div>
-            <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-gray-400 mb-1 uppercase">ถึงวันที่</label>
-                <input type="date" id="end-date">
-            </div>
-            <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-gray-400 mb-1 uppercase">เครื่องจักร</label>
-                <select id="filter-mc"><option value="">ทั้งหมด</option></select>
-            </div>
-            <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-gray-400 mb-1 uppercase">ปัจจัยหลัก</label>
-                <select id="filter-factor"><option value="">ทั้งหมด</option></select>
-            </div>
-            <div class="flex flex-col">
-                <label class="text-[10px] font-bold text-gray-400 mb-1 uppercase">ค้นหา (พนักงาน/ปัญหา/Station)</label>
-                <input type="text" id="filter-search" placeholder="พิมพ์เพื่อค้นหา...">
-            </div>
+        <!-- Filters -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
+            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
+            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหาเพิ่มเติม</label><input type="text" id="main-filter-search" placeholder="Station, พนักงาน, ปัญหา..."></div>
+            <div class="flex items-end"><button onclick="resetMainFilters()" class="text-xs text-blue-600 font-semibold mb-2 hover:underline">ล้างตัวกรองทั้งหมด</button></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-center text-sm font-bold text-gray-600 mb-4">Downtime by Factors</h3><div class="chart-container"><canvas id="mainChartFactor"></canvas></div></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-center text-sm font-bold text-gray-600 mb-4">Top 10 Stations Downtime</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700">รายการล่าสุด</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
+            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs"></tbody></table></div>
         </div>
     </div>
 
-    <!-- กราฟวิเคราะห์ -->
-    <div class="max-w-7xl mx-auto mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-700 mb-4 px-2 text-center text-sm">สัดส่วนตามปัจจัยหลัก (เวลาหยุด)</h3>
-            <div class="chart-container"><canvas id="chartFactor"></canvas></div>
+    <!-- PAGE 2: OPERATOR ANALYSIS -->
+    <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
+        <!-- Operator Selection -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 items-center border-t-4 border-blue-500">
+            <div class="w-full md:w-1/3">
+                <label class="text-xs font-bold text-gray-500 mb-1 block">เลือกรายชื่อพนักงานเพื่อวิเคราะห์แนวโน้ม</label>
+                <select id="op-select" class="text-lg font-bold text-blue-600 border-blue-200"><option value="">-- กรุณาเลือกพนักงาน --</option></select>
+            </div>
+            <div class="grid grid-cols-3 flex-1 gap-2 w-full">
+                <div class="text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Total Time</p><p id="op-kpi-time" class="text-xl font-black text-gray-700">0</p></div>
+                <div class="text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Total Counts</p><p id="op-kpi-count" class="text-xl font-black text-gray-700">0</p></div>
+                <div class="text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Problem Types</p><p id="op-kpi-types" class="text-xl font-black text-gray-700">0</p></div>
+            </div>
         </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-700 mb-4 px-2 text-center text-sm">Top 10 Station ที่หยุดนานที่สุด</h3>
-            <div class="chart-container"><canvas id="chartStation"></canvas></div>
-        </div>
-    </div>
 
-    <!-- ตารางข้อมูล -->
-    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-12">
-        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
-            <h3 class="font-bold text-gray-800">รายละเอียดประวัติรายงาน</h3>
-            <span id="filter-count" class="text-[10px] font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full uppercase">0 รายการ</span>
+        <!-- Trend Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-5 rounded-2xl shadow-sm lg:col-span-2">
+                <h3 class="text-sm font-bold text-gray-600 mb-4 border-b pb-2">แนวโน้มเวลาสูญเสียรายสัปดาห์ (Weekly Trend)</h3>
+                <div class="chart-container"><canvas id="opChartWeekly"></canvas></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm">
+                <h3 class="text-sm font-bold text-gray-600 mb-4 border-b pb-2">สัดส่วนรายเดือน (Monthly)</h3>
+                <div class="chart-container"><canvas id="opChartMonthly"></canvas></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm lg:col-span-3">
+                <h3 class="text-sm font-bold text-gray-600 mb-4 border-b pb-2">ข้อมูลรายวัน (Daily Detail)</h3>
+                <div class="chart-container"><canvas id="opChartDaily"></canvas></div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="w-full text-left">
-                <thead class="sticky top-0 bg-white shadow-sm z-10">
-                    <tr class="text-[10px] font-bold text-gray-400 border-b uppercase">
-                        <th class="p-4">วันที่/กะ</th>
-                        <th class="p-4">เครื่อง/Station</th>
-                        <th class="p-4">ปัญหาที่เกิดขึ้น</th>
-                        <th class="p-4 text-center">นาที</th>
-                        <th class="p-4">ปัจจัยหลัก</th>
-                        <th class="p-4">ผู้ปฏิบัติงาน</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body" class="text-xs text-gray-700">
-                    <!-- ข้อมูลจะถูกใส่ที่นี่อัตโนมัติ -->
-                </tbody>
-            </table>
+
+        <!-- Detailed Table -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div class="p-4 bg-blue-50 border-b"><h3 class="font-bold text-blue-800">รายละเอียดปัญหาที่เกิดขึ้น (รายบุคคล)</h3></div>
+            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหาที่พบ</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div>
         </div>
     </div>
 
     <script>
         let rawData = [];
-        let filteredData = [];
         let charts = {};
 
-        // ฟังก์ชันดึงข้อมูลจาก Google Sheets
+        // 1. Navigation & Sync
+        function switchPage(page) {
+            document.getElementById('page-main').classList.toggle('hidden', page !== 'main');
+            document.getElementById('page-operator').classList.toggle('hidden', page !== 'operator');
+            document.getElementById('btn-main').classList.toggle('active', page === 'main');
+            document.getElementById('btn-operator').classList.toggle('active', page === 'operator');
+            
+            if (page === 'operator') updateOperatorUI();
+            else updateMainUI();
+        }
+
         async function syncData() {
             const url = document.getElementById('sheet-url').value;
             document.getElementById('loading').style.display = 'flex';
-            
             try {
-                // ป้องกันการจำค่าแคช (Cache Busting)
-                const fetchUrl = `${url}&t=${new Date().getTime()}`;
-                const response = await fetch(fetchUrl);
+                const response = await fetch(`${url}&t=${Date.now()}`);
                 const csvText = await response.text();
                 parseCSV(csvText);
-                setupDropdowns();
-                applyFilters();
-            } catch (error) {
-                console.error("Fetch error:", error);
-                alert('ไม่สามารถดึงข้อมูลได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
+                initFilters();
+                updateMainUI();
+            } catch (err) { alert('ซิงค์ข้อมูลไม่สำเร็จ!'); }
+            finally { document.getElementById('loading').style.display = 'none'; }
         }
 
-        // ฟังก์ชันแปลงข้อมูล CSV
+        // 2. Data Processing
         function parseCSV(text) {
             const lines = text.split(/\r?\n/);
-            if (lines.length < 2) return;
-
-            const rows = [];
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                if (!line.trim()) continue;
-
-                // แยกคอลัมน์ด้วยเครื่องหมายคอมมา
+            rawData = lines.slice(1).map(line => {
                 const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                const clean = (val) => {
-                    if (!val) return '';
-                    let v = val.trim();
-                    if (v.startsWith('"') && v.endsWith('"')) v = v.substring(1, v.length - 1);
-                    return v.replace(/""/g, '"');
-                };
-
-                const item = {
+                if (cells.length < 5) return null;
+                const clean = (v) => v ? v.trim().replace(/"/g, '') : '';
+                return {
                     date: clean(cells[0]),
                     time: clean(cells[1]),
                     machine: clean(cells[2]),
@@ -184,154 +173,145 @@
                     problem: clean(cells[6]),
                     operator: clean(cells[7]),
                     factor: clean(cells[8]),
-                    shift: clean(cells[10])
+                    week: clean(cells[9]),
+                    shift: clean(cells[10]),
+                    month: clean(cells[17])
                 };
-
-                if (item.date) rows.push(item);
-            }
-            rawData = rows;
+            }).filter(d => d && d.date);
         }
 
-        // ตั้งค่าเมนูเลือกตัวกรอง
-        function setupDropdowns() {
-            const getUnique = (key) => [...new Set(rawData.map(d => d[key]))].filter(x => x).sort();
-            fillSelect('filter-mc', getUnique('machine'));
-            fillSelect('filter-factor', getUnique('factor'));
+        function initFilters() {
+            const unique = (key) => [...new Set(rawData.map(d => d[key]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
+            
+            fillSelect('main-filter-mc', unique('machine'));
+            fillSelect('main-filter-factor', unique('factor'));
+            fillSelect('op-select', unique('operator'));
+
+            document.querySelectorAll('#page-main input, #page-main select').forEach(el => el.addEventListener('change', updateMainUI));
+            document.getElementById('op-select').addEventListener('change', updateOperatorUI);
         }
 
         function fillSelect(id, items) {
             const select = document.getElementById(id);
             const current = select.value;
-            select.innerHTML = '<option value="">ทั้งหมด</option>';
-            items.forEach(item => {
+            select.innerHTML = id === 'op-select' ? '<option value="">-- กรุณาเลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>';
+            items.forEach(it => {
                 const opt = document.createElement('option');
-                opt.value = item;
-                opt.textContent = item;
-                select.appendChild(opt);
+                opt.value = it; opt.textContent = it; select.appendChild(opt);
             });
             select.value = current;
         }
 
-        // ฟังก์ชันกรองข้อมูล
-        function applyFilters() {
-            const start = document.getElementById('start-date').value;
-            const end = document.getElementById('end-date').value;
-            const mc = document.getElementById('filter-mc').value;
-            const factor = document.getElementById('filter-factor').value;
-            const search = document.getElementById('filter-search').value.toLowerCase();
+        // 3. UI Updates - Main Page
+        function updateMainUI() {
+            const mc = document.getElementById('main-filter-mc').value;
+            const factor = document.getElementById('main-filter-factor').value;
+            const search = document.getElementById('main-filter-search').value.toLowerCase();
 
-            filteredData = rawData.filter(d => {
-                let dDate = '';
-                if (d.date.includes('/')) {
-                    const parts = d.date.split('/');
-                    if (parts[2].length === 4) {
-                        dDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                    }
-                }
-
-                const dateMatch = (!start || dDate >= start) && (!end || dDate <= end);
-                const mcMatch = !mc || d.machine === mc;
-                const factorMatch = !factor || d.factor === factor;
-                const searchMatch = !search || 
-                                    d.problem.toLowerCase().includes(search) || 
-                                    d.operator.toLowerCase().includes(search) ||
-                                    d.station.toLowerCase().includes(search);
-                return dateMatch && mcMatch && factorMatch && searchMatch;
+            const filtered = rawData.filter(d => {
+                return (!mc || d.machine === mc) &&
+                       (!factor || d.factor === factor) &&
+                       (!search || d.problem.toLowerCase().includes(search) || d.operator.toLowerCase().includes(search) || d.station.toLowerCase().includes(search));
             });
 
-            updateUI();
-        }
+            const tMin = filtered.reduce((s,d) => s + d.duration, 0);
+            const tCount = filtered.reduce((s,d) => s + d.stops, 0);
 
-        // อัปเดตการแสดงผลบนหน้าจอ
-        function updateUI() {
-            const tMin = filteredData.reduce((s, d) => s + d.duration, 0);
-            const tCount = filteredData.reduce((s, d) => s + d.stops, 0);
-            
-            document.getElementById('total-min').textContent = tMin.toLocaleString();
-            document.getElementById('total-count').textContent = tCount.toLocaleString();
-            document.getElementById('avg-min').textContent = tCount ? (tMin / tCount).toFixed(1) : 0;
-            document.getElementById('total-rows').textContent = rawData.length.toLocaleString();
-            document.getElementById('filter-count').textContent = `แสดง ${filteredData.length} รายการ`;
+            document.getElementById('main-total-min').textContent = tMin.toLocaleString();
+            document.getElementById('main-total-count').textContent = tCount.toLocaleString();
+            document.getElementById('main-avg-min').textContent = tCount ? (tMin/tCount).toFixed(1) : 0;
+            document.getElementById('main-rows').textContent = rawData.length.toLocaleString();
+            document.getElementById('main-badge-count').textContent = `${filtered.length} รายการ`;
 
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = filteredData.length > 0 ? filteredData.map(d => `
-                <tr class="border-b hover:bg-gray-50 transition-colors">
-                    <td class="p-4"><span class="block font-bold text-gray-700">${d.date}</span><span class="text-[10px] text-gray-400 font-semibold">กะ ${d.shift} ${d.time}</span></td>
-                    <td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[10px] text-gray-500">${d.station}</span></td>
-                    <td class="p-4 text-xs font-medium text-gray-600 leading-snug">${d.problem}</td>
-                    <td class="p-4 text-center font-black text-red-500">${d.duration}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded-md text-[9px] font-bold ${getBadgeColor(d.factor)}">${d.factor}</span></td>
-                    <td class="p-4 text-[10px] text-gray-500">${d.operator}</td>
+            // Charts & Table
+            renderMainCharts(filtered);
+            document.getElementById('main-table-body').innerHTML = filtered.slice(0, 100).map(d => `
+                <tr class="border-b">
+                    <td class="p-4"><b>${d.date}</b><br><span class="text-gray-400">กะ ${d.shift}</span></td>
+                    <td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br>${d.station}</td>
+                    <td class="p-4 text-gray-500">${d.problem}</td>
+                    <td class="p-4 text-center font-bold text-red-500">${d.duration}</td>
+                    <td class="p-4 text-[10px]">${d.operator}</td>
                 </tr>
-            `).join('') : '<tr><td colspan="6" class="p-10 text-center text-gray-400">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>';
-
-            renderCharts();
+            `).join('');
         }
 
-        function getBadgeColor(f) {
-            if(f.includes('MAN')) return 'bg-orange-100 text-orange-600 border border-orange-200';
-            if(f.includes('MACHINE')) return 'bg-red-100 text-red-600 border border-red-200';
-            if(f.includes('MATERIAL')) return 'bg-blue-100 text-blue-600 border border-blue-200';
-            return 'bg-gray-100 text-gray-600 border border-gray-200';
-        }
+        function renderMainCharts(data) {
+            const fData = {}; data.forEach(d => fData[d.factor] = (fData[d.factor]||0) + d.duration);
+            updateChart('mainChartFactor', 'doughnut', Object.keys(fData), Object.values(fData));
 
-        // ฟังก์ชันวาดกราฟ
-        function renderCharts() {
-            const fData = {};
-            filteredData.forEach(d => { if(d.factor) fData[d.factor] = (fData[d.factor] || 0) + d.duration; });
-            updateChart('chartFactor', 'doughnut', Object.keys(fData), Object.values(fData));
-
-            const sData = {};
-            filteredData.forEach(d => { if(d.station) sData[d.station] = (sData[d.station] || 0) + d.duration; });
+            const sData = {}; data.forEach(d => sData[d.station] = (sData[d.station]||0) + d.duration);
             const topS = Object.entries(sData).sort((a,b) => b[1]-a[1]).slice(0, 10);
-            updateChart('chartStation', 'bar', topS.map(x=>x[0]), topS.map(x=>x[1]), true);
+            updateChart('mainChartStation', 'bar', topS.map(x=>x[0]), topS.map(x=>x[1]), true);
         }
 
+        // 4. UI Updates - Operator Page
+        function updateOperatorUI() {
+            const name = document.getElementById('op-select').value;
+            const opData = rawData.filter(d => d.operator === name);
+
+            if (!name) {
+                document.getElementById('op-table-body').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 font-bold italic text-sm">-- กรุณาเลือกชื่อพนักงานที่ด้านบนเพื่อดูข้อมูล --</td></tr>';
+                return;
+            }
+
+            document.getElementById('op-kpi-time').textContent = opData.reduce((s,d) => s + d.duration, 0).toLocaleString();
+            document.getElementById('op-kpi-count').textContent = opData.reduce((s,d) => s + d.stops, 0).toLocaleString();
+            document.getElementById('op-kpi-types').textContent = [...new Set(opData.map(d => d.problem))].length;
+
+            // Trend Data
+            const weekly = {}; opData.forEach(d => { const wk = "Week " + d.week; weekly[wk] = (weekly[wk]||0) + d.duration; });
+            const monthly = {}; opData.forEach(d => { const m = "Month " + d.month; monthly[m] = (monthly[m]||0) + d.duration; });
+            const daily = {}; opData.forEach(d => { daily[d.date] = (daily[d.date]||0) + d.duration; });
+
+            updateChart('opChartWeekly', 'bar', Object.keys(weekly), Object.values(weekly));
+            updateChart('opChartMonthly', 'pie', Object.keys(monthly), Object.values(monthly));
+            updateChart('opChartDaily', 'line', Object.keys(daily), Object.values(daily));
+
+            document.getElementById('op-table-body').innerHTML = opData.map(d => `
+                <tr class="border-b hover:bg-blue-50">
+                    <td class="p-4 font-bold">${d.date}</td>
+                    <td class="p-4 text-gray-400">${d.station}</td>
+                    <td class="p-4 font-medium text-gray-700">${d.problem}</td>
+                    <td class="p-4 text-center font-bold text-red-600">${d.duration}</td>
+                    <td class="p-4"><span class="px-2 py-0.5 bg-gray-100 rounded-md text-[9px] font-bold">${d.factor}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // 5. Chart Core
         function updateChart(id, type, labels, data, horizontal = false) {
             if(charts[id]) charts[id].destroy();
-            const canvas = document.getElementById(id);
-            if(!canvas) return;
-            const ctx = canvas.getContext('2d');
-            
+            const ctx = document.getElementById(id).getContext('2d');
             charts[id] = new Chart(ctx, {
                 type: type,
                 data: {
                     labels: labels,
                     datasets: [{
                         data: data,
-                        backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b', '#06b6d4', '#d946ef', '#f43f5e'],
-                        borderRadius: 4,
-                        borderWidth: 0
+                        backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b', '#06b6d4'],
+                        borderWidth: 0,
+                        borderRadius: type === 'bar' ? 6 : 0,
+                        fill: type === 'line',
+                        tension: 0.3
                     }]
                 },
                 options: {
                     indexAxis: horizontal ? 'y' : 'x',
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { 
-                            display: type === 'doughnut', 
-                            position: 'bottom', 
-                            labels: { boxWidth: 10, font: { size: 10, family: 'Kanit' }, padding: 15 } 
-                        }
-                    },
-                    scales: horizontal ? { 
-                        x: { grid: { display: false }, ticks: { font: { size: 9, family: 'Kanit' } } },
-                        y: { ticks: { font: { size: 9, family: 'Kanit' } } }
-                    } : { 
-                        y: { grid: { display: false }, ticks: { font: { size: 9, family: 'Kanit' } } },
-                        x: { ticks: { font: { size: 9, family: 'Kanit' } } }
-                    }
+                    plugins: { legend: { display: type === 'doughnut' || type === 'pie', position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+                    scales: (type === 'bar' || type === 'line') ? { x: { ticks: { font: { size: 9 } } }, y: { grid: { borderDash: [5,5] }, ticks: { font: { size: 9 } } } } : {}
                 }
             });
         }
 
-        // ผูกเหตุการณ์การเปลี่ยนแปลงของตัวกรอง
-        document.querySelectorAll('input, select').forEach(el => {
-            el.addEventListener('change', applyFilters);
-            if(el.type === 'text') el.addEventListener('keyup', applyFilters);
-        });
+        function resetMainFilters() {
+            document.getElementById('main-filter-mc').value = "";
+            document.getElementById('main-filter-factor').value = "";
+            document.getElementById('main-filter-search').value = "";
+            updateMainUI();
+        }
 
-        // เริ่มต้นโหลดข้อมูลเมื่อเปิดหน้าเว็บ
         window.onload = syncData;
     </script>
 </body>
