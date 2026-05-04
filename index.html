@@ -15,14 +15,14 @@
         input, select { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.6rem; font-size: 0.875rem; width: 100%; transition: all 0.2s; }
         
         /* สไตล์ปุ่มเมนู */
-        .nav-btn { transition: all 0.3s ease; border-radius: 0.75rem; color: #6b7280; background-color: #ffffff; }
+        .nav-btn { transition: all 0.3s ease; border-radius: 0.75rem; color: #6b7280; background-color: #ffffff; border: 1px solid transparent; }
         .nav-btn.active { background-color: #2563eb !important; color: white !important; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
         
         .view-btn { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; border: 1px solid #e5e7eb; transition: all 0.2s; }
         .view-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
-        /* รูปโปรไฟล์ */
+        /* รูปโปรไฟล์ขนาดใหญ่เน้นใบหน้า */
         .profile-img { width: 180px; height: 180px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 6px solid white; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15); background-color: #f9fafb; }
         .op-thumb { width: 45px; height: 45px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     </style>
@@ -36,7 +36,7 @@
 
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
 
-    <!-- Navigation Bar -->
+    <!-- แถบเมนูหลัก -->
     <div class="max-w-7xl mx-auto mb-6 flex bg-white p-2 rounded-2xl shadow-sm gap-2">
         <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 uppercase tracking-widest">ภาพรวมระบบ</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 uppercase tracking-widest">วิเคราะห์พนักงาน</button>
@@ -68,6 +68,7 @@
             </div>
         </div>
 
+        <!-- Trend Chart -->
         <div class="bg-white p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-4 border-b pb-2">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">แนวโน้มเวลาสูญเสีย (นาที / ครั้ง)</h3>
@@ -80,23 +81,41 @@
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-blue-100"><h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6">Downtime by Factors</h3><div class="chart-container"><canvas id="mainChartFactor"></canvas></div></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-red-100"><h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6">Top 10 Stations (นาที/ครั้ง)</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
+        <!-- Secondary Charts (นำโดนัทออกและปรับสัดส่วน) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-red-100">
+                <h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6 tracking-tighter">Top 10 Stations (นาที/ครั้ง)</h3>
+                <div class="chart-container"><canvas id="mainChartStation"></canvas></div>
+            </div>
             
-            <!-- ปรับปรุง Top 5 ให้แสดงรูปพนักงาน -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-amber-100">
-                <h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6">Top 5 Operators (นาที/ครั้ง)</h3>
+                <h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6 tracking-tighter">Top 5 Operators (นาที/ครั้ง)</h3>
                 <div id="top-operators-list" class="space-y-4">
-                    <!-- Top 5 rows will be injected here -->
+                    <!-- ข้อมูลจะถูกใส่ที่นี่อัตโนมัติ -->
                 </div>
             </div>
         </div>
 
         <!-- History Log Table -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
-            <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
-            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-gray-600"></tbody></table></div>
+            <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                <h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3>
+                <span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span>
+            </div>
+            <div class="table-responsive">
+                <table class="w-full text-left">
+                    <thead class="bg-white border-b sticky top-0">
+                        <tr class="text-[10px] font-bold text-gray-400 uppercase">
+                            <th class="p-4">วันที่/กะ</th>
+                            <th class="p-4">MC/Station</th>
+                            <th class="p-4">ปัญหา</th>
+                            <th class="p-4 text-center">นาที</th>
+                            <th class="p-4">พนักงาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="main-table-body" class="text-xs text-gray-600"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -105,7 +124,9 @@
         <div class="bg-white p-10 rounded-2xl shadow-sm border-t-4 border-blue-500">
             <div class="flex flex-col lg:flex-row gap-10 items-center">
                 <div class="shrink-0">
-                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100"><svg class="w-16 h-16 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100">
+                        <svg class="w-16 h-16 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </div>
                     <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" onerror="this.classList.add('hidden'); document.getElementById('op-img-placeholder').classList.remove('hidden');">
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 w-full">
@@ -124,7 +145,16 @@
             </div>
         </div>
         <div class="bg-white p-5 rounded-2xl shadow-sm"><div class="chart-container"><canvas id="opTrendChart"></canvas></div></div>
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10"><div class="table-responsive"><table class="w-full text-left"><thead class="bg-blue-50 border-b text-[10px] font-bold text-blue-400 uppercase"><tr><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div></div>
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
+            <div class="table-responsive">
+                <table class="w-full text-left">
+                    <thead class="bg-blue-50 border-b text-[10px] font-bold text-blue-400 uppercase">
+                        <tr><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr>
+                    </thead>
+                    <tbody id="op-table-body" class="text-xs text-gray-600"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -190,10 +220,10 @@
         }
 
         function renderDist(data) {
-            const fact = {}; data.forEach(d => fact[d.factor] = (fact[d.factor]||0)+d.duration); updateChart('mainChartFactor', 'doughnut', Object.keys(fact), Object.values(fact));
+            // กราฟสถานี
             const st = {}; data.forEach(d => { if(!st[d.station])st[d.station]={t:0,c:0}; st[d.station].t+=d.duration; st[d.station].c+=d.stops; }); const topSt = Object.entries(st).sort((a,b)=>b[1].t-a[1].t).slice(0, 10); updateChart('mainChartStation', 'bar', topSt.map(x=>x[0]), topSt.map(x=>x[1].t), true, topSt.map(x=>x[1].c));
             
-            // ปรับปรุงการคำนวณและแสดงผล Top 5 Operators รายคน
+            // รายชื่อพนักงาน Top 5
             const op = {}; data.forEach(d => { 
                 if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ 
                     if(!op[d.operator]) op[d.operator] = { t:0, c:0, img: d.imgUrl }; 
@@ -235,7 +265,7 @@
         }
 
         function updateChart(id, type, labs, data, horiz = false, counts = null) {
-            if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id).getContext('2d'), { type: type, data: { labels: labs, datasets: [{ data: data, backgroundColor: ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#64748b'], borderRadius: 4, custom: counts }] }, options: { indexAxis: horiz ? 'y' : 'x', maintainAspectRatio: false, plugins: { legend: { display: type==='doughnut', position: 'bottom' }, datalabels: { anchor: 'end', align: horiz ? 'right' : 'top', formatter: (v,ctx)=>ctx.dataset.custom ? `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.` : v.toLocaleString(), font: { size: 7, weight: 'bold' }, clip: false } }, scales: type === 'bar' ? { x: { beginAtZero: true, grace: horiz ? '45%' : '0' }, y: { beginAtZero: true, grace: horiz ? '0' : '30%' } } : {} } });
+            if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id).getContext('2d'), { type: type, data: { labels: labs, datasets: [{ data: data, backgroundColor: ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#64748b'], borderRadius: 4, custom: counts }] }, options: { indexAxis: horiz ? 'y' : 'x', maintainAspectRatio: false, plugins: { legend: { display: false, position: 'bottom' }, datalabels: { anchor: 'end', align: horiz ? 'right' : 'top', formatter: (v,ctx)=>ctx.dataset.custom ? `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.` : v.toLocaleString(), font: { size: 7, weight: 'bold' }, clip: false } }, scales: type === 'bar' ? { x: { beginAtZero: true, grace: horiz ? '45%' : '0' }, y: { beginAtZero: true, grace: horiz ? '0' : '30%' } } : {} } });
         }
 
         function setMainTrendMode(m) { mainTrendMode = m; document.querySelectorAll('#btn-main-trend-daily, #btn-main-trend-weekly, #btn-main-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-main-trend-${m}`)); updateMainUI(); }
