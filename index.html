@@ -11,7 +11,7 @@
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
         .chart-container { position: relative; height: 340px; width: 100%; }
-        .table-responsive { overflow-x: auto; max-height: 400px; }
+        .table-responsive { overflow-x: auto; max-height: 500px; }
         input, select { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.6rem; font-size: 0.875rem; width: 100%; transition: border 0.2s; }
         input:focus, select:focus { border-color: #3b82f6; outline: none; }
         .nav-btn { transition: all 0.2s; border-radius: 0.75rem; color: #6b7280; }
@@ -19,7 +19,8 @@
         .view-btn { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; border: 1px solid #e5e7eb; transition: all 0.2s; }
         .view-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
-        .profile-img { width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); background-color: #e5e7eb; }
+        /* รูปโปรไฟล์ขนาดใหญ่ 180px */
+        .profile-img { width: 180px; height: 180px; object-fit: cover; border-radius: 50%; border: 5px solid white; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15); background-color: #f9fafb; }
     </style>
 </head>
 <body class="p-2 md:p-6 pb-20">
@@ -31,38 +32,19 @@
 
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
 
-    <!-- Navigation Bar -->
     <div class="max-w-7xl mx-auto mb-6 flex bg-white p-2 rounded-2xl shadow-sm gap-2">
-        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-3 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 uppercase">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            ภาพรวมระบบ
-        </button>
-        <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-3 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 uppercase">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            วิเคราะห์พนักงาน
-        </button>
+        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-3 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 uppercase">ภาพรวมระบบ</button>
+        <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-3 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 uppercase">วิเคราะห์พนักงาน</button>
     </div>
 
     <!-- PAGE 1: MAIN DASHBOARD -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <!-- KPI Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Minutes</p>
-                <p id="main-total-min" class="text-2xl font-black text-gray-800">0</p>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-red-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Counts</p>
-                <p id="main-total-count" class="text-2xl font-black text-gray-800">0</p>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Avg Min/Stop</p>
-                <p id="main-avg-min" class="text-2xl font-black text-gray-800">0</p>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Records</p>
-                <p id="main-rows" class="text-2xl font-black text-gray-800">0</p>
-            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Minutes</p><p id="main-total-min" class="text-2xl font-black text-gray-800">0</p></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-red-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Counts</p><p id="main-total-count" class="text-2xl font-black text-gray-800">0</p></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Avg Min/Stop</p><p id="main-avg-min" class="text-2xl font-black text-gray-800">0</p></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Records</p><p id="main-rows" class="text-2xl font-black text-gray-800">0</p></div>
         </div>
 
         <!-- Filters -->
@@ -77,44 +59,76 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหาข้อมูล</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div>
             </div>
         </div>
 
+        <!-- Trend Chart -->
         <div class="bg-white p-5 rounded-2xl shadow-sm">
+            <div class="flex items-center justify-between mb-4 border-b pb-2">
+                <h3 class="text-xs font-bold text-gray-500 uppercase">แนวโน้มเวลาสูญเสีย (นาที / ครั้ง)</h3>
+                <div class="flex gap-1">
+                    <button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active rounded-l-lg">รายวัน</button>
+                    <button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn">รายวีค</button>
+                    <button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn rounded-r-lg">รายเดือน</button>
+                </div>
+            </div>
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
 
+        <!-- Secondary Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-blue-100">
                 <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Downtime by Factors</h3>
                 <div class="chart-container"><canvas id="mainChartFactor"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-red-100">
-                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 10 Stations</h3>
+                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 10 Stations (นาที/ครั้ง)</h3>
                 <div class="chart-container"><canvas id="mainChartStation"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-amber-100 lg:col-span-2 xl:col-span-1">
-                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 5 Operators</h3>
+                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 5 Operators (นาที/ครั้ง)</h3>
                 <div class="chart-container"><canvas id="mainChartOperator"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Table Log (กลับมาแล้วครับ) -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
+            <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                <h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3>
+                <span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span>
+            </div>
+            <div class="table-responsive">
+                <table class="w-full text-left">
+                    <thead class="bg-white border-b sticky top-0">
+                        <tr class="text-[10px] font-bold text-gray-400 uppercase">
+                            <th class="p-4">วันที่/กะ</th>
+                            <th class="p-4">MC/Station</th>
+                            <th class="p-4">ปัญหา</th>
+                            <th class="p-4 text-center">นาที</th>
+                            <th class="p-4">พนักงาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="main-table-body" class="text-xs text-gray-600">
+                        <!-- Data rows will be injected here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- PAGE 2: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
-        <div class="bg-white p-8 rounded-2xl shadow-sm border-t-4 border-blue-500">
-            <div class="flex flex-col md:flex-row gap-8 items-center">
-                <!-- Profile Image Area -->
+        <div class="bg-white p-10 rounded-2xl shadow-sm border-t-4 border-blue-500">
+            <div class="flex flex-col lg:flex-row gap-10 items-center">
                 <div class="shrink-0">
-                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-100">
-                        <svg class="w-12 h-12 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100">
+                        <svg class="w-16 h-16 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     </div>
                     <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" onerror="this.classList.add('hidden'); document.getElementById('op-img-placeholder').classList.remove('hidden');">
                 </div>
-                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 w-full">
-                    <div class="md:col-span-1"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-xl font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
+                    <div><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-xl font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
                     <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ (Shift)</label><select id="op-filter-shift"><option value="">ทั้งหมด</option></select></div>
                     <div class="grid grid-cols-2 gap-2">
                         <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Start Date</label><input type="date" id="op-start-date"></div>
@@ -122,232 +136,115 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-3 gap-4 pt-8 mt-6 border-t border-gray-100 text-center">
-                <div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Total Minutes</p><p id="op-kpi-time" class="text-2xl font-black text-gray-800">0</p></div>
-                <div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Total Times</p><p id="op-kpi-count" class="text-2xl font-black text-gray-800">0</p></div>
-                <div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Unique Probs</p><p id="op-kpi-types" class="text-2xl font-black text-gray-800">0</p></div>
+            <div class="grid grid-cols-3 gap-4 pt-10 mt-8 border-t border-gray-100 text-center">
+                <div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Total Minutes</p><p id="op-kpi-time" class="text-3xl font-black text-gray-800">0</p></div>
+                <div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Total Times</p><p id="op-kpi-count" class="text-3xl font-black text-gray-800">0</p></div>
+                <div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Unique Probs</p><p id="op-kpi-types" class="text-3xl font-black text-gray-800">0</p></div>
             </div>
         </div>
-
-        <div class="bg-white p-5 rounded-2xl shadow-sm">
-            <div class="chart-container"><canvas id="opTrendChart"></canvas></div>
-        </div>
-
+        <div class="bg-white p-5 rounded-2xl shadow-sm"><div class="chart-container"><canvas id="opTrendChart"></canvas></div></div>
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
-            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-blue-50 border-b text-[10px] font-bold text-blue-400 uppercase"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div>
+            <div class="table-responsive">
+                <table class="w-full text-left">
+                    <thead class="bg-blue-50 border-b text-[10px] font-bold text-blue-400 uppercase">
+                        <tr><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr>
+                    </thead>
+                    <tbody id="op-table-body" class="text-xs text-gray-600"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
         Chart.register(ChartDataLabels);
+        let rawData = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily';
 
-        let rawData = [];
-        let charts = {};
-        let mainTrendMode = 'daily';
-        let opTrendMode = 'daily';
-
-        // --- ฟังก์ชันแปลงลิงก์ Google Drive ให้แสดงผลได้ ---
-        function transformGDriveLink(url) {
-            if (!url) return "";
-            if (url.includes("drive.google.com")) {
-                let fileId = "";
-                // กรณีลิงก์แบบ /file/d/ID/view
-                if (url.includes("/file/d/")) {
-                    fileId = url.split("/file/d/")[1].split("/")[0];
-                } 
-                // กรณีลิงก์แบบ id=ID
-                else if (url.includes("id=")) {
-                    fileId = url.split("id=")[1].split("&")[0];
-                }
-                return fileId ? `https://lh3.googleusercontent.com/u/0/d/${fileId}` : url;
-            }
-            return url;
-        }
-
-        function formatToISO(dateStr) {
-            if (!dateStr || !dateStr.includes('/')) return '';
-            const parts = dateStr.split('/');
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-
-        function getISOWeek(date) {
-            const d = new Date(date);
-            d.setHours(0, 0, 0, 0);
-            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-            const yearStart = new Date(d.getFullYear(), 0, 1);
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
-
-        function switchPage(page) {
-            document.getElementById('page-main').classList.toggle('hidden', page !== 'main');
-            document.getElementById('page-operator').classList.toggle('hidden', page !== 'operator');
-            document.getElementById('btn-main').classList.toggle('active', page === 'main');
-            document.getElementById('btn-operator').classList.toggle('active', page === 'operator');
-            if (page === 'operator') updateOperatorUI();
-            else updateMainUI();
-        }
+        function transformGDriveLink(url) { if (!url || !url.includes("drive.google.com")) return url; let fileId = url.includes("/file/d/") ? url.split("/file/d/")[1].split("/")[0] : (url.includes("id=") ? url.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/u/0/d/${fileId}` : url; }
+        function formatToISO(d) { if (!d || !d.includes('/')) return ''; let p = d.split('/'); return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
+        function getISOWeek(date) { let d = new Date(date); d.setHours(0,0,0,0); d.setDate(d.getDate()+4-(d.getDay()||7)); return Math.ceil((((d-new Date(d.getFullYear(),0,1))/86400000)+1)/7); }
 
         async function syncData() {
-            const url = document.getElementById('sheet-url').value;
             document.getElementById('loading').style.display = 'flex';
             try {
-                const response = await fetch(`${url}&t=${Date.now()}`);
-                const csvText = await response.text();
-                parseCSV(csvText);
-                initFilters();
-                updateMainUI();
+                const res = await fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`);
+                const text = await res.text();
+                parseCSV(text); initFilters(); updateMainUI();
             } catch (err) { alert('Sync Error!'); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
         function parseCSV(text) {
-            const lines = text.split(/\r?\n/);
-            rawData = lines.slice(1).map(line => {
-                const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cells.length < 17) return null; // ตรวจสอบความยาวถึงคอลัมน์ Q
-                const clean = (v) => v ? v.trim().replace(/"/g, '') : '';
-                const isoDate = formatToISO(clean(cells[0]));
-                if (!isoDate) return null;
-                const dateObj = new Date(isoDate);
-                return {
-                    date: clean(cells[0]), isoDate: isoDate,
-                    year: dateObj.getFullYear(), month: dateObj.getMonth() + 1,
-                    weekNum: getISOWeek(dateObj), machine: clean(cells[2]), station: clean(cells[3]),
-                    stops: parseInt(clean(cells[4])) || 0, duration: parseFloat(clean(cells[5])) || 0,
-                    problem: clean(cells[6]), operator: clean(cells[7]), factor: clean(cells[8]),
-                    shift: clean(cells[9]), time: clean(cells[1]),
-                    imgUrl: transformGDriveLink(clean(cells[16])) // คอลัมน์ Q (Index 16)
-                };
+            rawData = text.split(/\r?\n/).slice(1).map(line => {
+                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (c.length < 17) return null;
+                const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
+                const iso = formatToISO(cl(c[0])); if (!iso) return null;
+                const dObj = new Date(iso);
+                return { date: cl(c[0]), isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj), machine: cl(c[2]), station: cl(c[3]), stops: parseInt(cl(c[4]))||0, duration: parseFloat(cl(c[5]))||0, problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), imgUrl: transformGDriveLink(cl(c[16])) };
             }).filter(d => d);
         }
 
         function initFilters() {
-            const getUnique = (key) => [...new Set(rawData.map(d => d[key]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
-            fillSelect('main-filter-mc', getUnique('machine'));
-            fillSelect('main-filter-factor', getUnique('factor'));
-            fillSelect('main-filter-shift', getUnique('shift'));
-            fillSelect('op-select', getUnique('operator'));
-            fillSelect('op-filter-shift', getUnique('shift'));
-            document.querySelectorAll('input, select').forEach(el => el.addEventListener('change', () => {
-                if (document.getElementById('page-main').classList.contains('hidden')) updateOperatorUI();
-                else updateMainUI();
-            }));
+            const getU = (k) => [...new Set(rawData.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
+            fillSelect('main-filter-mc', getU('machine')); fillSelect('main-filter-factor', getU('factor')); fillSelect('main-filter-shift', getU('shift')); fillSelect('op-select', getU('operator')); fillSelect('op-filter-shift', getU('shift'));
+            document.querySelectorAll('input, select').forEach(el => el.addEventListener('change', () => { if (document.getElementById('page-main').classList.contains('hidden')) updateOperatorUI(); else updateMainUI(); }));
         }
 
-        function fillSelect(id, items) {
-            const s = document.getElementById(id);
-            const val = s.value;
-            s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>';
-            items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); });
-            s.value = val;
-        }
-
-        function setDefaultDates() {
-            const today = new Date();
-            const last7 = new Date(); last7.setDate(today.getDate() - 7);
-            const fmt = (d) => d.toISOString().split('T')[0];
-            document.getElementById('main-start-date').value = fmt(last7);
-            document.getElementById('main-end-date').value = fmt(today);
-            document.getElementById('op-start-date').value = fmt(last7);
-            document.getElementById('op-end-date').value = fmt(today);
-        }
+        function fillSelect(id, items) { const s = document.getElementById(id); const v = s.value; s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>'; items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); }); s.value = v; }
+        function setDefaultDates() { const now = new Date(); const last7 = new Date(); last7.setDate(now.getDate()-7); const f = (d) => d.toISOString().split('T')[0]; document.getElementById('main-start-date').value = f(last7); document.getElementById('main-end-date').value = f(now); document.getElementById('op-start-date').value = f(last7); document.getElementById('op-end-date').value = f(now); }
+        function switchPage(p) { document.getElementById('page-main').classList.toggle('hidden', p !== 'main'); document.getElementById('page-operator').classList.toggle('hidden', p !== 'operator'); if (p === 'operator') updateOperatorUI(); else updateMainUI(); }
 
         function updateMainUI() {
-            const s = document.getElementById('main-start-date').value, e = document.getElementById('main-end-date').value;
-            const mc = document.getElementById('main-filter-mc').value, sh = document.getElementById('main-filter-shift').value;
-            const fc = document.getElementById('main-filter-factor').value, sr = document.getElementById('main-filter-search').value.toLowerCase();
+            const s = document.getElementById('main-start-date').value, e = document.getElementById('main-end-date').value, mc = document.getElementById('main-filter-mc').value, sh = document.getElementById('main-filter-shift').value, fc = document.getElementById('main-filter-factor').value, sr = document.getElementById('main-filter-search').value.toLowerCase();
+            const f = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (!fc || d.factor === fc) && (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr)));
+            
+            document.getElementById('main-total-min').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString();
+            document.getElementById('main-total-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
+            const cnt = f.reduce((a,b)=>a+b.stops,0);
+            document.getElementById('main-avg-min').textContent = cnt ? (f.reduce((a,b)=>a+b.duration,0)/cnt).toFixed(1) : 0;
+            document.getElementById('main-rows').textContent = f.length.toLocaleString();
+            document.getElementById('main-badge-count').textContent = `${f.length} รายการ`;
 
-            const filtered = rawData.filter(d => {
-                const dm = (!s || d.isoDate >= s) && (!e || d.isoDate <= e);
-                return dm && (!mc || d.machine === mc) && (!fc || d.factor === fc) && (!sh || d.shift === sh) &&
-                       (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr));
-            });
+            // ตารางหน้าภาพรวม
+            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `
+                <tr class="border-b hover:bg-gray-50 transition-colors">
+                    <td class="p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td>
+                    <td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-gray-400 uppercase">${d.station}</span></td>
+                    <td class="p-4 text-gray-600 leading-snug">${d.problem}</td>
+                    <td class="p-4 text-center font-black text-red-500">${d.duration}</td>
+                    <td class="p-4 text-[9px] text-gray-400 font-bold uppercase">${d.operator}</td>
+                </tr>
+            `).join('');
 
-            document.getElementById('main-total-min').textContent = filtered.reduce((a,b) => a+b.duration, 0).toLocaleString();
-            document.getElementById('main-total-count').textContent = filtered.reduce((a,b) => a+b.stops, 0).toLocaleString();
-            const cnt = filtered.reduce((a,b) => a+b.stops, 0);
-            document.getElementById('main-avg-min').textContent = cnt ? (filtered.reduce((a,b) => a+b.duration, 0)/cnt).toFixed(1) : 0;
-            document.getElementById('main-rows').textContent = filtered.length.toLocaleString();
-
-            renderTrend('mainTrendChart', filtered, mainTrendMode);
-            renderMainDist(filtered);
+            renderTrend('mainTrendChart', f, mainTrendMode); renderDist(f);
         }
 
-        function renderMainDist(data) {
-            const f = {}; data.forEach(d => f[d.factor] = (f[d.factor]||0) + d.duration);
-            updateChart('mainChartFactor', 'doughnut', Object.keys(f), Object.values(f));
-            const st = {}; data.forEach(d => { if(!st[d.station]) st[d.station]={t:0,c:0}; st[d.station].t+=d.duration; st[d.station].c+=d.stops; });
-            const topSt = Object.entries(st).sort((a,b) => b[1].t - a[1].t).slice(0, 10);
-            updateChart('mainChartStation', 'bar', topSt.map(x=>x[0]), topSt.map(x=>x[1].t), true, topSt.map(x=>x[1].c));
-            const op = {}; data.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!op[d.operator]) op[d.operator]={t:0,c:0}; op[d.operator].t+=d.duration; op[d.operator].c+=d.stops; }});
-            const topOp = Object.entries(op).sort((a,b) => b[1].t - a[1].t).slice(0, 5);
-            updateChart('mainChartOperator', 'bar', topOp.map(x=>x[0]), topOp.map(x=>x[1].t), true, topOp.map(x=>x[1].c));
+        function renderDist(data) {
+            const fact = {}; data.forEach(d => fact[d.factor] = (fact[d.factor]||0)+d.duration); updateChart('mainChartFactor', 'doughnut', Object.keys(fact), Object.values(fact));
+            const st = {}; data.forEach(d => { if(!st[d.station])st[d.station]={t:0,c:0}; st[d.station].t+=d.duration; st[d.station].c+=d.stops; }); const topSt = Object.entries(st).sort((a,b)=>b[1].t-a[1].t).slice(0, 10); updateChart('mainChartStation', 'bar', topSt.map(x=>x[0]), topSt.map(x=>x[1].t), true, topSt.map(x=>x[1].c));
+            const op = {}; data.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!op[d.operator])op[d.operator]={t:0,c:0}; op[d.operator].t+=d.duration; op[d.operator].c+=d.stops; }}); const topOp = Object.entries(op).sort((a,b)=>b[1].t-a[1].t).slice(0, 5); updateChart('mainChartOperator', 'bar', topOp.map(x=>x[0]), topOp.map(x=>x[1].t), true, topOp.map(x=>x[1].c));
         }
 
         function updateOperatorUI() {
-            const n = document.getElementById('op-select').value, sh = document.getElementById('op-filter-shift').value;
-            const s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value;
-            const profileImg = document.getElementById('op-profile-img'), placeholder = document.getElementById('op-img-placeholder');
-
-            if (!n) { document.getElementById('op-table-body').innerHTML = ''; profileImg.classList.add('hidden'); placeholder.classList.remove('hidden'); return; }
-
-            const opData = rawData.filter(d => d.operator === n && (!sh || d.shift === sh) && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
-            
-            // แสดงผลรูปภาพ
-            const imgUrl = opData.length > 0 ? opData[0].imgUrl : "";
-            if (imgUrl) {
-                profileImg.src = imgUrl; profileImg.classList.remove('hidden'); placeholder.classList.add('hidden');
-            } else {
-                profileImg.classList.add('hidden'); placeholder.classList.remove('hidden');
-            }
-
-            document.getElementById('op-kpi-time').textContent = opData.reduce((a,b) => a+b.duration, 0).toLocaleString();
-            document.getElementById('op-kpi-count').textContent = opData.reduce((a,b) => a+b.stops, 0).toLocaleString();
-            document.getElementById('op-kpi-types').textContent = [...new Set(opData.map(d => d.problem))].length;
-            document.getElementById('op-table-body').innerHTML = opData.sort((a,b) => new Date(b.isoDate)-new Date(a.isoDate)).map(d => `
-                <tr class="border-b hover:bg-blue-50">
-                    <td class="p-4 font-bold">${d.date}</td>
-                    <td class="p-4">${d.station}</td>
-                    <td class="p-4">${d.problem}</td>
-                    <td class="p-4 text-center font-black text-red-600">${d.duration}</td>
-                    <td class="p-4"><span class="px-2 py-1 bg-gray-100 rounded text-[9px] font-bold">${d.factor}</span></td>
-                </tr>
-            `).join('');
-            renderTrend('opTrendChart', opData, opTrendMode);
+            const n = document.getElementById('op-select').value, sh = document.getElementById('op-filter-shift').value, s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value, img = document.getElementById('op-profile-img'), ph = document.getElementById('op-img-placeholder');
+            if (!n) { document.getElementById('op-table-body').innerHTML = ''; img.classList.add('hidden'); ph.classList.remove('hidden'); return; }
+            const f = rawData.filter(d => d.operator === n && (!sh || d.shift === sh) && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
+            const url = f.length > 0 ? f.find(d => d.imgUrl)?.imgUrl : ""; if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); }
+            document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString(); document.getElementById('op-kpi-types').textContent = [...new Set(f.map(d=>d.problem))].length;
+            document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(b.isoDate)-new Date(a.isoDate)).map(d => `<tr class="border-b hover:bg-blue-50"><td class="p-4 font-bold">${d.date}</td><td class="p-4">${d.station}</td><td class="p-4">${d.problem}</td><td class="p-4 text-center font-black text-red-600">${d.duration}</td><td class="p-4"><span class="px-2 py-1 bg-gray-100 rounded text-[9px] font-bold">${d.factor}</span></td></tr>`).join(''); renderTrend('opTrendChart', f, opTrendMode);
         }
 
         function renderTrend(id, data, mode) {
-            let agg = {};
-            data.forEach(d => {
-                let k = mode === 'daily' ? d.date : (mode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2, '0')}` : `${d.year}-${d.month.toString().padStart(2, '0')}`);
-                if (!agg[k]) agg[k] = { t: 0, c: 0 }; agg[k].t += d.duration; agg[k].c += d.stops;
-            });
-            const labels = Object.keys(agg).sort((a, b) => mode === 'daily' ? new Date(formatToISO(a)) - new Date(formatToISO(b)) : a.localeCompare(b));
-            const disp = labels.map(l => mode === 'weekly' ? l.replace('-W', ' Wk ') : (mode === 'monthly' ? l : l));
-            
-            if (charts[id]) charts[id].destroy();
-            charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
-                type: mode === 'daily' ? 'line' : 'bar',
-                data: { labels: disp, datasets: [{ data: labels.map(l => agg[l].t), borderColor: '#3b82f6', backgroundColor: mode==='daily'?'rgba(59,130,246,0.1)':'#3b82f6', fill: true, tension: 0.3, custom: labels.map(l => agg[l].c) }] },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v, ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9, weight: 'bold', family: 'Kanit' } } }, scales: { y: { beginAtZero: true, grace: '20%' } } }
-            });
+            let agg = {}; data.forEach(d => { let k = mode === 'daily' ? d.date : (mode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2, '0')}` : `${d.year}-${d.month.toString().padStart(2, '0')}`); if (!agg[k]) agg[k] = { t: 0, c: 0 }; agg[k].t += d.duration; agg[k].c += d.stops; });
+            const labs = Object.keys(agg).sort((a,b) => mode==='daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
+            if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id).getContext('2d'), { type: mode === 'daily' ? 'line' : 'bar', data: { labels: labs, datasets: [{ data: labs.map(l=>agg[l].t), borderColor: '#3b82f6', backgroundColor: mode==='daily'?'rgba(59,130,246,0.1)':'#3b82f6', fill: true, tension: 0.3, custom: labs.map(l=>agg[l].c) }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9, weight: 'bold' } } }, scales: { y: { beginAtZero: true, grace: '20%' } } } });
         }
 
-        function updateChart(id, type, labels, data, horiz = false, countData = null) {
-            if(charts[id]) charts[id].destroy();
-            charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
-                type: type,
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#64748b'], borderRadius: 4, custom: countData }] },
-                options: {
-                    indexAxis: horiz ? 'y' : 'x', maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: type==='doughnut', position: 'bottom' },
-                        datalabels: { anchor: 'end', align: horiz ? 'right' : 'top', formatter: (v, ctx) => ctx.dataset.custom ? `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.` : v.toLocaleString(), font: { size: 9, weight: 'bold' } }
-                    }, scales: type === 'bar' ? { x: { display: !horiz || true }, y: { beginAtZero: true, grace: horiz ? '20%' : '10%' } } : {}
-                }
-            });
+        function updateChart(id, type, labs, data, horiz = false, counts = null) {
+            if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id).getContext('2d'), { type: type, data: { labels: labs, datasets: [{ data: data, backgroundColor: ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#64748b'], borderRadius: 4, custom: counts }] }, options: { indexAxis: horiz ? 'y' : 'x', maintainAspectRatio: false, plugins: { legend: { display: type==='doughnut', position: 'bottom' }, datalabels: { anchor: 'end', align: horiz ? 'right' : 'top', formatter: (v,ctx)=>ctx.dataset.custom ? `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.` : v.toLocaleString(), font: { size: 9, weight: 'bold' } } }, scales: type === 'bar' ? { y: { beginAtZero: true, grace: horiz ? '20%' : '10%' } } : {} } });
         }
+
+        function setMainTrendMode(m) { mainTrendMode = m; document.querySelectorAll('#btn-main-trend-daily, #btn-main-trend-weekly, #btn-main-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-main-trend-${m}`)); updateMainUI(); }
 
         window.onload = () => { setDefaultDates(); syncData(); };
     </script>
