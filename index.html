@@ -19,8 +19,18 @@
         .view-btn { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; border: 1px solid #e5e7eb; transition: all 0.2s; }
         .view-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
-        /* รูปโปรไฟล์ขนาดใหญ่ 180px */
-        .profile-img { width: 180px; height: 180px; object-fit: cover; border-radius: 50%; border: 5px solid white; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15); background-color: #f9fafb; }
+        
+        /* แก้ไขรูปโปรไฟล์ให้เน้นส่วนบนเพื่อให้เห็นหน้าชัดเจน */
+        .profile-img { 
+            width: 180px; 
+            height: 180px; 
+            object-fit: cover; 
+            object-position: center 15%; /* เน้นสัดส่วนด้านบนของรูปเพื่อไม่ให้บังหน้า */
+            border-radius: 50%; 
+            border: 6px solid white; 
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15); 
+            background-color: #f9fafb; 
+        }
     </style>
 </head>
 <body class="p-2 md:p-6 pb-20">
@@ -39,7 +49,6 @@
 
     <!-- PAGE 1: MAIN DASHBOARD -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
-        <!-- KPI Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Minutes</p><p id="main-total-min" class="text-2xl font-black text-gray-800">0</p></div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-red-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Counts</p><p id="main-total-count" class="text-2xl font-black text-gray-800">0</p></div>
@@ -47,7 +56,6 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Records</p><p id="main-rows" class="text-2xl font-black text-gray-800">0</p></div>
         </div>
 
-        <!-- Filters -->
         <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="grid grid-cols-2 gap-2">
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่เริ่มต้น</label><input type="date" id="main-start-date"></div>
@@ -63,7 +71,6 @@
             </div>
         </div>
 
-        <!-- Trend Chart -->
         <div class="bg-white p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-4 border-b pb-2">
                 <h3 class="text-xs font-bold text-gray-500 uppercase">แนวโน้มเวลาสูญเสีย (นาที / ครั้ง)</h3>
@@ -76,23 +83,13 @@
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
 
-        <!-- Secondary Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-blue-100">
-                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Downtime by Factors</h3>
-                <div class="chart-container"><canvas id="mainChartFactor"></canvas></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-red-100">
-                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 10 Stations (นาที/ครั้ง)</h3>
-                <div class="chart-container"><canvas id="mainChartStation"></canvas></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-amber-100 lg:col-span-2 xl:col-span-1">
-                <h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 5 Operators (นาที/ครั้ง)</h3>
-                <div class="chart-container"><canvas id="mainChartOperator"></canvas></div>
-            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-blue-100"><h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Downtime by Factors</h3><div class="chart-container"><canvas id="mainChartFactor"></canvas></div></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-red-100"><h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 10 Stations (นาที/ครั้ง)</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-2 border-amber-100 lg:col-span-2 xl:col-span-1"><h3 class="text-center text-xs font-bold text-gray-600 mb-4 uppercase">Top 5 Operators (นาที/ครั้ง)</h3><div class="chart-container"><canvas id="mainChartOperator"></canvas></div></div>
         </div>
 
-        <!-- Table Log (กลับมาแล้วครับ) -->
+        <!-- History Table -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
             <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
                 <h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3>
@@ -109,9 +106,7 @@
                             <th class="p-4">พนักงาน</th>
                         </tr>
                     </thead>
-                    <tbody id="main-table-body" class="text-xs text-gray-600">
-                        <!-- Data rows will be injected here -->
-                    </tbody>
+                    <tbody id="main-table-body" class="text-xs text-gray-600"></tbody>
                 </table>
             </div>
         </div>
@@ -122,7 +117,7 @@
         <div class="bg-white p-10 rounded-2xl shadow-sm border-t-4 border-blue-500">
             <div class="flex flex-col lg:flex-row gap-10 items-center">
                 <div class="shrink-0">
-                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100">
+                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50">
                         <svg class="w-16 h-16 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     </div>
                     <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" onerror="this.classList.add('hidden'); document.getElementById('op-img-placeholder').classList.remove('hidden');">
@@ -205,7 +200,6 @@
             document.getElementById('main-rows').textContent = f.length.toLocaleString();
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`;
 
-            // ตารางหน้าภาพรวม
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-gray-50 transition-colors">
                     <td class="p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td>
