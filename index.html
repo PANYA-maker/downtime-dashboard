@@ -15,7 +15,6 @@
         .table-responsive { overflow-x: auto; max-height: 500px; }
         input, select { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.6rem; font-size: 0.875rem; width: 100%; transition: all 0.2s; }
         
-        /* สไตล์ปุ่มเมนู */
         .nav-btn { transition: all 0.3s ease; border-radius: 0.75rem; color: #6b7280; background-color: #ffffff; border: 1px solid transparent; }
         .nav-btn.active { background-color: #2563eb !important; color: white !important; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
         
@@ -23,33 +22,35 @@
         .view-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
-        /* รูปโปรไฟล์พนักงาน */
         .profile-img { width: 180px; height: 180px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 6px solid white; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15); background-color: #f9fafb; }
         .op-thumb { width: 45px; height: 45px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        @media (max-width: 640px) {
+            .profile-img { width: 120px; height: 120px; }
+        }
     </style>
 </head>
-<body class="p-2 md:p-6 pb-20">
+<body class="p-2 md:p-6 pb-20" id="capture-area">
 
     <div id="loading" class="loading-overlay">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p class="text-blue-600 font-semibold text-sm uppercase tracking-widest">กำลังดำเนินการ...</p>
+        <p class="text-blue-600 font-semibold text-sm uppercase tracking-widest">กำลังประมวลผล...</p>
     </div>
 
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
 
     <!-- Navigation Bar -->
-    <div class="max-w-7xl mx-auto mb-6 flex bg-white p-2 rounded-2xl shadow-sm gap-2">
+    <div class="max-w-7xl mx-auto mb-6 flex bg-white p-2 rounded-2xl shadow-sm gap-2 no-export">
         <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 uppercase tracking-widest">ภาพรวมระบบ</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 uppercase tracking-widest">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-gray-100 hover:bg-gray-200 px-4 rounded-xl text-gray-600 flex items-center gap-2 font-bold text-xs transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            บันทึกภาพ
+            <span class="hidden sm:inline">บันทึกภาพ</span>
         </button>
     </div>
 
     <!-- PAGE 1: MAIN DASHBOARD -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
-        <!-- KPI Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Minutes</p><p id="main-total-min" class="text-2xl font-black text-gray-800">0</p></div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-red-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Counts</p><p id="main-total-count" class="text-2xl font-black text-gray-800">0</p></div>
@@ -57,8 +58,7 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Records</p><p id="main-rows" class="text-2xl font-black text-gray-800">0</p></div>
         </div>
 
-        <!-- Filters -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 no-export-filter">
             <div class="grid grid-cols-2 gap-2">
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่เริ่มต้น</label><input type="date" id="main-start-date"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่สิ้นสุด</label><input type="date" id="main-end-date"></div>
@@ -73,11 +73,10 @@
             </div>
         </div>
 
-        <!-- Trend Chart -->
         <div class="bg-white p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-4 border-b pb-2">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">แนวโน้มเวลาสูญเสีย (นาที / ครั้ง)</h3>
-                <div class="flex bg-gray-100 p-1 rounded-lg">
+                <div class="flex bg-gray-100 p-1 rounded-lg no-export">
                     <button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active rounded-md border-none px-4">Daily</button>
                     <button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn rounded-md border-none px-4">Weekly</button>
                     <button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn rounded-md border-none px-4">Monthly</button>
@@ -86,7 +85,6 @@
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
 
-        <!-- Distribution Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-red-100">
                 <h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6 tracking-tighter">Top 10 Stations (นาที/ครั้ง)</h3>
@@ -98,7 +96,6 @@
             </div>
         </div>
 
-        <!-- History Log Table -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10">
             <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div>
             <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-gray-600"></tbody></table></div>
@@ -113,17 +110,17 @@
                     <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100">
                         <svg class="w-16 h-16 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     </div>
-                    <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" onerror="this.classList.add('hidden'); document.getElementById('op-img-placeholder').classList.remove('hidden');">
+                    <!-- เพิ่ม crossorigin เพื่อให้ Screenshot ดึงรูปไปได้ -->
+                    <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" crossorigin="anonymous">
                 </div>
                 <div class="flex-1 w-full space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-xl font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="no-export-filter"><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-xl font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div>
+                        <div class="grid grid-cols-2 gap-2 no-export-filter">
                             <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Start Date</label><input type="date" id="op-start-date"></div>
                             <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">End Date</label><input type="date" id="op-end-date"></div>
                         </div>
                     </div>
-                    <!-- ส่วนข้อมูลเครื่องจักร/สถานี/กะ ที่เพิ่มเข้ามา -->
                     <div class="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl">
                         <div><p class="text-[9px] text-gray-400 uppercase font-bold">เครื่องจักรหลัก</p><p id="op-info-mc" class="text-xs font-bold text-gray-700">-</p></div>
                         <div><p class="text-[9px] text-gray-400 uppercase font-bold">สถานีหลัก</p><p id="op-info-station" class="text-xs font-bold text-gray-700">-</p></div>
@@ -131,7 +128,6 @@
                     </div>
                 </div>
             </div>
-            <!-- KPI Cards ปรับปรุงชื่อและการจัดวางตามคำขอ -->
             <div class="grid grid-cols-2 gap-4 pt-8 mt-8 border-t border-gray-100 text-center">
                 <div class="bg-blue-50 p-6 rounded-2xl">
                     <p class="text-[10px] text-blue-400 uppercase font-bold tracking-widest mb-1">เวลาสูญเสีย (นาที)</p>
@@ -144,7 +140,6 @@
             </div>
         </div>
 
-        <!-- History Table -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div class="table-responsive">
                 <table class="w-full text-left">
@@ -156,11 +151,10 @@
             </div>
         </div>
 
-        <!-- Trend Chart ย้ายมาล่างสุดตามคำขอ -->
         <div class="bg-white p-5 rounded-2xl shadow-sm mb-10">
             <div class="flex items-center justify-between mb-4 border-b pb-2">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">วิเคราะห์แนวโน้มรายบุคคล</h3>
-                <div class="flex bg-gray-100 p-1 rounded-lg">
+                <div class="flex bg-gray-100 p-1 rounded-lg no-export">
                     <button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active rounded-md border-none px-4">Daily</button>
                     <button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn rounded-md border-none px-4">Weekly</button>
                     <button onclick="setOpTrendMode('monthly')" id="btn-op-trend-monthly" class="view-btn rounded-md border-none px-4">Monthly</button>
@@ -174,9 +168,24 @@
         Chart.register(ChartDataLabels);
         let rawData = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily';
 
+        // ฟังก์ชันช่วยแปลงรูปเป็น DataURL เพื่อแก้ปัญหา Capture แล้วรูปหาย
+        async function toDataURL(url) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) { return url; }
+        }
+
         function transformGDriveLink(url) {
             if (!url || !url.includes("drive.google.com")) return url;
             let fileId = url.includes("/file/d/") ? url.split("/file/d/")[1].split("/")[0] : (url.includes("id=") ? url.split("id=")[1].split("&")[0] : "");
+            // ใช้รูปแบบ thumbnail จะดึงข้ามโดเมนได้เสถียรกว่า
             return fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w500` : url;
         }
 
@@ -221,13 +230,46 @@
             if (p === 'operator') updateOperatorUI(); else updateMainUI(); 
         }
 
+        // ปรับปรุงฟังก์ชันบันทึกภาพให้รองรับโทรศัพท์และรูปภาพข้ามโดเมน
         function takeScreenshot() {
+            document.getElementById('loading').style.display = 'flex';
             const element = document.body;
-            html2canvas(element, { backgroundColor: '#f3f4f6', useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `Dashboard_Export_${new Date().getTime()}.png`;
-                link.href = canvas.toDataURL();
-                link.click();
+            
+            // ซ่อนปุ่มและตัวกรองบางส่วนตอนบันทึกเพื่อความสวยงาม
+            document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden');
+
+            html2canvas(element, { 
+                backgroundColor: '#f3f4f6', 
+                useCORS: true, 
+                allowTaint: false,
+                scale: 2, // เพิ่มความชัด
+                logging: false,
+                scrollX: 0,
+                scrollY: -window.scrollY
+            }).then(canvas => {
+                document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible');
+                
+                try {
+                    const dataUrl = canvas.toDataURL("image/png");
+                    const link = document.createElement('a');
+                    link.download = `Analysis_Report_${new Date().getTime()}.png`;
+                    link.href = dataUrl;
+                    
+                    // สำหรับมือถือ: บางครั้งดาวน์โหลดอัตโนมัติไม่ได้ จะใช้วิธีเปิดรูปใหม่เพื่อให้กดค้างเซฟ
+                    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        const newTab = window.open();
+                        newTab.document.write('<img src="' + dataUrl + '" style="width:100%;">');
+                        newTab.document.title = "กดค้างที่รูปเพื่อบันทึก";
+                    } else {
+                        link.click();
+                    }
+                } catch (e) {
+                    alert("บันทึกภาพไม่สำเร็จ กรุณาลองแคปหน้าจอด้วยมือถือแทนครับ");
+                }
+                document.getElementById('loading').style.display = 'none';
+            }).catch(err => {
+                document.getElementById('loading').style.display = 'none';
+                alert("เกิดข้อผิดพลาดในการบันทึกภาพ");
             });
         }
 
@@ -252,7 +294,7 @@
             const op = {}; data.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!op[d.operator]) op[d.operator] = { t:0, c:0, img: d.imgUrl }; op[d.operator].t += d.duration; op[d.operator].c += d.stops; }});
             const topOp = Object.entries(op).sort((a,b) => b[1].t - a[1].t).slice(0, 5);
             const maxVal = topOp.length > 0 ? topOp[0][1].t : 1;
-            document.getElementById('top-operators-list').innerHTML = topOp.map(x => `<div class="flex items-center gap-4"><img src="${x[1].img || ''}" class="op-thumb shrink-0 bg-gray-100" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"><div class="flex-1 min-w-0"><div class="flex justify-between mb-1"><span class="text-[11px] font-bold text-gray-700 truncate">${x[0]}</span><span class="text-[10px] font-black text-blue-600">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width: ${(x[1].t/maxVal)*100}%"></div></div></div></div>`).join('');
+            document.getElementById('top-operators-list').innerHTML = topOp.map(x => `<div class="flex items-center gap-4"><img src="${x[1].img || ''}" class="op-thumb shrink-0 bg-gray-100" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"><div class="flex-1 min-w-0"><div class="flex justify-between mb-1"><span class="text-[11px] font-bold text-gray-700 truncate">${x[0]}</span><span class="text-[10px] font-black text-blue-600">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width: ${(x[1].t/maxVal)*100}%"></div></div></div></div>`).join('');
         }
 
         function getMode(arr) {
@@ -270,14 +312,21 @@
             if (!n) { document.getElementById('op-table-body').innerHTML = ''; img.classList.add('hidden'); ph.classList.remove('hidden'); return; }
             const f = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
             
-            // แสดงข้อมูลเสริม
             document.getElementById('op-info-mc').textContent = getMode(f.map(d => d.machine));
             document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station));
-            document.getElementById('op-info-shift').textContent = f.length > 0 ? f.sort((a,b) => new Date(b.isoDate) - new Date(a.isoDate))[0].shift : "-";
+            document.getElementById('op-info-shift').textContent = f.length > 0 ? f.sort((a,b) => new Date(formatToISO(b.date)) - new Date(formatToISO(a.date)))[0].shift : "-";
 
-            const url = f.length > 0 ? f.find(d => d.imgUrl)?.imgUrl : ""; if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); }
-            document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
-            document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(b.isoDate)-new Date(a.isoDate)).map(d => `<tr class="border-b hover:bg-blue-50"><td class="p-4 font-bold text-gray-700">${d.date}</td><td class="p-4">${d.station}</td><td class="p-4">${d.problem}</td><td class="p-4 text-center font-black text-red-600">${d.duration}</td><td class="p-4"><span class="px-2 py-1 bg-gray-100 rounded text-[9px] font-bold text-gray-400">${d.factor}</span></td></tr>`).join(''); renderTrend('opTrendChart', f, opTrendMode);
+            const url = f.length > 0 ? f.find(d => d.imgUrl)?.imgUrl : ""; 
+            if (url) { 
+                img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); 
+            } else { 
+                img.classList.add('hidden'); ph.classList.remove('hidden'); 
+            }
+            
+            document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); 
+            document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
+            document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr class="border-b hover:bg-blue-50"><td class="p-4 font-bold text-gray-700">${d.date}</td><td class="p-4">${d.station}</td><td class="p-4">${d.problem}</td><td class="p-4 text-center font-black text-red-600">${d.duration}</td><td class="p-4"><span class="px-2 py-1 bg-gray-100 rounded text-[9px] font-bold text-gray-400">${d.factor}</span></td></tr>`).join(''); 
+            renderTrend('opTrendChart', f, opTrendMode);
         }
 
         function renderTrend(id, data, mode) {
