@@ -107,8 +107,8 @@
         <div class="bg-white p-6 md:p-10 rounded-2xl shadow-sm border-t-4 border-blue-500">
             <div class="flex flex-col lg:flex-row gap-10 items-center">
                 <div class="shrink-0">
-                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100 text-gray-300">
-                        <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100">
+                        <svg class="w-16 h-16 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     </div>
                     <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" crossorigin="anonymous">
                 </div>
@@ -128,8 +128,14 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4 pt-8 mt-8 border-t border-gray-100 text-center">
-                <div class="bg-blue-50 p-6 rounded-2xl"><p class="text-[10px] text-blue-400 uppercase font-bold tracking-widest mb-1">เวลาสูญเสีย (นาที)</p><p id="op-kpi-time" class="text-3xl font-black text-blue-800">0</p></div>
-                <div class="bg-red-50 p-6 rounded-2xl"><p class="text-[10px] text-red-400 uppercase font-bold tracking-widest mb-1">จำนวนครั้ง</p><p id="op-kpi-count" class="text-3xl font-black text-red-800">0</p></div>
+                <div class="bg-blue-50 p-6 rounded-2xl">
+                    <p class="text-[10px] text-blue-400 uppercase font-bold tracking-widest mb-1">เวลาสูญเสีย (นาที)</p>
+                    <p id="op-kpi-time" class="text-3xl font-black text-blue-800">0</p>
+                </div>
+                <div class="bg-red-50 p-6 rounded-2xl">
+                    <p class="text-[10px] text-red-400 uppercase font-bold tracking-widest mb-1">จำนวนครั้ง</p>
+                    <p id="op-kpi-count" class="text-3xl font-black text-red-800">0</p>
+                </div>
             </div>
         </div>
 
@@ -154,17 +160,23 @@
         Chart.register(ChartDataLabels);
         let rawData = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily';
 
-        // ปรับปรุงฟังก์ชันแปลงลิงก์ Google Drive ให้เสถียรกว่าเดิม
         function transformGDriveLink(url) {
             if (!url || !url.includes("drive.google.com")) return url;
-            let fileId = "";
-            if (url.includes("/file/d/")) {
-                fileId = url.split("/file/d/")[1].split("/")[0];
-            } else if (url.includes("id=")) {
-                fileId = url.split("id=")[1].split("&")[0];
-            }
-            // ใช้รูปแบบ lh3 จะดึงรูปได้ตรงกว่า
+            let fileId = url.includes("/file/d/") ? url.split("/file/d/")[1].split("/")[0] : (url.includes("id=") ? url.split("id=")[1].split("&")[0] : "");
             return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : url;
+        }
+
+        async function fetchImageAsBase64(url) {
+            if (!url || !url.startsWith('http')) return null;
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) { return null; }
         }
 
         function formatToISO(d) { if (!d || !d.includes('/')) return ''; let p = d.split('/'); return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
@@ -208,18 +220,29 @@
             if (p === 'operator') updateOperatorUI(); else updateMainUI(); 
         }
 
-        function takeScreenshot() {
+        async function takeScreenshot() {
             document.getElementById('loading').style.display = 'flex';
             const element = document.body;
-            document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden');
+            
+            // แปลงรูปเป็น Base64 ชั่วคราวก่อน Capture
+            const allImgs = Array.from(document.querySelectorAll('img'));
+            const originalSrcs = allImgs.map(i => i.src);
+            for (let img of allImgs) {
+                const b64 = await fetchImageAsBase64(img.src);
+                if (b64) img.src = b64;
+            }
 
+            document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden');
             html2canvas(element, { 
                 backgroundColor: '#f3f4f6', useCORS: true, scale: 2, scrollY: -window.scrollY
             }).then(canvas => {
                 document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible');
+                // คืนค่ารูปเดิม
+                allImgs.forEach((img, idx) => img.src = originalSrcs[idx]);
+
                 const dataUrl = canvas.toDataURL("image/png");
                 const link = document.createElement('a');
-                link.download = `Analysis_Report_${new Date().getTime()}.png`;
+                link.download = `Report_${new Date().getTime()}.png`;
                 link.href = dataUrl;
                 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                     const newTab = window.open();
@@ -235,45 +258,22 @@
         function updateMainUI() {
             const s = document.getElementById('main-start-date').value, e = document.getElementById('main-end-date').value, mc = document.getElementById('main-filter-mc').value, sh = document.getElementById('main-filter-shift').value, fc = document.getElementById('main-filter-factor').value, sr = document.getElementById('main-filter-search').value.toLowerCase();
             const f = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (!fc || d.factor === fc) && (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr)));
-            
             document.getElementById('main-total-min').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString();
             document.getElementById('main-total-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
             const cnt = f.reduce((a,b)=>a+b.stops,0);
             document.getElementById('main-avg-min').textContent = cnt ? (f.reduce((a,b)=>a+b.duration,0)/cnt).toFixed(1) : 0;
             document.getElementById('main-rows').textContent = f.length.toLocaleString();
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`;
-
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-gray-50 transition-colors"><td class="p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-gray-400 uppercase">${d.station}</span></td><td class="p-4 text-gray-600 leading-snug">${d.problem}</td><td class="p-4 text-center font-black text-red-500">${d.duration}</td><td class="p-4 text-[9px] text-gray-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             renderTrend('mainTrendChart', f, mainTrendMode); renderDist(f);
         }
 
         function renderDist(data) {
             const st = {}; data.forEach(d => { if(!st[d.station])st[d.station]={t:0,c:0}; st[d.station].t+=d.duration; st[d.station].c+=d.stops; }); const topSt = Object.entries(st).sort((a,b)=>b[1].t-a[1].t).slice(0, 10); updateChart('mainChartStation', 'bar', topSt.map(x=>x[0]), topSt.map(x=>x[1].t), true, topSt.map(x=>x[1].c));
-            
-            const op = {}; data.forEach(d => { 
-                if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ 
-                    if(!op[d.operator]) op[d.operator] = { t:0, c:0, img: d.imgUrl }; 
-                    op[d.operator].t += d.duration; op[d.operator].c += d.stops; 
-                }
-            });
+            const op = {}; data.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!op[d.operator]) op[d.operator] = { t:0, c:0, img: d.imgUrl }; op[d.operator].t += d.duration; op[d.operator].c += d.stops; }});
             const topOp = Object.entries(op).sort((a,b) => b[1].t - a[1].t).slice(0, 5);
             const maxVal = topOp.length > 0 ? topOp[0][1].t : 1;
-            
-            document.getElementById('top-operators-list').innerHTML = topOp.map(x => `
-                <div class="flex items-center gap-4">
-                    <img src="${x[1].img || ''}" class="op-thumb shrink-0 bg-gray-100" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="op-thumb shrink-0 bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs" style="display:none;">${x[0].charAt(0)}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between mb-1">
-                            <span class="text-[11px] font-bold text-gray-700 truncate">${x[0]}</span>
-                            <span class="text-[10px] font-black text-blue-600">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span>
-                        </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: ${(x[1].t/maxVal)*100}%"></div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            document.getElementById('top-operators-list').innerHTML = topOp.map(x => `<div class="flex items-center gap-4"><img src="${x[1].img || ''}" class="op-thumb shrink-0 bg-gray-100" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb shrink-0 bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs" style="display:none;">${x[0].charAt(0)}</div><div class="flex-1 min-w-0"><div class="flex justify-between mb-1"><span class="text-[11px] font-bold text-gray-700 truncate">${x[0]}</span><span class="text-[10px] font-black text-blue-600">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width: ${(x[1].t/maxVal)*100}%"></div></div></div></div>`).join('');
         }
 
         function getMode(arr) { if(arr.length === 0) return "-"; const modeMap = {}; let maxEl = arr[0], maxCount = 1; for(let i = 0; i < arr.length; i++) { let el = arr[i]; if(modeMap[el] == null) modeMap[el] = 1; else modeMap[el]++; if(modeMap[el] > maxCount) { maxEl = el; maxCount = modeMap[el]; } } return maxEl; }
@@ -282,19 +282,11 @@
             const n = document.getElementById('op-select').value, s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value, img = document.getElementById('op-profile-img'), ph = document.getElementById('op-img-placeholder');
             if (!n) { document.getElementById('op-table-body').innerHTML = ''; img.classList.add('hidden'); ph.classList.remove('hidden'); return; }
             const f = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e));
-            
             document.getElementById('op-info-mc').textContent = getMode(f.map(d => d.machine));
             document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station));
             document.getElementById('op-info-shift').textContent = f.length > 0 ? f.sort((a,b) => new Date(formatToISO(b.date)) - new Date(formatToISO(a.date)))[0].shift : "-";
-
             const url = f.length > 0 ? f.find(d => d.imgUrl)?.imgUrl : ""; 
-            if (url) { 
-                img.src = url; img.onload = () => { img.classList.remove('hidden'); ph.classList.add('hidden'); };
-                img.onerror = () => { img.classList.add('hidden'); ph.classList.remove('hidden'); };
-            } else { 
-                img.classList.add('hidden'); ph.classList.remove('hidden'); 
-            }
-            
+            if (url) { img.src = url; img.onload = () => { img.classList.remove('hidden'); ph.classList.add('hidden'); }; img.onerror = () => { img.classList.add('hidden'); ph.classList.remove('hidden'); }; } else { img.classList.add('hidden'); ph.classList.remove('hidden'); }
             document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); 
             document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
             document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr class="border-b hover:bg-blue-50"><td class="p-4 font-bold text-gray-700">${d.date}</td><td class="p-4">${d.station}</td><td class="p-4">${d.problem}</td><td class="p-4 text-center font-black text-red-600">${d.duration}</td><td class="p-4"><span class="px-2 py-1 bg-gray-100 rounded text-[9px] font-bold text-gray-400">${d.factor}</span></td></tr>`).join(''); 
