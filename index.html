@@ -23,13 +23,32 @@
         .card-stat:hover { transform: translateY(-2px); }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
-        /* Profile Image Styles - คืนค่าวงกลมสมบูรณ์ */
-        .profile-frame { width: 180px; height: 180px; border-radius: 50%; border: 6px solid white; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.1); overflow: hidden; background: #f1f5f9; position: relative; }
-        .profile-img-el { width: 100%; height: 100%; object-fit: cover; }
+        /* สไตล์กรอบรูปพนักงานวงกลม - แก้ไขให้รูปไม่ล้นและสมส่วนเสมอ */
+        .profile-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 180px;
+            height: 180px;
+            min-width: 180px;
+            min-height: 180px;
+            border-radius: 9999px; /* บังคับวงกลม */
+            border: 6px solid white;
+            box-shadow: 0 15px 35px -5px rgba(0,0,0,0.15);
+            overflow: hidden; /* ตัดส่วนที่ล้นออก */
+            background-color: #f1f5f9;
+            position: relative;
+        }
+        .profile-img-el {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* ขยายรูปให้เต็มโดยไม่เสียสัดส่วน */
+            display: block;
+        }
         .op-thumb { width: 64px; height: 64px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px -1px rgba(0,0,0,0.15); }
         
         @media (max-width: 640px) { 
-            .profile-frame { width: 140px; height: 140px; }
+            .profile-container { width: 140px; height: 140px; min-width: 140px; min-height: 140px; }
             .op-thumb { width: 56px; height: 56px; } 
         }
     </style>
@@ -41,7 +60,7 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <!-- Data Links -->
+    <!-- ลิงก์ข้อมูล (Optimized: ใช้เฉพาะ Downtime และ Waste Col AJ) -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
 
@@ -56,7 +75,7 @@
         </button>
     </div>
 
-    <!-- PAGE 1: DOWNTIME -->
+    <!-- PAGE 1: DOWNTIME (คงเดิม) -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Total Minutes</p><p id="main-total-min" class="text-3xl font-black text-slate-800">0</p></div>
@@ -96,7 +115,7 @@
         </div>
     </div>
 
-    <!-- PAGE 2: NCP OVERVIEW -->
+    <!-- PAGE 2: NCP OVERVIEW (คงเดิม) -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -127,13 +146,13 @@
         </div>
     </div>
 
-    <!-- PAGE 3: OPERATOR ANALYSIS -->
+    <!-- PAGE 3: OPERATOR ANALYSIS (แก้ไขส่วนรูปภาพ) -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
-                <!-- ส่วนรูปพนักงาน: ปรับปรุงโครงสร้างให้รูปอยู่ภายในกรอบวงกลมสมบูรณ์ -->
-                <div class="flex justify-center">
-                    <div class="profile-frame">
+                <!-- ส่วนรูปพนักงาน: ล็อกกรอบวงกลมไม่ให้ล้นแน่นอน -->
+                <div class="flex justify-center flex-shrink-0">
+                    <div class="profile-container">
                         <div id="op-img-placeholder" class="w-full h-full flex items-center justify-center">
                             <svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                         </div>
@@ -250,7 +269,7 @@
                     station: (stRaw && isNaN(stRaw)) ? stRaw : cl(c[3]),
                     problem: cl(c[32]) || cl(c[17]), 
                     weightNcp: parseNum(cl(c[24])), 
-                    consumption: parseNum(cl(c[35])), 
+                    consumption: parseNum(cl(c[35])), // Col AJ
                     operator: cl(c[26]), isoDate: iso, date: cl(c[27]), time: cl(c[2]),
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj)
                 };
@@ -397,7 +416,7 @@
             const originalSrcs = imgs.map(i => i.src);
             for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } }
             document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden');
-            html2canvas(document.body, { backgroundColor: '#f8fafc', shadowBlur: 20, useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => {
+            html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => {
                 document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible');
                 imgs.forEach((img, idx) => img.src = originalSrcs[idx]);
                 const dataUrl = canvas.toDataURL("image/png");
