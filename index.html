@@ -23,12 +23,13 @@
         .card-stat:hover { transform: translateY(-2px); }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
-        /* สไตล์รูปพนักงานวงกลม */
-        .profile-img { width: 160px; height: 160px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); background-color: #f1f5f9; overflow: hidden; }
+        /* Profile Image Styles - คืนค่าวงกลมสมบูรณ์ */
+        .profile-frame { width: 180px; height: 180px; border-radius: 50%; border: 6px solid white; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.1); overflow: hidden; background: #f1f5f9; position: relative; }
+        .profile-img-el { width: 100%; height: 100%; object-fit: cover; }
         .op-thumb { width: 64px; height: 64px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px -1px rgba(0,0,0,0.15); }
         
         @media (max-width: 640px) { 
-            .profile-img { width: 120px; height: 120px; }
+            .profile-frame { width: 140px; height: 140px; }
             .op-thumb { width: 56px; height: 56px; } 
         }
     </style>
@@ -40,7 +41,7 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <!-- ลิงก์ข้อมูล (ดึงเฉพาะที่จำเป็นเพื่อความเร็ว) -->
+    <!-- Data Links -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
 
@@ -130,11 +131,14 @@
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
-                <div class="relative">
-                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-slate-50 border-slate-100">
-                        <svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <!-- ส่วนรูปพนักงาน: ปรับปรุงโครงสร้างให้รูปอยู่ภายในกรอบวงกลมสมบูรณ์ -->
+                <div class="flex justify-center">
+                    <div class="profile-frame">
+                        <div id="op-img-placeholder" class="w-full h-full flex items-center justify-center">
+                            <svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        </div>
+                        <img id="op-profile-img" src="" alt="Profile" class="profile-img-el hidden" crossorigin="anonymous">
                     </div>
-                    <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" crossorigin="anonymous">
                 </div>
                 <div class="flex-1 w-full space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -246,7 +250,7 @@
                     station: (stRaw && isNaN(stRaw)) ? stRaw : cl(c[3]),
                     problem: cl(c[32]) || cl(c[17]), 
                     weightNcp: parseNum(cl(c[24])), 
-                    consumption: parseNum(cl(c[35])), // Col AJ
+                    consumption: parseNum(cl(c[35])), 
                     operator: cl(c[26]), isoDate: iso, date: cl(c[27]), time: cl(c[2]),
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj)
                 };
@@ -327,82 +331,25 @@
             document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="relative"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"><div class="absolute -top-1 -right-1 bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shadow-md">${i+1}</div></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length].replace('0.85)', '1)')}, ${colorPalette[i % colorPalette.length].replace('0.85)', '0.6)')})"></div></div></div></div>`).join('');
         }
 
-        // แก้ไขหน้า NCP ตามโจทย์ล่าสุด
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
-            
-            // 1. กรองสำหรับ Denominator (Consumption): ใช้ วันที่ + เครื่อง + กะ (ไม่สนใจ Station)
-            const fForConRaw = ncpData.filter(d => 
-                (!s || d.isoDate >= s) && 
-                (!e || d.isoDate <= e) && 
-                (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
-                (!sh || cleanStr(d.shift) === cleanStr(sh))
-            );
-
-            // ป้องกันการนับซ้ำยอดผลิต (AJ) เมื่อมีหลาย Station ในกะเดียวกัน
+            const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const uniqueConMap = {};
-            fForConRaw.forEach(d => {
-                const key = `${d.isoDate}_${d.shift}_${d.machine}`;
-                if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption;
-            });
+            fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
             const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
-
-            // 2. กรองสำหรับ Numerator (Weight NCP): ใช้ทุุกเงื่อนไข (รวม Station)
-            const fForNCP = ncpData.filter(d => 
-                (!s || d.isoDate >= s) && 
-                (!e || d.isoDate <= e) && 
-                (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
-                (!st || cleanStr(d.station) === cleanStr(st)) && 
-                (!sh || cleanStr(d.shift) === cleanStr(sh))
-            );
+            const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const totalNCP = fForNCP.reduce((acc, curr) => acc + curr.weightNcp, 0);
-            
-            // แสดงผลการ์ด KPI
             document.getElementById('ncp-kpi-weight-mc').textContent = totalConsumption.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('ncp-kpi-weight-ncp').textContent = totalNCP.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('ncp-kpi-percent').textContent = totalConsumption > 0 ? ((totalNCP/totalConsumption)*100).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})+'%' : '0.00%';
-            
-            // แสดงตารางรายละเอียด
             document.getElementById('ncp-table-body').innerHTML = fForNCP.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b></td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.shift} ${d.time}</td><td class="p-5 font-bold text-indigo-600">${d.machine}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.operator}</td></tr>`).join('');
-
-            // 3. กราฟแนวโน้ม % NCP (ปรับให้ตัวหารไม่ขยับตาม Station Filter)
-            const trendWaste = {}; 
-            const trendConRaw = {}; 
-            
-            // จับคู่ตัวหาร (Consumption) ตามกะหลัก
-            fForConRaw.forEach(d => {
-                let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
-                const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`;
-                if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption };
-            });
-
-            // รวมยอดตัวหารตามคาบเวลา
-            const trendConFinal = {};
-            Object.values(trendConRaw).forEach(obj => {
-                trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value;
-            });
-
-            // รวมยอดเศษ (Waste) ตามคาบเวลา
-            fForNCP.forEach(d => {
-                let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
-                trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp;
-            });
-            
+            const trendWaste = {}; const trendConRaw = {}; 
+            fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
+            const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
+            fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
             const labs = Object.keys(trendConFinal).sort();
-            const displayLabs = labs.map(l => {
-                if(ncpTrendMode === 'daily') {
-                    const found = ncpData.find(d => d.isoDate === l);
-                    return found ? found.date : l;
-                }
-                return l;
-            });
-
-            drawChart('ncpTrendChart', {
-                type: ncpTrendMode === 'daily' ? 'line' : 'bar',
-                data: { labels: displayLabs, datasets: [{ data: labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0)), borderColor: 'rgba(99, 102, 241, 1)' }] },
-                options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v)=>v.toFixed(2)+'%', font: { size: 10, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: false } }, scales: { y: { beginAtZero: true, grace: '25%' } } }
-            });
-
+            const displayLabs = labs.map(l => { if(ncpTrendMode === 'daily') { const found = ncpData.find(d => d.isoDate === l); return found ? found.date : l; } return l; });
+            drawChart('ncpTrendChart', { type: ncpTrendMode === 'daily' ? 'line' : 'bar', data: { labels: displayLabs, datasets: [{ data: labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0)), borderColor: 'rgba(99, 102, 241, 1)' }] }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v)=>v.toFixed(2)+'%', font: { size: 10, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: false } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
             const stAgg = {}; fForNCP.forEach(d => { if(d.station && isNaN(d.station)) stAgg[d.station] = (stAgg[d.station]||0) + d.weightNcp; });
             const stItems = Object.entries(stAgg).sort((a,b)=>b[1]-a[1]).slice(0,10);
             drawChart('ncpStationChart', { type: 'bar', data: { labels: stItems.map(x=>x[0]), datasets: [{ data: stItems.map(x=>x[1]), backgroundColor: 'rgba(99, 102, 241, 0.8)' }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v)=>v.toLocaleString(undefined, {maximumFractionDigits:1})+' กก.', font: { size: 9, weight: 600 }, color: '#6366f1' } }, scales: { x: { beginAtZero: true, grace: '40%' } } } });
@@ -416,6 +363,7 @@
             document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station));
             document.getElementById('op-info-shift').textContent = f.length ? f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date)))[0].shift : "-";
             
+            // ค้นหารูปภาพพนักงาน
             const url = f.length ? f.find(d => d.imgUrl && d.imgUrl.includes('google'))?.imgUrl : "";
             if (url) { 
                 img.src = url; 
@@ -449,7 +397,7 @@
             const originalSrcs = imgs.map(i => i.src);
             for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } }
             document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden');
-            html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => {
+            html2canvas(document.body, { backgroundColor: '#f8fafc', shadowBlur: 20, useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => {
                 document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible');
                 imgs.forEach((img, idx) => img.src = originalSrcs[idx]);
                 const dataUrl = canvas.toDataURL("image/png");
