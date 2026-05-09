@@ -28,9 +28,9 @@
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
         .profile-img { width: 160px; height: 160px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 4px solid white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); background-color: #f1f5f9; }
-        .op-thumb { width: 48px; height: 48px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .op-thumb { width: 64px; height: 64px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px -1px rgba(0,0,0,0.15); }
         
-        @media (max-width: 640px) { .profile-img { width: 120px; height: 120px; } }
+        @media (max-width: 640px) { .profile-img { width: 120px; height: 120px; } .op-thumb { width: 56px; height: 56px; } }
     </style>
 </head>
 <body class="p-3 md:p-6 pb-20">
@@ -49,7 +49,7 @@
 
     <!-- Navigation Bar -->
     <div class="max-w-7xl mx-auto mb-8 flex bg-white p-2 rounded-2xl shadow-sm gap-2 no-export">
-        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวมระบบ</button>
+        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม DOWNTIME</button>
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
@@ -193,15 +193,9 @@
         Chart.register(ChartDataLabels);
         let rawData = [], ncpData = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily';
 
-        // ชุดสีพรีเมียม
         const colorPalette = [
-            'rgba(37, 99, 235, 0.85)',  // Blue
-            'rgba(244, 63, 94, 0.85)',  // Rose
-            'rgba(245, 158, 11, 0.85)', // Amber
-            'rgba(16, 185, 129, 0.85)', // Emerald
-            'rgba(139, 92, 246, 0.85)', // Violet
-            'rgba(236, 72, 153, 0.85)', // Pink
-            'rgba(100, 116, 139, 0.85)' // Slate
+            'rgba(37, 99, 235, 0.85)', 'rgba(244, 63, 94, 0.85)', 'rgba(245, 158, 11, 0.85)', 
+            'rgba(16, 185, 129, 0.85)', 'rgba(139, 92, 246, 0.85)', 'rgba(236, 72, 153, 0.85)', 'rgba(100, 116, 139, 0.85)'
         ];
 
         function transformGDriveLink(url) { if (!url || !url.includes("drive.google.com")) return url; let fileId = url.includes("/file/d/") ? url.split("/file/d/")[1].split("/")[0] : (url.includes("id=") ? url.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : url; }
@@ -220,11 +214,8 @@
                 parseDowntime(textD);
                 parseNCP(textN);
                 initFilters(); 
-                const activeBtn = document.querySelector('.nav-btn.active').id;
-                if (activeBtn === 'btn-main') updateMainUI();
-                else if (activeBtn === 'btn-ncp') updateNCPUI();
-                else updateOperatorUI();
-            } catch (err) { alert('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + err.message); }
+                updateCurrentPage();
+            } catch (err) { alert('Sync Error: ' + err.message); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
@@ -264,12 +255,14 @@
             fillSelect('ncp-filter-station', getU(ncpData, 'station'));
             fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
             
-            document.querySelectorAll('input, select').forEach(el => el.addEventListener('change', () => { 
-                const activeBtn = document.querySelector('.nav-btn.active').id;
-                if (activeBtn === 'btn-main') updateMainUI();
-                else if (activeBtn === 'btn-ncp') updateNCPUI();
-                else updateOperatorUI();
-            }));
+            document.querySelectorAll('input, select').forEach(el => el.addEventListener('change', updateCurrentPage));
+        }
+
+        function updateCurrentPage() {
+            const activeBtn = document.querySelector('.nav-btn.active').id;
+            if (activeBtn === 'btn-main') updateMainUI();
+            else if (activeBtn === 'btn-ncp') updateNCPUI();
+            else if (activeBtn === 'btn-operator') updateOperatorUI();
         }
 
         function fillSelect(id, items) { const s = document.getElementById(id); const v = s.value; s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>'; items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); }); s.value = v; }
@@ -282,35 +275,30 @@
             document.getElementById('btn-main').classList.toggle('active', p === 'main');
             document.getElementById('btn-ncp').classList.toggle('active', p === 'ncp');
             document.getElementById('btn-operator').classList.toggle('active', p === 'operator');
-            if (p === 'operator') updateOperatorUI(); else if(p === 'ncp') updateNCPUI(); else updateMainUI(); 
+            updateCurrentPage();
         }
 
-        // ฟังก์ชันวาดกราฟมาตรฐาน (Premium Version)
         function drawChart(id, config) {
             const canvas = document.getElementById(id);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             if (charts[id]) charts[id].destroy();
 
-            // จัดการ Gradient สำหรับ Line Chart
             if (config.type === 'line' && config.data.datasets[0]) {
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
                 gradient.addColorStop(0, config.data.datasets[0].borderColor.replace('1)', '0.3)'));
                 gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
                 config.data.datasets[0].backgroundColor = gradient;
                 config.data.datasets[0].fill = true;
-                config.data.datasets[0].tension = 0.4; // เส้นโค้ง
+                config.data.datasets[0].tension = 0.4;
                 config.data.datasets[0].pointRadius = 4;
                 config.data.datasets[0].pointBackgroundColor = '#fff';
                 config.data.datasets[0].pointBorderWidth = 2;
             }
-
-            // จัดการ Rounded Corners สำหรับ Bar Chart
             if (config.type === 'bar') {
                 config.data.datasets[0].borderRadius = 8;
                 config.data.datasets[0].borderSkipped = false;
             }
-
             charts[id] = new Chart(ctx, config);
         }
 
@@ -325,7 +313,7 @@
             document.getElementById('main-rows').textContent = f.length.toLocaleString();
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`;
 
-            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase tracking-tight">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 uppercase font-bold">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
+            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
 
             const trend = {};
             f.forEach(d => {
@@ -337,14 +325,7 @@
             drawChart('mainTrendChart', {
                 type: 'line',
                 data: { labels: labs, datasets: [{ label: 'นาที', data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] },
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 10, weight: 600, family: 'Kanit' }, color: '#475569', offset: 8 } 
-                    }, 
-                    scales: { y: { beginAtZero: true, grace: '25%', grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } 
-                }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } }
             });
 
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
@@ -352,15 +333,7 @@
             drawChart('mainChartStation', {
                 type: 'bar',
                 data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] },
-                options: { 
-                    indexAxis: 'y', 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } 
-                    },
-                    scales: { x: { beginAtZero: true, grace: '40%', grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } }
-                }
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } }, scales: { x: { beginAtZero: true, grace: '40%' } } }
             });
 
             const opMap = {}; f.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!opMap[d.operator]) opMap[d.operator] = { t:0, c:0, img: d.imgUrl }; opMap[d.operator].t += d.duration; opMap[d.operator].c += d.stops; }});
@@ -370,14 +343,14 @@
                 <div class="flex items-center gap-5">
                     <div class="relative">
                         <img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'">
-                        <div class="absolute -top-1 -right-1 bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-md">${i+1}</div>
+                        <div class="absolute -top-1 -right-1 bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shadow-md">${i+1}</div>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span>
                             <span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span>
                         </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
                             <div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length].replace('0.85)', '1)')}, ${colorPalette[i % colorPalette.length].replace('0.85)', '0.6)')})"></div>
                         </div>
                     </div>
@@ -404,11 +377,7 @@
             drawChart('ncpTrendChart', {
                 type: 'line',
                 data: { labels: labs, datasets: [{ data: labs.map(l => { const m = Object.values(trend[l].m).reduce((a,b)=>a+b,0); return m > 0 ? (trend[l].n/m)*100 : 0; }), borderColor: 'rgba(99, 102, 241, 1)' }] },
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { datalabels: { formatter: (v)=>v.toFixed(2)+'%', font: { size: 10, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: false } }, 
-                    scales: { y: { beginAtZero: true, grace: '25%', grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } 
-                }
+                options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v)=>v.toFixed(2)+'%', font: { size: 10, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: false } }, scales: { y: { beginAtZero: true, grace: '25%' } } }
             });
 
             const stAgg = {}; f.forEach(d => stAgg[d.station] = (stAgg[d.station]||0) + d.weightNcp);
@@ -416,15 +385,7 @@
             drawChart('ncpStationChart', {
                 type: 'bar',
                 data: { labels: stItems.map(x=>x[0]), datasets: [{ data: stItems.map(x=>x[1]), backgroundColor: 'rgba(99, 102, 241, 0.8)' }] },
-                options: { 
-                    indexAxis: 'y', 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false },
-                        datalabels: { anchor: 'end', align: 'right', formatter: (v)=>v.toLocaleString()+' กก.', font: { size: 9, weight: 600 }, color: '#6366f1' } 
-                    },
-                    scales: { x: { beginAtZero: true, grace: '40%' }, y: { grid: { display: false } } }
-                }
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v)=>v.toLocaleString()+' กก.', font: { size: 9, weight: 600 }, color: '#6366f1' } }, scales: { x: { beginAtZero: true, grace: '40%' } } }
             });
         }
 
@@ -443,19 +404,18 @@
             document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
             document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-5 font-bold text-slate-700">${d.date}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5"><span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] uppercase font-bold text-slate-500">${d.factor}</span></td></tr>`).join('');
             
-            const trend = {}; f.forEach(d => { if(!trend[d.date]) trend[d.date] = { t:0, c:0 }; trend[d.date].t += d.duration; trend[d.date].c += d.stops; });
-            const labs = Object.keys(trend).sort((a,b) => new Date(formatToISO(a)) - new Date(formatToISO(b)));
+            // Fixed Trend Logic: Use opTrendMode variable
+            const trend = {};
+            f.forEach(d => {
+                let k = opTrendMode === 'daily' ? d.date : (opTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
+                if(!trend[k]) trend[k] = { t:0, c:0 };
+                trend[k].t += d.duration; trend[k].c += d.stops;
+            });
+            const labs = Object.keys(trend).sort((a,b) => opTrendMode === 'daily' ? new Date(formatToISO(a)) - new Date(formatToISO(b)) : a.localeCompare(b));
             drawChart('opTrendChart', {
                 type: 'line',
                 data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] },
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false },
-                        datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 10, weight: 600 }, color: '#334155', offset: 8 } 
-                    },
-                    scales: { y: { beginAtZero: true, grace: '25%' } }
-                }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 10, weight: 600 }, color: '#334155', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } }
             });
         }
 
