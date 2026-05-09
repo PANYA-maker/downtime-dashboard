@@ -10,25 +10,37 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
         .chart-container { position: relative; height: 340px; width: 100%; }
         .table-responsive { overflow-x: auto; max-height: 500px; }
-        input, select { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.6rem; font-size: 0.875rem; width: 100%; transition: all 0.2s; }
-        .nav-btn { transition: all 0.3s ease; border-radius: 0.75rem; color: #6b7280; background-color: #ffffff; border: 1px solid transparent; }
-        .nav-btn.active { background-color: #2563eb !important; color: white !important; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
-        .view-btn { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; border: 1px solid #e5e7eb; transition: all 0.2s; }
-        .view-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
-        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
-        .profile-img { width: 180px; height: 180px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 6px solid white; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15); background-color: #f9fafb; }
-        .op-thumb { width: 45px; height: 45px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        @media (max-width: 640px) { .profile-img { width: 140px; height: 140px; } }
+        input, select { border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 0.875rem; width: 100%; transition: all 0.2s; background-color: white; }
+        input:focus, select:focus { outline: none; border-color: #3b82f6; ring: 2px; ring-color: #3b82f633; }
+        
+        .nav-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 0.75rem; color: #64748b; background-color: #ffffff; border: 1px solid transparent; font-weight: 600; }
+        .nav-btn.active { background-color: #2563eb !important; color: white !important; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4); transform: translateY(-1px); }
+        
+        .view-btn { padding: 0.5rem 1.25rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.5rem; transition: all 0.2s; }
+        .view-btn.active { background-color: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        
+        .card-stat { background: white; padding: 1.5rem; border-radius: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left-width: 4px; transition: transform 0.2s; }
+        .card-stat:hover { transform: translateY(-2px); }
+        
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
+        
+        .profile-img { width: 160px; height: 160px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 4px solid white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); background-color: #f1f5f9; }
+        .op-thumb { width: 48px; height: 48px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        @media (max-width: 640px) { .profile-img { width: 120px; height: 120px; } }
     </style>
 </head>
-<body class="p-2 md:p-6 pb-20">
+<body class="p-3 md:p-6 pb-20">
 
     <div id="loading" class="loading-overlay">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p class="text-blue-600 font-semibold text-sm uppercase tracking-widest">กำลังดึงข้อมูลล่าสุด...</p>
+        <div class="relative w-16 h-16">
+            <div class="absolute inset-0 rounded-full border-4 border-blue-100"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+        </div>
+        <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
     <!-- Data Links -->
@@ -36,11 +48,11 @@
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
 
     <!-- Navigation Bar -->
-    <div class="max-w-7xl mx-auto mb-6 flex bg-white p-2 rounded-2xl shadow-sm gap-2 no-export">
-        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 font-bold text-[10px] sm:text-sm flex items-center justify-center gap-2 uppercase tracking-widest">ภาพรวมระบบ</button>
-        <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 font-bold text-[10px] sm:text-sm flex items-center justify-center gap-2 uppercase tracking-widest">ภาพรวม NCP</button>
-        <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 font-bold text-[10px] sm:text-sm flex items-center justify-center gap-2 uppercase tracking-widest">วิเคราะห์พนักงาน</button>
-        <button onclick="takeScreenshot()" class="bg-gray-100 hover:bg-gray-200 px-4 rounded-xl text-gray-600 flex items-center gap-2 font-bold text-xs transition-colors">
+    <div class="max-w-7xl mx-auto mb-8 flex bg-white p-2 rounded-2xl shadow-sm gap-2 no-export">
+        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวมระบบ</button>
+        <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
+        <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
+        <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
@@ -48,71 +60,149 @@
 
     <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Minutes</p><p id="main-total-min" class="text-2xl font-black text-gray-800">0</p></div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-red-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Counts</p><p id="main-total-count" class="text-2xl font-black text-gray-800">0</p></div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Avg Min/Stop</p><p id="main-avg-min" class="text-2xl font-black text-gray-800">0</p></div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Records</p><p id="main-rows" class="text-2xl font-black text-gray-800">0</p></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Total Minutes</p><p id="main-total-min" class="text-3xl font-black text-slate-800">0</p></div>
+            <div class="card-stat border-rose-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Total Counts</p><p id="main-total-count" class="text-3xl font-black text-slate-800">0</p></div>
+            <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Avg Min/Stop</p><p id="main-avg-min" class="text-3xl font-black text-slate-800">0</p></div>
+            <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Total Records</p><p id="main-rows" class="text-3xl font-black text-slate-800">0</p></div>
         </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่เริ่มต้น</label><input type="date" id="main-start-date"></div><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่สิ้นสุด</label><input type="date" id="main-end-date"></div></div>
-            <div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ (Shift)</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div></div>
-            <div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">ค้นหาข้อมูล</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div></div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" id="main-start-date">
+                    <input type="date" id="main-end-date">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">กะ (Shift)</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div>
+            </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm">
-            <div class="flex items-center justify-between mb-4 border-b pb-2">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">แนวโน้มเวลาสูญเสีย (นาที / ครั้ง)</h3>
-                <div class="flex bg-gray-100 p-1 rounded-lg no-export">
-                    <button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active rounded-md border-none px-4">Daily</button>
-                    <button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn rounded-md border-none px-4">Weekly</button>
-                    <button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn rounded-md border-none px-4">Monthly</button>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">แนวโน้มเวลาสูญเสีย (นาที / ครั้ง)</h3>
+                <div class="flex bg-slate-100 p-1 rounded-xl no-export">
+                    <button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active">Daily</button>
+                    <button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn">Weekly</button>
+                    <button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn">Monthly</button>
                 </div>
             </div>
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-red-100">
-                <h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6 tracking-tighter">Top 10 Stations (นาที/ครั้ง)</h3>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 10 Stations (นาที/ครั้ง)</h3>
                 <div class="chart-container"><canvas id="mainChartStation"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-amber-100">
-                <h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6 tracking-tighter">Top 5 Operators (นาที/ครั้ง)</h3>
-                <div id="top-operators-list" class="space-y-4"></div>
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 Operators (นาที/ครั้ง)</h3>
+                <div id="top-operators-list" class="space-y-6"></div>
             </div>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10"><div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold">0 รายการ</span></div><div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่/กะ</th><th class="p-4">MC/Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-gray-600"></tbody></table></div></div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
+            <div class="p-5 bg-slate-50/50 border-b flex justify-between items-center">
+                <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3>
+                <span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full font-bold">0 รายการ</span>
+            </div>
+            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-slate-400 uppercase"><th class="p-5">วันที่/กะ</th><th class="p-5">MC/Station</th><th class="p-5">ปัญหา</th><th class="p-5 text-center">นาที</th><th class="p-5">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-slate-600"></tbody></table></div>
+        </div>
     </div>
 
     <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Weight M/C (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-gray-800">0</p></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-red-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Weight NCP (กก.)</p><p id="ncp-kpi-weight-ncp" class="text-3xl font-black text-gray-800">0</p></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-amber-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">% NCP</p><p id="ncp-kpi-percent" class="text-3xl font-black text-gray-800">0%</p></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Weight M/C (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0</p></div>
+            <div class="card-stat border-rose-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Weight NCP (กก.)</p><p id="ncp-kpi-weight-ncp" class="text-3xl font-black text-slate-800">0</p></div>
+            <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">% NCP</p><p id="ncp-kpi-percent" class="text-3xl font-black text-slate-800">0%</p></div>
         </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่เริ่มต้น - สิ้นสุด</label>
-                <div class="flex gap-2"><input type="date" id="ncp-start-date"><input type="date" id="ncp-end-date"></div>
-            </div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label><div class="flex gap-2"><input type="date" id="ncp-start-date"><input type="date" id="ncp-end-date"></div></div>
+            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
+            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
+            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">แนวโน้มเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="chart-container"><canvas id="ncpTrendChart"></canvas></div></div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-indigo-100"><h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6">NCP Weight by Station (กก.)</h3><div class="chart-container"><canvas id="ncpStationChart"></canvas></div></div>
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10"><div class="p-4 bg-gray-50 border-b"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล NCP (Sheet: Waste)</h3></div><div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">กะ/เวลา</th><th class="p-4">เครื่องจักร</th><th class="p-4">Station Waste</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">Weight NCP</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="ncp-table-body" class="text-xs text-gray-600"></tbody></table></div></div>
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3 mb-8">แนวโน้มเปอร์เซ็นต์ของเสีย (% NCP)</h3>
+            <div class="chart-container"><canvas id="ncpTrendChart"></canvas></div>
+        </div>
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">NCP Weight by Station (กก.)</h3>
+            <div class="chart-container"><canvas id="ncpStationChart"></canvas></div>
+        </div>
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
+            <div class="p-5 bg-slate-50 border-b"><h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล NCP</h3></div>
+            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-slate-400 uppercase"><th class="p-5">วันที่</th><th class="p-5">กะ/เวลา</th><th class="p-5">เครื่องจักร</th><th class="p-5">Station Waste</th><th class="p-5">ปัญหา</th><th class="p-5 text-center">Weight NCP</th><th class="p-5">พนักงาน</th></tr></thead><tbody id="ncp-table-body" class="text-xs text-slate-600"></tbody></table></div>
+        </div>
     </div>
 
     <!-- PAGE 3: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
-        <div class="bg-white p-6 md:p-10 rounded-2xl shadow-sm border-t-4 border-blue-500"><div class="flex flex-col lg:flex-row gap-10 items-center"><div class="shrink-0"><div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-gray-50 border-gray-100"><svg class="w-16 h-16 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" crossorigin="anonymous"></div><div class="flex-1 w-full space-y-6"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Operator Name</label><select id="op-select" class="text-xl font-bold text-blue-600 border-blue-200"><option value="">-- เลือกพนักงาน --</option></select></div><div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Start Date</label><input type="date" id="op-start-date"></div><div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">End Date</label><input type="date" id="op-end-date"></div></div></div><div class="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl"><div><p class="text-[9px] text-gray-400 uppercase font-bold">เครื่องจักรหลัก</p><p id="op-info-mc" class="text-xs font-bold text-gray-700">-</p></div><div><p class="text-[9px] text-gray-400 uppercase font-bold">สถานีหลัก</p><p id="op-info-station" class="text-xs font-bold text-gray-700">-</p></div><div><p class="text-[9px] text-gray-400 uppercase font-bold">กะล่าสุด</p><p id="op-info-shift" class="text-xs font-bold text-gray-700">-</p></div></div></div></div><div class="grid grid-cols-2 gap-4 pt-8 mt-8 border-t border-gray-100 text-center"><div class="bg-blue-50 p-6 rounded-2xl"><p class="text-[10px] text-blue-400 uppercase font-bold tracking-widest mb-1">เวลาสูญเสีย (นาที)</p><p id="op-kpi-time" class="text-3xl font-black text-blue-800">0</p></div><div class="bg-red-50 p-6 rounded-2xl"><p class="text-[10px] text-red-400 uppercase font-bold tracking-widest mb-1">จำนวนครั้ง</p><p id="op-kpi-count" class="text-3xl font-black text-red-800">0</p></div></div></div>
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden"><div class="table-responsive"><table class="w-full text-left"><thead class="bg-blue-50 border-b text-[10px] font-bold text-blue-400 uppercase"><tr><th class="p-4">วันที่</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">นาที</th><th class="p-4">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-gray-600"></tbody></table></div></div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm mb-10"><div class="flex items-center justify-between mb-4 border-b pb-2"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">วิเคราะห์แนวโน้มรายบุคคล</h3><div class="flex bg-gray-100 p-1 rounded-lg no-export"><button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active rounded-md border-none px-4">Daily</button><button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn rounded-md border-none px-4">Weekly</button><button onclick="setOpTrendMode('monthly')" id="btn-op-trend-monthly" class="view-btn rounded-md border-none px-4">Monthly</button></div></div><div class="chart-container"><canvas id="opTrendChart"></canvas></div></div>
+        <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="relative">
+                    <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-slate-50 border-slate-100">
+                        <svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </div>
+                    <img id="op-profile-img" src="" alt="Profile" class="profile-img hidden" crossorigin="anonymous">
+                </div>
+                <div class="flex-1 w-full space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operator Name</label><select id="op-select" class="text-xl font-bold text-blue-600 border-none bg-blue-50/50 p-4"><option value="">-- เลือกพนักงาน --</option></select></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เลือกช่วงเวลาวิเคราะห์</label><div class="grid grid-cols-2 gap-2"><input type="date" id="op-start-date"><input type="date" id="op-end-date"></div></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <div><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-1">เครื่องจักรหลัก</p><p id="op-info-mc" class="text-sm font-bold text-slate-700">-</p></div>
+                        <div><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-1">สถานีหลัก</p><p id="op-info-station" class="text-sm font-bold text-slate-700">-</p></div>
+                        <div><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-1">กะล่าสุด</p><p id="op-info-shift" class="text-sm font-bold text-slate-700">-</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-6 mt-12 pt-12 border-t border-slate-100">
+                <div class="bg-blue-50/50 p-8 rounded-3xl text-center"><p class="text-[10px] text-blue-400 uppercase font-bold tracking-widest mb-1">เวลาสูญเสีย (นาที)</p><p id="op-kpi-time" class="text-4xl font-black text-blue-700">0</p></div>
+                <div class="bg-rose-50/50 p-8 rounded-3xl text-center"><p class="text-[10px] text-rose-400 uppercase font-bold tracking-widest mb-1">จำนวนครั้ง</p><p id="op-kpi-count" class="text-4xl font-black text-rose-700">0</p></div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-slate-50 border-b text-[10px] font-bold text-slate-400 uppercase"><tr><th class="p-5">วันที่</th><th class="p-5">Station</th><th class="p-5">ปัญหา</th><th class="p-5 text-center">นาที</th><th class="p-5">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-slate-600"></tbody></table></div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-12">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">วิเคราะห์แนวโน้มรายบุคคล</h3>
+                <div class="flex bg-slate-100 p-1 rounded-xl no-export">
+                    <button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active">Daily</button>
+                    <button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn">Weekly</button>
+                    <button onclick="setOpTrendMode('monthly')" id="btn-op-trend-monthly" class="view-btn">Monthly</button>
+                </div>
+            </div>
+            <div class="chart-container"><canvas id="opTrendChart"></canvas></div>
+        </div>
     </div>
 
     <script>
         Chart.register(ChartDataLabels);
         let rawData = [], ncpData = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily';
+
+        // ชุดสีพรีเมียม
+        const colorPalette = [
+            'rgba(37, 99, 235, 0.85)',  // Blue
+            'rgba(244, 63, 94, 0.85)',  // Rose
+            'rgba(245, 158, 11, 0.85)', // Amber
+            'rgba(16, 185, 129, 0.85)', // Emerald
+            'rgba(139, 92, 246, 0.85)', // Violet
+            'rgba(236, 72, 153, 0.85)', // Pink
+            'rgba(100, 116, 139, 0.85)' // Slate
+        ];
 
         function transformGDriveLink(url) { if (!url || !url.includes("drive.google.com")) return url; let fileId = url.includes("/file/d/") ? url.split("/file/d/")[1].split("/")[0] : (url.includes("id=") ? url.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : url; }
         function formatToISO(d) { if (!d || !d.includes('/')) return ''; let p = d.split('/'); return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
@@ -125,21 +215,15 @@
                     fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`),
                     fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`)
                 ]);
-                
                 if(!resD.ok || !resN.ok) throw new Error("Sync Failed");
-                
                 const [textD, textN] = await Promise.all([resD.text(), resN.text()]);
-                
                 parseDowntime(textD);
                 parseNCP(textN);
                 initFilters(); 
-                
-                // สลับหน้าและโหลด UI
                 const activeBtn = document.querySelector('.nav-btn.active').id;
                 if (activeBtn === 'btn-main') updateMainUI();
                 else if (activeBtn === 'btn-ncp') updateNCPUI();
                 else updateOperatorUI();
-
             } catch (err) { alert('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + err.message); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
@@ -201,19 +285,39 @@
             if (p === 'operator') updateOperatorUI(); else if(p === 'ncp') updateNCPUI(); else updateMainUI(); 
         }
 
-        // ฟังก์ชันวาดกราฟมาตรฐาน (Robust Version)
+        // ฟังก์ชันวาดกราฟมาตรฐาน (Premium Version)
         function drawChart(id, config) {
             const canvas = document.getElementById(id);
             if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             if (charts[id]) charts[id].destroy();
-            charts[id] = new Chart(canvas.getContext('2d'), config);
+
+            // จัดการ Gradient สำหรับ Line Chart
+            if (config.type === 'line' && config.data.datasets[0]) {
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, config.data.datasets[0].borderColor.replace('1)', '0.3)'));
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                config.data.datasets[0].backgroundColor = gradient;
+                config.data.datasets[0].fill = true;
+                config.data.datasets[0].tension = 0.4; // เส้นโค้ง
+                config.data.datasets[0].pointRadius = 4;
+                config.data.datasets[0].pointBackgroundColor = '#fff';
+                config.data.datasets[0].pointBorderWidth = 2;
+            }
+
+            // จัดการ Rounded Corners สำหรับ Bar Chart
+            if (config.type === 'bar') {
+                config.data.datasets[0].borderRadius = 8;
+                config.data.datasets[0].borderSkipped = false;
+            }
+
+            charts[id] = new Chart(ctx, config);
         }
 
         function updateMainUI() {
             const s = document.getElementById('main-start-date').value, e = document.getElementById('main-end-date').value, mc = document.getElementById('main-filter-mc').value, sh = document.getElementById('main-filter-shift').value, fc = document.getElementById('main-filter-factor').value, sr = document.getElementById('main-filter-search').value.toLowerCase();
             const f = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (!fc || d.factor === fc) && (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr)));
             
-            // Cards
             document.getElementById('main-total-min').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString();
             document.getElementById('main-total-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
             const totalStops = f.reduce((a,b)=>a+b.stops,0);
@@ -221,10 +325,8 @@
             document.getElementById('main-rows').textContent = f.length.toLocaleString();
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`;
 
-            // Table
-            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-gray-50 transition-colors"><td class="p-4"><b>${d.date}</b><br><span class="text-[9px] text-gray-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-4"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-gray-400 uppercase">${d.station}</span></td><td class="p-4 text-gray-600 leading-snug">${d.problem}</td><td class="p-4 text-center font-black text-red-500">${d.duration}</td><td class="p-4 text-[9px] text-gray-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
+            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase tracking-tight">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 uppercase font-bold">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
 
-            // กราฟแนวโน้ม (Trend)
             const trend = {};
             f.forEach(d => {
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
@@ -233,25 +335,54 @@
             });
             const labs = Object.keys(trend).sort((a,b) => mainTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
             drawChart('mainTrendChart', {
-                type: mainTrendMode === 'daily' ? 'line' : 'bar',
-                data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: '#3b82f6', backgroundColor: '#3b82f6aa', custom: labs.map(l=>trend[l].c) }] },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 8, weight: 'bold' } } }, scales: { y: { beginAtZero: true, grace: '20%' } } }
+                type: 'line',
+                data: { labels: labs, datasets: [{ label: 'นาที', data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] },
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 10, weight: 600, family: 'Kanit' }, color: '#475569', offset: 8 } 
+                    }, 
+                    scales: { y: { beginAtZero: true, grace: '25%', grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } 
+                }
             });
 
-            // กราฟ Station
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
             drawChart('mainChartStation', {
                 type: 'bar',
-                data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: '#ef4444aa', custom: topSt.map(x=>x[1].c) }] },
-                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 8 } } } }
+                data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] },
+                options: { 
+                    indexAxis: 'y', 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } 
+                    },
+                    scales: { x: { beginAtZero: true, grace: '40%', grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } }
+                }
             });
 
-            // Top Operators List
             const opMap = {}; f.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!opMap[d.operator]) opMap[d.operator] = { t:0, c:0, img: d.imgUrl }; opMap[d.operator].t += d.duration; opMap[d.operator].c += d.stops; }});
             const topOp = Object.entries(opMap).sort((a,b) => b[1].t - a[1].t).slice(0,5);
             const maxT = topOp.length ? topOp[0][1].t : 1;
-            document.getElementById('top-operators-list').innerHTML = topOp.map(x => `<div class="flex items-center gap-4"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"><div class="flex-1"><div class="flex justify-between text-[10px] mb-1"><b>${x[0]}</b><span class="text-blue-600">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-gray-100 rounded-full h-1.5"><div class="bg-blue-500 h-1.5 rounded-full" style="width: ${(x[1].t/maxT)*100}%"></div></div></div></div>`).join('');
+            document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `
+                <div class="flex items-center gap-5">
+                    <div class="relative">
+                        <img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'">
+                        <div class="absolute -top-1 -right-1 bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-md">${i+1}</div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span>
+                            <span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length].replace('0.85)', '1)')}, ${colorPalette[i % colorPalette.length].replace('0.85)', '0.6)')})"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function updateNCPUI() {
@@ -266,24 +397,34 @@
             document.getElementById('ncp-kpi-weight-ncp').textContent = totalNCP.toLocaleString(undefined, {minimumFractionDigits:1});
             document.getElementById('ncp-kpi-percent').textContent = totalMC > 0 ? ((totalNCP/totalMC)*100).toFixed(2)+'%' : '0%';
 
-            document.getElementById('ncp-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b"><td class="p-4"><b>${d.date}</b></td><td class="p-4 text-[9px] uppercase">${d.shift} ${d.time}</td><td class="p-4 font-bold text-indigo-600">${d.machine}</td><td class="p-4">${d.station}</td><td class="p-4">${d.problem}</td><td class="p-4 text-center font-black text-red-500">${d.weightNcp.toLocaleString()}</td><td class="p-4 text-[9px] uppercase font-bold">${d.operator}</td></tr>`).join('');
+            document.getElementById('ncp-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b></td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.shift} ${d.time}</td><td class="p-5 font-bold text-indigo-600">${d.machine}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString()}</td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.operator}</td></tr>`).join('');
 
-            // กราฟแนวโน้ม NCP
             const trend = {}; f.forEach(d => { if(!trend[d.date]) trend[d.date] = { n:0, m:{} }; trend[d.date].n += d.weightNcp; trend[d.date].m[`${d.machine}-${d.shift}`] = d.weightMc; });
             const labs = Object.keys(trend).sort((a,b) => new Date(formatToISO(a)) - new Date(formatToISO(b)));
             drawChart('ncpTrendChart', {
                 type: 'line',
-                data: { labels: labs, datasets: [{ data: labs.map(l => { const m = Object.values(trend[l].m).reduce((a,b)=>a+b,0); return m > 0 ? (trend[l].n/m)*100 : 0; }), borderColor: '#6366f1', backgroundColor: '#6366f122', fill: true }] },
-                options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v)=>v.toFixed(2)+'%', font: { size: 9, weight: 'bold' } } }, scales: { y: { beginAtZero: true, grace: '20%' } } }
+                data: { labels: labs, datasets: [{ data: labs.map(l => { const m = Object.values(trend[l].m).reduce((a,b)=>a+b,0); return m > 0 ? (trend[l].n/m)*100 : 0; }), borderColor: 'rgba(99, 102, 241, 1)' }] },
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { datalabels: { formatter: (v)=>v.toFixed(2)+'%', font: { size: 10, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: false } }, 
+                    scales: { y: { beginAtZero: true, grace: '25%', grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } 
+                }
             });
 
-            // กราฟ Station NCP
             const stAgg = {}; f.forEach(d => stAgg[d.station] = (stAgg[d.station]||0) + d.weightNcp);
             const stItems = Object.entries(stAgg).sort((a,b)=>b[1]-a[1]).slice(0,10);
             drawChart('ncpStationChart', {
                 type: 'bar',
-                data: { labels: stItems.map(x=>x[0]), datasets: [{ data: stItems.map(x=>x[1]), backgroundColor: '#6366f1aa' }] },
-                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { datalabels: { anchor: 'end', align: 'right', formatter: (v)=>v.toLocaleString()+' กก.', font: { size: 8 } } } }
+                data: { labels: stItems.map(x=>x[0]), datasets: [{ data: stItems.map(x=>x[1]), backgroundColor: 'rgba(99, 102, 241, 0.8)' }] },
+                options: { 
+                    indexAxis: 'y', 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: { anchor: 'end', align: 'right', formatter: (v)=>v.toLocaleString()+' กก.', font: { size: 9, weight: 600 }, color: '#6366f1' } 
+                    },
+                    scales: { x: { beginAtZero: true, grace: '40%' }, y: { grid: { display: false } } }
+                }
             });
         }
 
@@ -300,14 +441,21 @@
             
             document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString();
             document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString();
-            document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-4 font-bold">${d.date}</td><td class="p-4">${d.station}</td><td class="p-4">${d.problem}</td><td class="p-4 text-center font-black text-red-600">${d.duration}</td><td class="p-4"><span class="px-2 py-1 bg-gray-100 rounded text-[9px] uppercase">${d.factor}</span></td></tr>`).join('');
+            document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-5 font-bold text-slate-700">${d.date}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5"><span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] uppercase font-bold text-slate-500">${d.factor}</span></td></tr>`).join('');
             
             const trend = {}; f.forEach(d => { if(!trend[d.date]) trend[d.date] = { t:0, c:0 }; trend[d.date].t += d.duration; trend[d.date].c += d.stops; });
             const labs = Object.keys(trend).sort((a,b) => new Date(formatToISO(a)) - new Date(formatToISO(b)));
             drawChart('opTrendChart', {
                 type: 'line',
-                data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: '#2563eb', backgroundColor: '#2563eb22', fill: true, custom: labs.map(l=>trend[l].c) }] },
-                options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v,ctx)=>`${v}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9 } } } }
+                data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] },
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 10, weight: 600 }, color: '#334155', offset: 8 } 
+                    },
+                    scales: { y: { beginAtZero: true, grace: '25%' } }
+                }
             });
         }
 
@@ -329,16 +477,16 @@
                 }
             }
             document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden');
-            html2canvas(document.body, { backgroundColor: '#f3f4f6', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => {
+            html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => {
                 document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible');
                 imgs.forEach((img, idx) => img.src = originalSrcs[idx]);
                 const dataUrl = canvas.toDataURL("image/png");
                 const link = document.createElement('a');
-                link.download = `Analysis_Report_${new Date().getTime()}.png`;
+                link.download = `Production_Analysis_${new Date().getTime()}.png`;
                 link.href = dataUrl;
                 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                     const newTab = window.open();
-                    newTab.document.write('<img src="' + dataUrl + '" style="width:100%;">');
+                    newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>');
                 } else { link.click(); }
                 document.getElementById('loading').style.display = 'none';
             });
