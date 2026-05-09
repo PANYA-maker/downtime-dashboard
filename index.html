@@ -166,34 +166,24 @@
         
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
 
-        // ปรับปรุง: รองรับทั้งปี พ.ศ. และ ค.ศ.
         function fixYear(year) {
             let y = parseInt(year);
             if (isNaN(y)) return year;
-            if (y > 2400) return (y - 543).toString(); // แปลง พ.ศ. เป็น ค.ศ.
-            if (y < 100) return (y + 2000).toString(); // กรณีปีแบบ 2 หลัก
+            if (y > 2400) return (y - 543).toString(); 
+            if (y < 100) return (y + 2000).toString(); 
             return y.toString();
         }
 
-        // สำหรับ Waste Sheet (MM/DD/YYYY)
-        function formatNCPDate(dateStr) {
+        // Unified: ทั้ง Waste และ CON เป็น DD/MM/YYYY แล้ว
+        function parseUnifiedDate(dateStr) {
             if (!dateStr || !dateStr.includes('/')) return '';
             const p = dateStr.split('/');
-            const y = fixYear(p[2]);
-            return `${y}-${p[0].padStart(2, '0')}-${p[1].padStart(2, '0')}`;
-        }
-
-        // สำหรับ CON Sheet (DD/MM/YYYY)
-        function formatCONDate(dateStr) {
-            if (!dateStr || !dateStr.includes('/')) return '';
-            const p = dateStr.split('/');
+            if (p.length < 3) return '';
             const y = fixYear(p[2]);
             return `${y}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
         }
 
-        // สำหรับ Downtime Sheet (DD/MM/YYYY)
-        function formatToISO(d) { if (!d || !d.includes('/')) return ''; let p = d.split('/'); const y = fixYear(p[2]); return `${y}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
-        
+        function formatToISO(d) { return parseUnifiedDate(d); }
         function getISOWeek(date) { let d = new Date(date); d.setHours(0,0,0,0); d.setDate(d.getDate()+4-(d.getDay()||7)); return Math.ceil((((d-new Date(d.getFullYear(),0,1))/86400000)+1)/7); }
 
         async function syncData() {
@@ -232,7 +222,7 @@
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (c.length < 28) return null;
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
-                const iso = formatNCPDate(cl(c[27])); // Waste AB
+                const iso = parseUnifiedDate(cl(c[27])); // Waste AB (ตอนนี้เป็น DD/MM/YYYY แล้ว)
                 if (!iso) return null;
                 const dObj = new Date(iso);
                 const stRaw = cl(c[33]);
@@ -254,15 +244,14 @@
                 if (c.length < 6) return null;
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
                 
-                // CON: วันที่ A(0), กะ C(2), เครื่อง D(3), Consumtion F(5)
-                const iso = formatCONDate(cl(c[0])); 
+                const iso = parseUnifiedDate(cl(c[0])); // CON A (DD/MM/YYYY)
                 if (!iso) return null;
                 const dObj = new Date(iso);
                 return {
                     isoDate: iso,
-                    shift: cl(c[2]), 
-                    machine: cl(c[3]), 
-                    consumption: parseFloat(cl(c[5])) || 0,
+                    shift: cl(c[2]), // CON C
+                    machine: cl(c[3]), // CON D
+                    consumption: parseFloat(cl(c[5])) || 0, // CON F
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj)
                 };
             }).filter(d => d);
@@ -354,7 +343,7 @@
                 (!sh || cleanStr(d.shift) === cleanStr(sh))
             );
             
-            // กรอง CONSUMPTION (CON) - เปรียบเทียบแบบ Case-Insensitive และ Trim
+            // กรอง CONSUMPTION (CON)
             const fCon = conData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
