@@ -23,7 +23,7 @@
         .card-stat:hover { transform: translateY(-2px); }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
-        /* สไตล์กรอบรูปพนักงานวงกลม - แก้ไขให้รูปไม่ล้นและสมส่วนเสมอ */
+        /* แก้ไข: ปรับโครงสร้างรูปพนักงานให้เห็น "หัว" ชัดเจน */
         .profile-container {
             display: flex;
             justify-content: center;
@@ -32,20 +32,32 @@
             height: 180px;
             min-width: 180px;
             min-height: 180px;
-            border-radius: 9999px; /* บังคับวงกลม */
+            border-radius: 9999px;
             border: 6px solid white;
             box-shadow: 0 15px 35px -5px rgba(0,0,0,0.15);
-            overflow: hidden; /* ตัดส่วนที่ล้นออก */
+            overflow: hidden;
             background-color: #f1f5f9;
             position: relative;
         }
         .profile-img-el {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* ขยายรูปให้เต็มโดยไม่เสียสัดส่วน */
+            object-fit: cover;
+            /* ปรับตำแหน่งรูปให้เน้นด้านบน (เห็นหัว) มากขึ้น */
+            object-position: center 10%; 
             display: block;
         }
-        .op-thumb { width: 64px; height: 64px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px -1px rgba(0,0,0,0.15); }
+        
+        /* สไตล์รูปเล็กในรายการ Top 5 */
+        .op-thumb { 
+            width: 64px; 
+            height: 64px; 
+            object-fit: cover; 
+            object-position: center 15%; 
+            border-radius: 50%; 
+            border: 2px solid white; 
+            box-shadow: 0 4px 10px -1px rgba(0,0,0,0.15); 
+        }
         
         @media (max-width: 640px) { 
             .profile-container { width: 140px; height: 140px; min-width: 140px; min-height: 140px; }
@@ -60,7 +72,7 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <!-- ลิงก์ข้อมูล (Optimized: ใช้เฉพาะ Downtime และ Waste Col AJ) -->
+    <!-- Data Links -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
 
@@ -75,7 +87,7 @@
         </button>
     </div>
 
-    <!-- PAGE 1: DOWNTIME (คงเดิม) -->
+    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Total Minutes</p><p id="main-total-min" class="text-3xl font-black text-slate-800">0</p></div>
@@ -115,7 +127,7 @@
         </div>
     </div>
 
-    <!-- PAGE 2: NCP OVERVIEW (คงเดิม) -->
+    <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -146,12 +158,12 @@
         </div>
     </div>
 
-    <!-- PAGE 3: OPERATOR ANALYSIS (แก้ไขส่วนรูปภาพ) -->
+    <!-- PAGE 3: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
-                <!-- ส่วนรูปพนักงาน: ล็อกกรอบวงกลมไม่ให้ล้นแน่นอน -->
                 <div class="flex justify-center flex-shrink-0">
+                    <!-- ล็อกกรอบรูปให้เห็นใบหน้าชัดเจน ไม่ล้น ไม่หัวหาย -->
                     <div class="profile-container">
                         <div id="op-img-placeholder" class="w-full h-full flex items-center justify-center">
                             <svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -232,6 +244,9 @@
                     fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`),
                     fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`)
                 ]);
+                
+                if (!resD.ok || !resN.ok) throw new Error("ลิงก์ Google Sheets ไม่ตอบสนอง หรือการเชื่อมต่อล้มเหลว");
+                
                 const [textD, textN] = await Promise.all([resD.text(), resN.text()]);
                 
                 parseDowntime(textD);
@@ -239,7 +254,12 @@
                 
                 initFilters(); 
                 updateCurrentPage();
-            } catch (err) { alert('Sync Error: ' + err.message); }
+            } catch (err) { 
+                console.error(err);
+                // แสดง Error ที่ชัดเจนขึ้น
+                document.getElementById('loading').style.display = 'none';
+                alert('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + err.message + '\nกรุณาตรวจสอบว่า Google Sheets เผยแพร่ทางเว็บถูกต้องแล้ว'); 
+            }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
