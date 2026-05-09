@@ -28,12 +28,12 @@
 
     <div id="loading" class="loading-overlay">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p class="text-blue-600 font-semibold text-sm uppercase tracking-widest">กำลังดึงข้อมูล...</p>
+        <p class="text-blue-600 font-semibold text-sm uppercase tracking-widest">กำลังดึงข้อมูลล่าสุด...</p>
     </div>
 
-    <!-- ลิงก์ข้อมูล -->
+    <!-- ลิงก์ข้อมูลอัปเดต -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
-    <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?output=csv">
+    <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
 
     <!-- Navigation Bar -->
     <div class="max-w-7xl mx-auto mb-6 flex bg-white p-2 rounded-2xl shadow-sm gap-2 no-export">
@@ -46,7 +46,7 @@
         </button>
     </div>
 
-    <!-- PAGE 1: MAIN DASHBOARD (DOWNTIME) -->
+    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500"><p class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Total Minutes</p><p id="main-total-min" class="text-2xl font-black text-gray-800">0</p></div>
@@ -75,13 +75,13 @@
             <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">วันที่เริ่มต้น - สิ้นสุด</label>
                 <div class="flex gap-2"><input type="date" id="ncp-start-date"><input type="date" id="ncp-end-date"></div>
             </div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">เครื่องจักร (Col G)</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
+            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Station Waste (Col AH)</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
+            <div><label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">กะ (Shift Col B)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
         </div>
         <div class="bg-white p-5 rounded-2xl shadow-sm"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">แนวโน้มเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="chart-container"><canvas id="ncpTrendChart"></canvas></div></div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border-t-2 border-indigo-100"><h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-6">NCP Weight by Station (กก.)</h3><div class="chart-container"><canvas id="ncpStationChart"></canvas></div></div>
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10"><div class="p-4 bg-gray-50 border-b"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล NCP</h3></div><div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">กะ/เวลา</th><th class="p-4">เครื่องจักร</th><th class="p-4">Station</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">Weight NCP</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="ncp-table-body" class="text-xs text-gray-600"></tbody></table></div></div>
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-10"><div class="p-4 bg-gray-50 border-b"><h3 class="font-bold text-gray-700 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล NCP (Sheet: Waste)</h3></div><div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-gray-400 uppercase"><th class="p-4">วันที่</th><th class="p-4">กะ/เวลา</th><th class="p-4">เครื่องจักร</th><th class="p-4">Station Waste</th><th class="p-4">ปัญหา</th><th class="p-4 text-center">Weight NCP</th><th class="p-4">พนักงาน</th></tr></thead><tbody id="ncp-table-body" class="text-xs text-gray-600"></tbody></table></div></div>
     </div>
 
     <!-- PAGE 3: OPERATOR ANALYSIS -->
@@ -115,13 +115,15 @@
         async function syncData() {
             document.getElementById('loading').style.display = 'flex';
             try {
-                // Downtime Data
+                // 1. Sync Downtime
                 const resD = await fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`);
+                if(!resD.ok) throw new Error("Downtime Sync Failed");
                 const textD = await resD.text();
                 parseDowntime(textD);
 
-                // NCP Data (New Link)
+                // 2. Sync Waste (NCP) - Using the provided link
                 const resN = await fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`);
+                if(!resN.ok) throw new Error("NCP Sync Failed");
                 const textN = await resN.text();
                 parseNCP(textN);
 
@@ -130,7 +132,10 @@
                 if (page === 'btn-main') updateMainUI();
                 else if (page === 'btn-ncp') updateNCPUI();
                 else updateOperatorUI();
-            } catch (err) { alert('Sync Error: กรุณาตรวจสอบลิงก์หรือการตั้งค่า Publish ของไฟล์!'); }
+            } catch (err) { 
+                console.error(err);
+                alert('Sync Error: ลิงก์ข้อมูล NCP อาจไม่ถูกต้อง หรือไม่ได้ Publish เฉพาะชีท Waste เป็นไฟล์ .csv ครับ'); 
+            }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
@@ -149,21 +154,22 @@
             const rows = text.split(/\r?\n/).slice(1);
             ncpData = rows.map(line => {
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (c.length < 34) return null;
+                if (c.length < 28) return null; // AB = index 27
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
-                const iso = formatToISO(cl(c[27])); // AB -> 27
+                const dateStr = cl(c[27]);
+                const iso = formatToISO(dateStr);
                 if (!iso) return null;
                 return {
-                    shift: cl(c[1]), // B -> 1
-                    time: cl(c[2]), // T -> 2
-                    machine: cl(c[6]), // G -> 6
-                    station: cl(c[33]) || cl(c[3]), // AH -> 33
-                    problem: cl(c[32]) || cl(c[17]), // AG -> 32
-                    weightNcp: parseFloat(cl(c[24])) || 0, // Y -> 24
-                    weightMc: parseFloat(cl(c[25])) || 0, // Z -> 25
-                    operator: cl(c[26]), // AA -> 26
+                    shift: cl(c[1]), // B
+                    time: cl(c[2]), // T
+                    machine: cl(c[6]), // G
+                    station: c[33] ? cl(c[33]) : cl(c[3]), // AH หรือ D
+                    problem: c[32] ? cl(c[32]) : cl(c[17]), // AG หรือ R
+                    weightNcp: parseFloat(cl(c[24])) || 0, // Y
+                    weightMc: parseFloat(cl(c[25])) || 0, // Z
+                    operator: cl(c[26]), // AA
                     isoDate: iso,
-                    date: cl(c[27])
+                    date: dateStr
                 };
             }).filter(d => d);
         }
@@ -172,6 +178,7 @@
             const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
             fillSelect('main-filter-mc', getU(rawData, 'machine')); fillSelect('main-filter-factor', getU(rawData, 'factor')); fillSelect('main-filter-shift', getU(rawData, 'shift')); 
             fillSelect('op-select', getU(rawData, 'operator'));
+            // NCP Filters
             fillSelect('ncp-filter-mc', getU(ncpData, 'machine')); fillSelect('ncp-filter-station', getU(ncpData, 'station')); fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
             
             document.querySelectorAll('input, select').forEach(el => el.addEventListener('change', () => { 
@@ -212,10 +219,11 @@
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             const f = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!st || d.station === st) && (!sh || d.shift === sh));
             
+            // Logic Weight M/C (Unique Sum by Day-Machine-Shift)
             const uniqueMC = {};
             f.forEach(d => {
                 const key = `${d.isoDate}-${d.machine}-${d.shift}`;
-                if (!uniqueMC[key]) uniqueMC[key] = d.weightMc;
+                if (!(key in uniqueMC)) uniqueMC[key] = d.weightMc;
             });
             const totalWeightMC = Object.values(uniqueMC).reduce((a,b) => a+b, 0);
             const totalWeightNCP = f.reduce((a,b) => a+b.weightNcp, 0);
@@ -237,6 +245,7 @@
                 </tr>
             `).join('');
 
+            // NCP Trend (% over time)
             const trendAgg = {};
             f.forEach(d => {
                 if(!trendAgg[d.date]) trendAgg[d.date] = { ncp: 0, mc: {} };
@@ -251,6 +260,7 @@
             });
             updateChart('ncpTrendChart', 'line', labels, trendValues, false, null, '%');
 
+            // NCP by Station
             const stAgg = {};
             f.forEach(d => stAgg[d.station] = (stAgg[d.station]||0) + d.weightNcp);
             const stItems = Object.entries(stAgg).sort((a,b) => b[1]-a[1]).slice(0, 10);
