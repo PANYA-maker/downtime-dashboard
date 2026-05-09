@@ -23,7 +23,6 @@
         .card-stat:hover { transform: translateY(-2px); }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
-        /* แก้ไข: เพิ่ม CSS สำหรับรูปพนักงานให้เป็นวงกลม */
         .profile-img { width: 160px; height: 160px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); background-color: #f1f5f9; overflow: hidden; }
         .op-thumb { width: 64px; height: 64px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px -1px rgba(0,0,0,0.15); }
         
@@ -40,7 +39,7 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <!-- Data Links (Optimized: Removed CON Link to speed up) -->
+    <!-- Data Links -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
 
@@ -98,7 +97,6 @@
     <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- ดึงข้อมูล Consumption จากคอลัมน์ AJ ในชีท Waste -->
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
             <div class="card-stat border-rose-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Weight NCP (กก.)</p><p id="ncp-kpi-weight-ncp" class="text-3xl font-black text-slate-800">0.00</p></div>
             <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">% NCP</p><p id="ncp-kpi-percent" class="text-3xl font-black text-slate-800">0.00%</p></div>
@@ -131,7 +129,6 @@
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
-                <!-- ส่วนแสดงรูปพนักงาน (แก้ไขเป็นวงกลม) -->
                 <div class="relative">
                     <div id="op-img-placeholder" class="profile-img flex items-center justify-center bg-slate-50 border-slate-100">
                         <svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -178,6 +175,14 @@
         function transformGDriveLink(url) { if (!url || !url.includes("drive.google.com")) return url; let fileId = url.includes("/file/d/") ? url.split("/file/d/")[1].split("/")[0] : (url.includes("id=") ? url.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : url; }
         
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
+
+        // แก้ไข: เพิ่มฟังก์ชันล้างคอมมาออกจากตัวเลข
+        function parseNum(v) { 
+            if (!v) return 0;
+            // ลบช่องว่าง, ลบคอมมา, ลบเครื่องหมายคำพูด
+            let cleanV = v.toString().replace(/[",\s]/g, '');
+            return parseFloat(cleanV) || 0; 
+        }
 
         function fixYear(year) {
             let y = parseInt(year);
@@ -230,7 +235,8 @@
         function parseNCP(text) {
             ncpData = text.split(/\r?\n/).slice(1).map(line => {
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (c.length < 36) return null; 
+                // ปรับปรุง: ไม่ล็อคความยาวแถวมากเกินไป (AJ อยู่ที่ Index 35)
+                if (c.length < 28) return null; 
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
                 const iso = parseUnifiedDate(cl(c[27])); 
                 if (!iso) return null;
@@ -240,8 +246,9 @@
                     shift: cl(c[1]), 
                     machine: cl(c[6]), 
                     station: (stRaw && isNaN(stRaw)) ? stRaw : cl(c[3]),
-                    problem: cl(c[32]) || cl(c[17]), weightNcp: parseFloat(cl(c[24])) || 0,
-                    consumption: parseFloat(cl(c[35])) || 0, // ดึงข้อมูล Col AJ จากชีท Waste
+                    problem: cl(c[32]) || cl(c[17]), 
+                    weightNcp: parseNum(cl(c[24])), // ใช้ parseNum เพื่อความแม่นยำ
+                    consumption: parseNum(cl(c[35])), // ดึงข้อมูล Col AJ (Index 35) + ล้างคอมมา
                     operator: cl(c[26]), isoDate: iso, date: cl(c[27]), time: cl(c[2]),
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj)
                 };
@@ -333,7 +340,6 @@
                 (!sh || cleanStr(d.shift) === cleanStr(sh))
             );
             
-            // คำนวณ Consumption จาก Col AJ ของชีท Waste
             const totalConsumption = f.reduce((acc, curr) => acc + curr.consumption, 0);
             const totalNCP = f.reduce((acc, curr) => acc + curr.weightNcp, 0);
             
