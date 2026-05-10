@@ -108,7 +108,7 @@
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
     </div>
@@ -193,9 +193,9 @@
         </div>
 
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">NCP Weight by Station (กก.)</h3>
+            <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">NCP Performance by Station (น้ำหนัก / %NCP / Diff)</h3>
             <div id="ncp-station-list" class="space-y-6">
-                <!-- รายการ Station จะถูกสร้างที่นี่ -->
+                <!-- รายการ Station จะถูกสร้างที่นี่ เรียงตาม Diff ที่เป็นลบมากที่สุดขึ้นก่อน -->
             </div>
         </div>
 
@@ -254,14 +254,14 @@
 
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
 
-        // NCP Targets Definition
+        // NCP Targets Definition (Updated Stacker Target to 0.15%)
         const ncpTargets = {
             "": 2.00,
             "single c": 0.90,
             "single b": 0.20,
             "double": 0.45,
             "dryend": 0.30,
-            "stacker": 0.30
+            "stacker": 0.15
         };
 
         function transformGDriveLink(url) { 
@@ -449,7 +449,7 @@
             document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="downtime-thumb-box"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`).join('');
         }
 
-        // หน้า NCP: เพิ่มระบบ Target และแสดงผล Diff
+        // หน้า NCP: ปรับ Target ใหม่ และระบบ Ranking ตาม Diff (จากลบมากที่สุดไปหาบวก)
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             
@@ -480,7 +480,7 @@
 
             document.getElementById('ncp-table-body').innerHTML = fForNCP.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b></td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.shift} ${d.time}</td><td class="p-5 font-bold text-indigo-600">${d.machine}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.operator}</td></tr>`).join('');
 
-            // Station Ranking
+            // Station Ranking: ปรับตาม Diff จากลบมากที่สุด (ดีที่สุด) ไปหาบวก
             const stationNcpMap = {};
             fForNCP.forEach(d => {
                 const stKey = d.station;
@@ -491,13 +491,26 @@
                 names.forEach(name => stationNcpMap[stKey].ops.add(name));
             });
 
-            const sortedStations = Object.entries(stationNcpMap).sort((a,b) => b[1].weight - a[1].weight).slice(0, 10);
-            const maxStW = sortedStations.length ? sortedStations[0][1].weight : 1;
+            // คำนวณ % และ Diff สำหรับแต่ละ Station เพื่อนำมาเรียงลำดับ
+            const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => {
+                const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0;
+                const stTarget = ncpTargets[cleanStr(stName)] || 0;
+                const stDiff = stPercent - stTarget;
+                return {
+                    name: stName,
+                    weight: data.weight,
+                    percent: stPercent,
+                    target: stTarget,
+                    diff: stDiff,
+                    ops: Array.from(data.ops)
+                };
+            });
 
-            document.getElementById('ncp-station-list').innerHTML = sortedStations.map((x, i) => {
-                const stName = x[0];
-                const stData = x[1];
-                const opArray = Array.from(stData.ops);
+            // เรียงลำดับ: ติดลบมากสุด (ดีที่สุด) มาก่อน
+            const sortedStations = rankingData.sort((a, b) => a.diff - b.diff);
+
+            document.getElementById('ncp-station-list').innerHTML = sortedStations.map((stData, i) => {
+                const opArray = stData.ops;
                 const thumbsHtml = opArray.map((name, idx) => {
                     const img = masterOpList.get(name) || "";
                     const initial = name.charAt(0);
@@ -507,10 +520,33 @@
                         return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${initial}</div>`;
                     } else { return `<div class="op-thumb" style="background-color: ${bgColor}" title="${name}">${initial}</div>`; }
                 }).join('');
-                return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stName}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${opArray.join(', ')}</span></div><span class="text-[11px] font-black text-indigo-600 whitespace-nowrap ml-2">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(stData.weight/maxStW)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`;
+
+                const diffColor = stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600';
+                const diffSymbol = stData.diff > 0 ? '+' : '';
+
+                return `
+                <div class="flex items-center gap-5">
+                    <div class="ncp-thumb-box">${thumbsHtml}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="flex flex-col truncate">
+                                <span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase truncate">${opArray.join(', ')}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span>
+                                <span class="text-[10px] font-bold ${diffColor} block italic">Diff: ${diffSymbol}${stData.diff.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+                            <!-- แถบแสดงผลเทียบเป้าหมาย -->
+                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div>
+                        </div>
+                    </div>
+                </div>`;
             }).join('');
 
-            // กราฟแนวโน้มพร้อมเส้น Target
+            // กราฟแนวโน้มพร้อมเส้น Target (Target จะเปลี่ยนตาม Station ที่เลือก)
             const trendWaste = {}; const trendConRaw = {}; 
             fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
@@ -536,7 +572,7 @@
                             tension: 0.4
                         },
                         {
-                            label: 'Target %',
+                            label: `Target (${targetVal.toFixed(2)}%)`,
                             data: targetTrendData,
                             borderColor: 'rgba(100, 116, 139, 0.6)',
                             borderWidth: 2,
