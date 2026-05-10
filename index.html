@@ -65,7 +65,6 @@
             font-size: 14px;
         }
 
-        /* โซนรูปภาพในหน้า NCP: ล็อกพื้นที่ไว้ 180px เพื่อให้ขึ้นแถวละ 3 รูป */
         .ncp-thumb-box {
             display: flex;
             flex-wrap: wrap;
@@ -106,12 +105,12 @@
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
     </div>
 
-    <!-- หน้า 1: DOWNTIME -->
+    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Total Minutes</p><p id="main-total-min" class="text-3xl font-black text-slate-800">0</p></div>
@@ -151,7 +150,7 @@
         </div>
     </div>
 
-    <!-- หน้า 2: NCP OVERVIEW (ปรับปรุง) -->
+    <!-- PAGE 2: NCP OVERVIEW (RE-FIXED IMAGE LOGIC) -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -179,7 +178,7 @@
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
             <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">NCP Weight by Station (กก.)</h3>
             <div id="ncp-station-list" class="space-y-6">
-                <!-- รายการ Station พร้อมรูป (แถวละ 3) -->
+                <!-- รายการจัดอันดับ Station จะถูกสร้างที่นี่ -->
             </div>
         </div>
 
@@ -189,7 +188,7 @@
         </div>
     </div>
 
-    <!-- หน้า 3: OPERATOR ANALYSIS -->
+    <!-- PAGE 3: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -407,7 +406,7 @@
             document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="downtime-thumb-box"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`).join('');
         }
 
-        // แก้ไขหน้า NCP: ดึงรูปครบทุกคน, เรียงรูปแถวละ 3
+        // แก้ไขหน้า NCP: แก้ปัญหาการดึงรูปพนักงานให้ครบและถูกต้อง
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             
@@ -425,7 +424,7 @@
             
             document.getElementById('ncp-table-body').innerHTML = fForNCP.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b></td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.shift} ${d.time}</td><td class="p-5 font-bold text-indigo-600">${d.machine}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.operator}</td></tr>`).join('');
 
-            // --- ส่วนจัดอันดับตาม Station (แก้ไขการ Split และ การแสดงผลรูปพนักงาน) ---
+            // --- ส่วนจัดอันดับตาม Station (แก้ไขการ Split และ Matching ลิงก์รูป) ---
             const stationNcpMap = {};
             fForNCP.forEach(d => {
                 const stKey = d.station;
@@ -436,14 +435,16 @@
                 }
                 stationNcpMap[stKey].weight += d.weightNcp;
                 
-                // แยกชื่อและรูปภาพ (ใช้การแยกด้วย คอมมา หรือ ขึ้นบรรทัดใหม่)
-                const names = d.ncpOpNames ? d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n) : [];
-                const imgs = d.ncpOpImgs ? d.ncpOpImgs.split(/[\n,]+/).map(i => i.trim()).filter(i => i) : [];
+                // แยกรายชื่อและลิงก์รูป (รองรับทั้งเว้นวรรค ขึ้นบรรทัดใหม่ และคอมมา)
+                // พยายามแยกด้วย Regex ที่ครอบคลุมขึ้น
+                const names = d.ncpOpNames ? d.ncpOpNames.split(/\r?\n|,/).map(n => n.trim()).filter(n => n) : [];
+                const imgs = d.ncpOpImgs ? d.ncpOpImgs.split(/\r?\n|,/).map(i => i.trim()).filter(i => i) : [];
                 
                 names.forEach((name, idx) => {
-                    // ดึงลิงก์รูปภาพและตรวจสอบ
-                    let imgUrl = transformGDriveLink(imgs[idx] || '');
                     if (!stationNcpMap[stKey].ops.has(name)) {
+                        // ดึงลิงก์ตามลำดับ ถ้าไม่มีให้เป็นค่าว่าง
+                        const rawImg = imgs[idx] || "";
+                        const imgUrl = transformGDriveLink(rawImg);
                         stationNcpMap[stKey].ops.set(name, imgUrl);
                     }
                 });
@@ -466,12 +467,13 @@
                     const initial = name.charAt(0);
                     const bgColor = colorPalette[idx % colorPalette.length];
                     
-                    // ปรับเงื่อนไขการตรวจจับลิงก์ให้ยืดหยุ่นขึ้น
-                    const isLink = img && (img.startsWith('http') || img.startsWith('https'));
+                    // ตรวจสอบว่าเป็นลิงก์จริงหรือไม่
+                    const hasValidImg = img && (img.startsWith('http') || img.startsWith('https'));
                     
-                    if (isLink) {
+                    if (hasValidImg) {
                         return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" 
-                                     onerror="this.onerror=null; this.parentElement.innerHTML += '<div class=\\'op-thumb\\' style=\\'background-color: ${bgColor}\\' title=\\'${name}\\'>${initial}</div>'; this.remove();">`;
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${initial}</div>`;
                     } else {
                         return `<div class="op-thumb" style="background-color: ${bgColor}" title="${name}">${initial}</div>`;
                     }
@@ -481,7 +483,6 @@
 
                 return `
                 <div class="flex items-center gap-5">
-                    <!-- ล็อกขนาดพื้นที่รูปภาพให้คงที่ (180px) เพื่อให้ขึ้นแถวละ 3 รูปพอดี -->
                     <div class="ncp-thumb-box">
                         ${thumbsHtml}
                     </div>
