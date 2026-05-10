@@ -23,7 +23,6 @@
         .card-stat:hover { transform: translateY(-2px); }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         
-        /* สไตล์รูปพนักงานในหน้าหลักวิเคราะห์พนักงาน */
         .profile-container {
             display: flex;
             justify-content: center;
@@ -43,11 +42,10 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center 10%; /* แก้หัวหาย */
+            object-position: center 10%;
             display: block;
         }
         
-        /* รูปวงกลมเล็กในรายการจัดอันดับ */
         .op-thumb { 
             width: 52px; 
             height: 52px; 
@@ -67,18 +65,16 @@
             font-size: 14px;
         }
 
-        /* โซนรูปภาพในหน้า NCP: ล็อกความกว้างให้คงที่ ไม่ยาวเบียดกราฟ */
         .ncp-thumb-box {
             display: flex;
-            flex-wrap: wrap; /* ให้รูปขึ้นบรรทัดใหม่ได้ถ้าเยอะเกิน */
-            gap: 4px;
-            width: 140px; /* ความกว้างคงที่ตามคำสั่ง */
-            min-width: 140px;
+            flex-wrap: wrap;
+            gap: 6px;
+            width: 160px; /* ล็อกความกว้างคงที่เพื่อให้กราฟไม่ขยับ */
+            min-width: 160px;
             justify-content: flex-start;
             align-items: center;
         }
         
-        /* โซนรูปภาพในหน้า Downtime: ใช้การซ้อนกันแบบเดิม */
         .downtime-thumb-box {
             display: flex;
             align-items: center;
@@ -90,7 +86,7 @@
         @media (max-width: 640px) { 
             .profile-container { width: 140px; height: 140px; min-width: 140px; min-height: 140px; }
             .op-thumb { width: 44px; height: 44px; min-width: 44px; font-size: 12px; } 
-            .ncp-thumb-box { width: 100px; min-width: 100px; }
+            .ncp-thumb-box { width: 110px; min-width: 110px; }
         }
     </style>
 </head>
@@ -101,11 +97,9 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <!-- ลิงก์ข้อมูล -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
 
-    <!-- แถบนำทาง -->
     <div class="max-w-7xl mx-auto mb-8 flex bg-white p-2 rounded-2xl shadow-sm gap-2 no-export">
         <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม DOWNTIME</button>
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
@@ -116,7 +110,7 @@
         </button>
     </div>
 
-    <!-- หน้า 1: DOWNTIME (คงเดิม) -->
+    <!-- หน้า 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Total Minutes</p><p id="main-total-min" class="text-3xl font-black text-slate-800">0</p></div>
@@ -156,7 +150,7 @@
         </div>
     </div>
 
-    <!-- หน้า 2: NCP OVERVIEW (ปรับปรุงใหม่ตามสั่ง) -->
+    <!-- หน้า 2: NCP OVERVIEW (ปรับปรุงการแยกรายชื่อ) -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -194,7 +188,7 @@
         </div>
     </div>
 
-    <!-- หน้า 3: OPERATOR ANALYSIS (คงเดิม) -->
+    <!-- หน้า 3: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -279,7 +273,7 @@
                     fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`),
                     fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`)
                 ]);
-                if (!resD.ok || !resN.ok) throw new Error("Connection failed");
+                if (!resD.ok || !resN.ok) throw new Error("Sync failed");
                 const [textD, textN] = await Promise.all([resD.text(), resN.text()]);
                 parseDowntime(textD);
                 parseNCP(textN);
@@ -424,7 +418,7 @@
             
             document.getElementById('ncp-table-body').innerHTML = fForNCP.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b></td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.shift} ${d.time}</td><td class="p-5 font-bold text-indigo-600">${d.machine}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.operator}</td></tr>`).join('');
 
-            // --- ส่วนจัดอันดับตาม Station (แก้ไขใหม่) ---
+            // --- ส่วนจัดอันดับตาม Station (แก้ไขใหม่เพื่อไม่ให้แยกช่องว่าง) ---
             const stationNcpMap = {};
             fForNCP.forEach(d => {
                 const stKey = d.station;
@@ -435,9 +429,9 @@
                 }
                 stationNcpMap[stKey].weight += d.weightNcp;
                 
-                // แยกชื่อและรูปภาพ
-                const names = d.ncpOpNames ? d.ncpOpNames.split(/[\s,]+/).map(n => n.trim()).filter(n => n) : [];
-                const imgs = d.ncpOpImgs ? d.ncpOpImgs.split(/[\s,]+/).map(i => i.trim()).filter(i => i) : [];
+                // แก้ไขการ Split: แยกเฉพาะตอนเจอ "คอมมา" หรือ "ขึ้นบรรทัดใหม่" เท่านั้น (ไม่แยกช่องว่าง)
+                const names = d.ncpOpNames ? d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n) : [];
+                const imgs = d.ncpOpImgs ? d.ncpOpImgs.split(/[\n,]+/).map(i => i.trim()).filter(i => i) : [];
                 
                 names.forEach((name, idx) => {
                     const imgUrl = transformGDriveLink(imgs[idx] || '');
@@ -462,14 +456,13 @@
                     const name = op[0];
                     const img = op[1];
                     const initial = name.charAt(0);
-                    // ใช้สีตามตำแหน่งชื่อให้ไม่ซ้ำกัน
                     const bgColor = colorPalette[idx % colorPalette.length];
                     
                     if (img && img.startsWith('http')) {
                         return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" 
                                      onerror="this.style.display='none'">`;
                     } else {
-                        // สร้างตัวย่อชื่อถ้าไม่มีรูป
+                        // แสดงตัวย่อเป็นวงกลมสีแทนถ้ารูปเสียหรือไม่มีรูป
                         return `<div class="op-thumb" style="background-color: ${bgColor}" title="${name}">${initial}</div>`;
                     }
                 }).join('');
@@ -478,7 +471,7 @@
 
                 return `
                 <div class="flex items-center gap-5">
-                    <!-- ล็อกขนาดพื้นที่รูปภาพให้คงที่ (140px) ไม่ยาวเกินเบียดกราฟ -->
+                    <!-- ล็อกขนาดพื้นที่รูปภาพให้คงที่ (160px) ไม่ยาวเกินเบียดกราฟ -->
                     <div class="ncp-thumb-box">
                         ${thumbsHtml}
                     </div>
