@@ -264,6 +264,18 @@
             "stacker": 0.15
         };
 
+        // ปรับปรุงฟังก์ชันคำนวณเลขสัปดาห์ให้เริ่มวันอาทิตย์ (Sunday-based)
+        function getSunWeek(date) {
+            let d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            let start = new Date(d.getFullYear(), 0, 1);
+            // จำนวนวันตั้งแต่ต้นปี
+            let days = Math.floor((d - start) / 86400000);
+            // วันแรกของปีคือวันอะไร (0=อาทิตย์, 6=เสาร์)
+            // สูตรคำนวณเลขสัปดาห์แบบเริ่มวันอาทิตย์
+            return Math.ceil((days + start.getDay() + 1) / 7);
+        }
+
         function transformGDriveLink(url) { 
             if (!url) return "";
             let cleanUrl = url.toString().trim();
@@ -297,7 +309,6 @@
         }
 
         function formatToISO(d) { return parseUnifiedDate(d); }
-        function getISOWeek(date) { let d = new Date(date); d.setHours(0,0,0,0); d.setDate(d.getDate()+4-(d.getDay()||7)); return Math.ceil((((d-new Date(d.getFullYear(),0,1))/86400000)+1)/7); }
 
         async function syncData() {
             document.getElementById('loading').style.display = 'flex';
@@ -344,7 +355,7 @@
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
                 const iso = formatToISO(cl(c[0])); if (!iso) return null;
                 const dObj = new Date(iso);
-                return { date: cl(c[0]), isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj), machine: cl(c[2]), station: cl(c[3]), stops: parseInt(cl(c[4]))||0, duration: parseFloat(cl(c[5]))||0, problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), imgUrl: transformGDriveLink(cl(c[16])) };
+                return { date: cl(c[0]), isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj), machine: cl(c[2]), station: cl(c[3]), stops: parseInt(cl(c[4]))||0, duration: parseFloat(cl(c[5]))||0, problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), imgUrl: transformGDriveLink(cl(c[16])) };
             }).filter(d => d);
         }
 
@@ -370,7 +381,7 @@
                     operator: cl(c[26]), 
                     ncpOpNames: cl(c[34]), 
                     isoDate: iso, date: cl(c[27]), time: cl(c[2]),
-                    year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj)
+                    year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj)
                 };
             }).filter(d => d);
         }
