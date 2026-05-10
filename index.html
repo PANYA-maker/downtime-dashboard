@@ -108,7 +108,7 @@
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
     </div>
@@ -195,13 +195,26 @@
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
             <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">NCP Performance by Station (น้ำหนัก / %NCP / Diff)</h3>
             <div id="ncp-station-list" class="space-y-6">
-                <!-- รายการ Station จะถูกสร้างที่นี่ เรียงตาม Diff ที่เป็นลบมากที่สุดขึ้นก่อน -->
+                <!-- รายการ Station เรียงตาม Diff ติดลบขึ้นก่อน -->
             </div>
         </div>
 
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
             <div class="p-5 bg-slate-50 border-b"><h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล NCP</h3></div>
-            <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-slate-400 uppercase"><th class="p-5">วันที่</th><th class="p-5">กะ/เวลา</th><th class="p-5">เครื่องจักร</th><th class="p-5">Station Waste</th><th class="p-5">ปัญหา</th><th class="p-5 text-center">Weight NCP</th><th class="p-5">พนักงาน</th></tr></thead><tbody id="ncp-table-body" class="text-xs text-slate-600"></tbody></table></div>
+            <div class="table-responsive">
+                <table class="w-full text-left">
+                    <thead class="bg-white border-b sticky top-0">
+                        <tr class="text-[10px] font-bold text-slate-400 uppercase">
+                            <th class="p-5">วันที่/กะ</th>
+                            <th class="p-5">PDR</th>
+                            <th class="p-5">เครื่องจักร/Station Waste</th>
+                            <th class="p-5">ปัญหา</th>
+                            <th class="p-5 text-center">Weight NCP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ncp-table-body" class="text-xs text-slate-600"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -254,7 +267,7 @@
 
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
 
-        // NCP Targets Definition (Updated Stacker Target to 0.15%)
+        // Targets NCP
         const ncpTargets = {
             "": 2.00,
             "single c": 0.90,
@@ -264,15 +277,12 @@
             "stacker": 0.15
         };
 
-        // ปรับปรุงฟังก์ชันคำนวณเลขสัปดาห์ให้เริ่มวันอาทิตย์ (Sunday-based)
+        // Sunday-based Week
         function getSunWeek(date) {
             let d = new Date(date);
             d.setHours(0, 0, 0, 0);
             let start = new Date(d.getFullYear(), 0, 1);
-            // จำนวนวันตั้งแต่ต้นปี
             let days = Math.floor((d - start) / 86400000);
-            // วันแรกของปีคือวันอะไร (0=อาทิตย์, 6=เสาร์)
-            // สูตรคำนวณเลขสัปดาห์แบบเริ่มวันอาทิตย์
             return Math.ceil((days + start.getDay() + 1) / 7);
         }
 
@@ -318,15 +328,11 @@
                     fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`),
                     fetch(`${document.getElementById('op-list-url').value}&t=${Date.now()}`)
                 ]);
-                
                 if (!resD.ok || !resN.ok || !resOp.ok) throw new Error("Sync failed");
-                
                 const [textD, textN, textOp] = await Promise.all([resD.text(), resN.text(), resOp.text()]);
-                
                 parseMasterOpList(textOp);
                 parseDowntime(textD);
                 parseNCP(textN);
-                
                 initFilters(); 
                 updateCurrentPage();
             } catch (err) { 
@@ -367,20 +373,20 @@
                 const iso = parseUnifiedDate(cl(c[27])); 
                 if (!iso) return null;
                 const dObj = new Date(iso);
+                // AH is index 33 (Station Waste)
                 const stRaw = cl(c[33]);
-                let finalStation = (stRaw && isNaN(stRaw)) ? stRaw : cl(c[3]);
-                if (!isNaN(finalStation)) finalStation = cl(c[33]); 
-
+                
                 return {
-                    shift: cl(c[1]), 
-                    machine: cl(c[6]), 
-                    station: finalStation,
-                    problem: cl(c[32]) || cl(c[17]), 
-                    weightNcp: parseNum(cl(c[24])), 
-                    consumption: parseNum(cl(c[35])), 
-                    operator: cl(c[26]), 
-                    ncpOpNames: cl(c[34]), 
-                    isoDate: iso, date: cl(c[27]), time: cl(c[2]),
+                    shift: cl(c[1]), // B
+                    pdr: cl(c[2]), // C
+                    machine: cl(c[6]), // G
+                    station: stRaw, // AH
+                    problem: cl(c[32]), // AG
+                    weightNcp: parseNum(cl(c[24])), // Y
+                    consumption: parseNum(cl(c[35])), // AJ
+                    ncpOpNames: cl(c[34]), // AI
+                    isoDate: iso, // AB
+                    date: cl(c[27]), // AB
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj)
                 };
             }).filter(d => d);
@@ -431,7 +437,6 @@
                 config.data.datasets[0].fill = true;
                 config.data.datasets[0].tension = 0.4;
             }
-            if (config.type === 'bar') { config.data.datasets[0].borderRadius = 8; }
             charts[id] = new Chart(ctx, config);
         }
 
@@ -460,7 +465,7 @@
             document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="downtime-thumb-box"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`).join('');
         }
 
-        // หน้า NCP: ปรับ Target ใหม่ และระบบ Ranking ตาม Diff (จากลบมากที่สุดไปหาบวก)
+        // PAGE: NCP OVERVIEW (Updated Table Columns)
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             
@@ -473,25 +478,28 @@
             const totalNCP = fForNCP.reduce((acc, curr) => acc + curr.weightNcp, 0);
             
             const actualPercent = totalConsumption > 0 ? (totalNCP / totalConsumption) * 100 : 0;
-
-            // Target Calculation
-            const selectedStation = cleanStr(st);
-            const targetVal = ncpTargets[selectedStation] || 2.00;
+            const targetVal = ncpTargets[cleanStr(st)] || 2.00;
             const diffVal = actualPercent - targetVal;
 
             document.getElementById('ncp-kpi-weight-mc').textContent = totalConsumption.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('ncp-kpi-weight-ncp').textContent = totalNCP.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('ncp-kpi-percent').textContent = actualPercent.toFixed(2) + '%';
-            
-            // UI Target & Diff
             document.getElementById('ncp-kpi-target').textContent = `Target: ${targetVal.toFixed(2)}%`;
             const diffEl = document.getElementById('ncp-kpi-diff');
             diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`;
             diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
 
-            document.getElementById('ncp-table-body').innerHTML = fForNCP.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b></td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.shift} ${d.time}</td><td class="p-5 font-bold text-indigo-600">${d.machine}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.operator}</td></tr>`).join('');
+            // TABLE BODY UPDATE
+            document.getElementById('ncp-table-body').innerHTML = fForNCP.slice(0, 100).map(d => `
+                <tr class="border-b hover:bg-indigo-50/30 transition-colors">
+                    <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td>
+                    <td class="p-5 font-medium">${d.pdr}</td>
+                    <td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td>
+                    <td class="p-5 text-slate-600">${d.problem}</td>
+                    <td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                </tr>`).join('');
 
-            // Station Ranking: ปรับตาม Diff จากลบมากที่สุด (ดีที่สุด) ไปหาบวก
+            // RANKING UPDATE
             const stationNcpMap = {};
             fForNCP.forEach(d => {
                 const stKey = d.station;
@@ -501,28 +509,15 @@
                 const names = d.ncpOpNames ? d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n) : [];
                 names.forEach(name => stationNcpMap[stKey].ops.add(name));
             });
-
-            // คำนวณ % และ Diff สำหรับแต่ละ Station เพื่อนำมาเรียงลำดับ
             const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => {
                 const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0;
                 const stTarget = ncpTargets[cleanStr(stName)] || 0;
                 const stDiff = stPercent - stTarget;
-                return {
-                    name: stName,
-                    weight: data.weight,
-                    percent: stPercent,
-                    target: stTarget,
-                    diff: stDiff,
-                    ops: Array.from(data.ops)
-                };
+                return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stDiff, ops: Array.from(data.ops) };
             });
-
-            // เรียงลำดับ: ติดลบมากสุด (ดีที่สุด) มาก่อน
             const sortedStations = rankingData.sort((a, b) => a.diff - b.diff);
-
             document.getElementById('ncp-station-list').innerHTML = sortedStations.map((stData, i) => {
-                const opArray = stData.ops;
-                const thumbsHtml = opArray.map((name, idx) => {
+                const thumbsHtml = stData.ops.map((name, idx) => {
                     const img = masterOpList.get(name) || "";
                     const initial = name.charAt(0);
                     const bgColor = colorPalette[idx % colorPalette.length];
@@ -531,84 +526,18 @@
                         return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${initial}</div>`;
                     } else { return `<div class="op-thumb" style="background-color: ${bgColor}" title="${name}">${initial}</div>`; }
                 }).join('');
-
                 const diffColor = stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600';
-                const diffSymbol = stData.diff > 0 ? '+' : '';
-
-                return `
-                <div class="flex items-center gap-5">
-                    <div class="ncp-thumb-box">${thumbsHtml}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="flex flex-col truncate">
-                                <span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase truncate">${opArray.join(', ')}</span>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span>
-                                <span class="text-[10px] font-bold ${diffColor} block italic">Diff: ${diffSymbol}${stData.diff.toFixed(2)}%</span>
-                            </div>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
-                            <!-- แถบแสดงผลเทียบเป้าหมาย -->
-                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div>
-                        </div>
-                    </div>
-                </div>`;
+                return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><span class="text-[10px] font-bold ${diffColor} block italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`;
             }).join('');
 
-            // กราฟแนวโน้มพร้อมเส้น Target (Target จะเปลี่ยนตาม Station ที่เลือก)
+            // TREND CHART
             const trendWaste = {}; const trendConRaw = {}; 
             fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
             fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
             const labs = Object.keys(trendConFinal).sort();
             const displayLabs = labs.map(l => { if(ncpTrendMode === 'daily') { const found = ncpData.find(d => d.isoDate === l); return found ? found.date : l; } return l; });
-            
-            const actualTrendData = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
-            const targetTrendData = labs.map(() => targetVal);
-
-            drawChart('ncpTrendChart', { 
-                type: 'line', 
-                data: { 
-                    labels: displayLabs, 
-                    datasets: [
-                        { 
-                            label: 'Actual % NCP',
-                            data: actualTrendData, 
-                            borderColor: 'rgba(99, 102, 241, 1)',
-                            borderWidth: 3,
-                            fill: true,
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                            tension: 0.4
-                        },
-                        {
-                            label: `Target (${targetVal.toFixed(2)}%)`,
-                            data: targetTrendData,
-                            borderColor: 'rgba(100, 116, 139, 0.6)',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false,
-                            datalabels: { display: false }
-                        }
-                    ] 
-                }, 
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        datalabels: { 
-                            formatter: (v, ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', 
-                            font: { size: 10, weight: 'bold' }, 
-                            color: '#4f46e5', 
-                            offset: 8, 
-                            align: 'top' 
-                        }, 
-                        legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } 
-                    }, 
-                    scales: { y: { beginAtZero: true, grace: '25%' } } 
-                } 
-            });
+            drawChart('ncpTrendChart', { type: 'line', data: { labels: displayLabs, datasets: [{ label: 'Actual % NCP', data: labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0)), borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } }] }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
         function updateOperatorUI() {
@@ -650,6 +579,7 @@
                     const newTab = window.open();
                     newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>');
                 } else { link.click(); }
+                document.getElementById('loading').style.none = 'none';
                 document.getElementById('loading').style.display = 'none';
             });
         }
