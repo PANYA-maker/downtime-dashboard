@@ -108,7 +108,7 @@
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
     </div>
@@ -158,7 +158,21 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
             <div class="card-stat border-rose-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Weight NCP (กก.)</p><p id="ncp-kpi-weight-ncp" class="text-3xl font-black text-slate-800">0.00</p></div>
-            <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">% NCP</p><p id="ncp-kpi-percent" class="text-3xl font-black text-slate-800">0.00%</p></div>
+            <div class="card-stat border-amber-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">% NCP</p>
+                        <p id="ncp-kpi-percent" class="text-3xl font-black text-slate-800">0.00%</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Target / Diff</p>
+                        <div class="flex flex-col items-end">
+                            <span id="ncp-kpi-target" class="text-xs font-bold text-slate-500 italic">Target: 2.00%</span>
+                            <span id="ncp-kpi-diff" class="text-sm font-black">Diff: 0.00%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label><div class="flex gap-2"><input type="date" id="ncp-start-date"><input type="date" id="ncp-end-date"></div></div>
@@ -240,6 +254,16 @@
 
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
 
+        // NCP Targets Definition
+        const ncpTargets = {
+            "": 2.00,
+            "single c": 0.90,
+            "single b": 0.20,
+            "double": 0.45,
+            "dryend": 0.30,
+            "stacker": 0.30
+        };
+
         function transformGDriveLink(url) { 
             if (!url) return "";
             let cleanUrl = url.toString().trim();
@@ -288,7 +312,6 @@
                 
                 const [textD, textN, textOp] = await Promise.all([resD.text(), resN.text(), resOp.text()]);
                 
-                // Parse Master Operator List first
                 parseMasterOpList(textOp);
                 parseDowntime(textD);
                 parseNCP(textN);
@@ -345,7 +368,7 @@
                     weightNcp: parseNum(cl(c[24])), 
                     consumption: parseNum(cl(c[35])), 
                     operator: cl(c[26]), 
-                    ncpOpNames: cl(c[34]), // Col AI
+                    ncpOpNames: cl(c[34]), 
                     isoDate: iso, date: cl(c[27]), time: cl(c[2]),
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getISOWeek(dObj)
                 };
@@ -426,7 +449,7 @@
             document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="downtime-thumb-box"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`).join('');
         }
 
-        // หน้า NCP: ดึงรูปอัตโนมัติจาก Master List โดยใช้ชื่อจากคอลัมน์ AI
+        // หน้า NCP: เพิ่มระบบ Target และแสดงผล Diff
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             
@@ -438,85 +461,107 @@
             const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const totalNCP = fForNCP.reduce((acc, curr) => acc + curr.weightNcp, 0);
             
+            const actualPercent = totalConsumption > 0 ? (totalNCP / totalConsumption) * 100 : 0;
+
+            // Target Calculation
+            const selectedStation = cleanStr(st);
+            const targetVal = ncpTargets[selectedStation] || 2.00;
+            const diffVal = actualPercent - targetVal;
+
             document.getElementById('ncp-kpi-weight-mc').textContent = totalConsumption.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('ncp-kpi-weight-ncp').textContent = totalNCP.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('ncp-kpi-percent').textContent = totalConsumption > 0 ? ((totalNCP/totalConsumption)*100).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})+'%' : '0.00%';
+            document.getElementById('ncp-kpi-percent').textContent = actualPercent.toFixed(2) + '%';
             
+            // UI Target & Diff
+            document.getElementById('ncp-kpi-target').textContent = `Target: ${targetVal.toFixed(2)}%`;
+            const diffEl = document.getElementById('ncp-kpi-diff');
+            diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`;
+            diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+
             document.getElementById('ncp-table-body').innerHTML = fForNCP.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b></td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.shift} ${d.time}</td><td class="p-5 font-bold text-indigo-600">${d.machine}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-5 text-[9px] uppercase font-bold text-slate-400">${d.operator}</td></tr>`).join('');
 
-            // --- จัดอันดับ Station และ ดึงรูปพนักงานอัตโนมัติ ---
+            // Station Ranking
             const stationNcpMap = {};
             fForNCP.forEach(d => {
                 const stKey = d.station;
                 if (!stKey || !isNaN(stKey)) return;
-
-                if (!stationNcpMap[stKey]) {
-                    stationNcpMap[stKey] = { weight: 0, ops: new Set() };
-                }
+                if (!stationNcpMap[stKey]) { stationNcpMap[stKey] = { weight: 0, ops: new Set() }; }
                 stationNcpMap[stKey].weight += d.weightNcp;
-                
-                // ดึงชื่อพนักงานจากหน้า NCP (คอลัมน์ AI) มาค้นรูปใน Master List
                 const names = d.ncpOpNames ? d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n) : [];
                 names.forEach(name => stationNcpMap[stKey].ops.add(name));
             });
 
-            const sortedStations = Object.entries(stationNcpMap)
-                .sort((a,b) => b[1].weight - a[1].weight)
-                .slice(0, 10);
-
+            const sortedStations = Object.entries(stationNcpMap).sort((a,b) => b[1].weight - a[1].weight).slice(0, 10);
             const maxStW = sortedStations.length ? sortedStations[0][1].weight : 1;
 
             document.getElementById('ncp-station-list').innerHTML = sortedStations.map((x, i) => {
                 const stName = x[0];
                 const stData = x[1];
                 const opArray = Array.from(stData.ops);
-                
                 const thumbsHtml = opArray.map((name, idx) => {
-                    // ค้นหารูปจาก Master List (ระบบ Lookup อัตโนมัติ)
                     const img = masterOpList.get(name) || "";
                     const initial = name.charAt(0);
                     const bgColor = colorPalette[idx % colorPalette.length];
                     const hasValidImg = img && (img.startsWith('http') || img.startsWith('https'));
-                    
                     if (hasValidImg) {
-                        return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" 
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${initial}</div>`;
-                    } else {
-                        return `<div class="op-thumb" style="background-color: ${bgColor}" title="${name}">${initial}</div>`;
-                    }
+                        return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${initial}</div>`;
+                    } else { return `<div class="op-thumb" style="background-color: ${bgColor}" title="${name}">${initial}</div>`; }
                 }).join('');
-                
-                const namesHtml = opArray.join(', ');
-
-                return `
-                <div class="flex items-center gap-5">
-                    <div class="ncp-thumb-box">
-                        ${thumbsHtml}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="flex flex-col truncate">
-                                <span class="text-xs font-bold text-slate-700 truncate">${stName}</span>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase truncate">${namesHtml}</span>
-                            </div>
-                            <span class="text-[11px] font-black text-indigo-600 whitespace-nowrap ml-2">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก.</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${(stData.weight/maxStW)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div>
-                        </div>
-                    </div>
-                </div>`;
+                return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stName}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${opArray.join(', ')}</span></div><span class="text-[11px] font-black text-indigo-600 whitespace-nowrap ml-2">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(stData.weight/maxStW)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`;
             }).join('');
 
-            // กราฟแนวโน้ม
+            // กราฟแนวโน้มพร้อมเส้น Target
             const trendWaste = {}; const trendConRaw = {}; 
             fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
             fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
             const labs = Object.keys(trendConFinal).sort();
             const displayLabs = labs.map(l => { if(ncpTrendMode === 'daily') { const found = ncpData.find(d => d.isoDate === l); return found ? found.date : l; } return l; });
-            drawChart('ncpTrendChart', { type: ncpTrendMode === 'daily' ? 'line' : 'bar', data: { labels: displayLabs, datasets: [{ data: labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0)), borderColor: 'rgba(99, 102, 241, 1)' }] }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v)=>v.toFixed(2)+'%', font: { size: 10, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: false } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            
+            const actualTrendData = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
+            const targetTrendData = labs.map(() => targetVal);
+
+            drawChart('ncpTrendChart', { 
+                type: 'line', 
+                data: { 
+                    labels: displayLabs, 
+                    datasets: [
+                        { 
+                            label: 'Actual % NCP',
+                            data: actualTrendData, 
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            borderWidth: 3,
+                            fill: true,
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Target %',
+                            data: targetTrendData,
+                            borderColor: 'rgba(100, 116, 139, 0.6)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            datalabels: { display: false }
+                        }
+                    ] 
+                }, 
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        datalabels: { 
+                            formatter: (v, ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', 
+                            font: { size: 10, weight: 'bold' }, 
+                            color: '#4f46e5', 
+                            offset: 8, 
+                            align: 'top' 
+                        }, 
+                        legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } 
+                    }, 
+                    scales: { y: { beginAtZero: true, grace: '25%' } } 
+                } 
+            });
         }
 
         function updateOperatorUI() {
