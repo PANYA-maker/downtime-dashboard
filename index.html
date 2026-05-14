@@ -22,7 +22,6 @@
         .card-stat { background: white; padding: 1.5rem; border-radius: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left-width: 4px; transition: transform 0.2s; }
         .card-stat:hover { transform: translateY(-2px); }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
-        
         .profile-container { display: flex; justify-content: center; align-items: center; width: 180px; height: 180px; min-width: 180px; min-height: 180px; border-radius: 9999px; border: 6px solid white; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.15); overflow: hidden; background-color: #f1f5f9; position: relative; }
         .profile-img-el { width: 100%; height: 100%; object-fit: cover; object-position: center 10%; display: block; }
         .op-thumb { width: 52px; height: 52px; min-width: 52px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-transform: uppercase; font-size: 14px; overflow: hidden; }
@@ -31,6 +30,14 @@
         .downtime-thumb-box .op-thumb { margin-right: -25px; z-index: 1; }
         .downtime-thumb-box .op-thumb:hover { margin-right: 5px; z-index: 10; transform: scale(1.1); }
         
+        /* Multi-select Styles */
+        .multi-select-container { position: relative; width: 100%; }
+        .multi-select-dropdown { position: absolute; top: 100%; left: 0; right: 0; z-index: 50; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); display: none; }
+        .multi-select-option { padding: 0.6rem 1rem; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 2px; }
+        .multi-select-option:hover { background-color: #f1f5f9; }
+        .multi-select-chip { display: inline-flex; align-items: center; background: #eff6ff; color: #2563eb; padding: 0.25rem 0.5rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; margin: 2px; border: 1px solid #dbeafe; }
+        .multi-select-chip button { margin-left: 4px; color: #ef4444; }
+
         @media (max-width: 640px) { .profile-container { width: 140px; height: 140px; min-width: 140px; min-height: 140px; } .op-thumb { width: 44px; height: 44px; min-width: 44px; font-size: 12px; } .ncp-thumb-box { width: 140px; min-width: 140px; } }
     </style>
 </head>
@@ -41,6 +48,7 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
+    <!-- URLs -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
     <input type="hidden" id="op-list-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=593156373&single=true&output=csv">
@@ -50,11 +58,12 @@
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
     </div>
 
+    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
@@ -86,19 +95,32 @@
         </div>
     </div>
 
+    <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
             <div class="card-stat border-rose-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">Weight NCP (กก.)</p><p id="ncp-kpi-weight-ncp" class="text-3xl font-black text-slate-800">0.00</p></div>
             <div class="card-stat border-amber-500"><div class="flex justify-between items-start"><div><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">% NCP</p><p id="ncp-kpi-percent" class="text-3xl font-black text-slate-800">0.00%</p></div><div class="text-right"><p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Target / Diff</p><div class="flex flex-col items-end"><span id="ncp-kpi-target" class="text-xs font-bold text-slate-500 italic">Target: 2.00%</span><span id="ncp-kpi-diff" class="text-sm font-black">Diff: 0.00%</span></div></div></div></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label><div class="flex gap-2"><input type="date" id="ncp-start-date"><input type="date" id="ncp-end-date"></div></div>
-            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
-            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล (Col U)</label><input type="text" id="ncp-filter-reason" placeholder="พิมพ์ชื่อปัญหา..."></div>
+        
+        <!-- Filter Bar Layout Adjusted -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-3"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label><div class="flex gap-2"><input type="date" id="ncp-start-date" class="w-full"><input type="date" id="ncp-end-date" class="w-full"></div></div>
+            <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
+            <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
+            <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            
+            <!-- Custom Multi-select for Reason Description -->
+            <div class="lg:col-span-3">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล (Col U)</label>
+                <div class="multi-select-container">
+                    <div id="ncp-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
+                    <input type="text" id="ncp-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาปัญหา..." class="w-full" onfocus="toggleNcpReasonDropdown(true)" oninput="filterNcpReasonOptions(this.value)">
+                    <div id="ncp-reason-dropdown" class="multi-select-dropdown"></div>
+                </div>
+            </div>
         </div>
+
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3">แนวโน้มเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="flex bg-slate-100 p-1 rounded-xl no-export"><button onclick="setNcpTrendMode('daily')" id="btn-ncp-trend-daily" class="view-btn active">Daily</button><button onclick="setNcpTrendMode('weekly')" id="btn-ncp-trend-weekly" class="view-btn">Weekly</button><button onclick="setNcpTrendMode('monthly')" id="btn-ncp-trend-monthly" class="view-btn">Monthly</button></div></div>
             <div class="chart-container"><canvas id="ncpTrendChart"></canvas></div>
@@ -110,6 +132,7 @@
         </div>
     </div>
 
+    <!-- PAGE 3: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -125,6 +148,11 @@
     <script>
         Chart.register(ChartDataLabels);
         let rawData = [], ncpData = [], masterOpList = new Map(), charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily';
+        
+        // Multi-select state for NCP
+        let ncpSelectedReasons = new Set();
+        let ncpAllReasonOptions = [];
+
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
         const ncpTargets = { "": 2.00, "single c": 0.90, "single b": 0.20, "double": 0.45, "dryend": 0.30, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
@@ -176,8 +204,70 @@
         function initFilters() {
             const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
             fillSelect('main-filter-mc', getU(rawData, 'machine')); fillSelect('main-filter-factor', getU(rawData, 'factor')); fillSelect('main-filter-shift', getU(rawData, 'shift'));
-            fillSelect('op-select', getU(rawData, 'operator')); fillSelect('ncp-filter-mc', getU(ncpData, 'machine')); fillSelect('ncp-filter-station', getU(ncpData, 'station').filter(x => isNaN(x))); fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
-            document.querySelectorAll('input, select').forEach(el => el.addEventListener('change', updateCurrentPage));
+            fillSelect('op-select', getU(rawData, 'operator')); 
+            fillSelect('ncp-filter-mc', getU(ncpData, 'machine')); 
+            fillSelect('ncp-filter-station', getU(ncpData, 'station').filter(x => isNaN(x))); 
+            fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
+            
+            // Populate NCP Multi-select options
+            ncpAllReasonOptions = getU(ncpData, 'reasonDesc');
+            renderNcpReasonOptions("");
+            
+            document.querySelectorAll('input:not(#ncp-filter-reason-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
+            
+            // Close multi-select on click outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.multi-select-container')) {
+                    toggleNcpReasonDropdown(false);
+                }
+            });
+        }
+
+        // NCP Reason Multi-select Functions
+        function toggleNcpReasonDropdown(show) {
+            const dropdown = document.getElementById('ncp-reason-dropdown');
+            dropdown.style.display = show ? 'block' : 'none';
+        }
+
+        function filterNcpReasonOptions(searchText) {
+            renderNcpReasonOptions(searchText);
+            toggleNcpReasonDropdown(true);
+        }
+
+        function renderNcpReasonOptions(searchText) {
+            const dropdown = document.getElementById('ncp-reason-dropdown');
+            const cleanSearch = searchText.toLowerCase();
+            const filtered = ncpAllReasonOptions.filter(opt => opt.toLowerCase().includes(cleanSearch));
+            
+            dropdown.innerHTML = filtered.map(opt => {
+                const isSelected = ncpSelectedReasons.has(opt);
+                return `
+                <div class="multi-select-option" onclick="toggleNcpReasonSelection('${opt}')">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} class="mr-2">
+                    <span class="${isSelected ? 'font-bold text-blue-600' : ''}">${opt}</span>
+                </div>`;
+            }).join('') || '<div class="p-4 text-xs text-slate-400">ไม่พบข้อมูล...</div>';
+        }
+
+        function toggleNcpReasonSelection(opt) {
+            if (ncpSelectedReasons.has(opt)) {
+                ncpSelectedReasons.delete(opt);
+            } else {
+                ncpSelectedReasons.add(opt);
+            }
+            renderNcpReasonChips();
+            renderNcpReasonOptions(document.getElementById('ncp-filter-reason-input').value);
+            updateNCPUI();
+        }
+
+        function renderNcpReasonChips() {
+            const container = document.getElementById('ncp-reason-chips');
+            container.innerHTML = Array.from(ncpSelectedReasons).map(opt => `
+                <span class="multi-select-chip">
+                    ${opt}
+                    <button onclick="event.stopPropagation(); toggleNcpReasonSelection('${opt}')">&times;</button>
+                </span>
+            `).join('');
         }
 
         function updateCurrentPage() { const activeBtn = document.querySelector('.nav-btn.active').id; if (activeBtn === 'btn-main') updateMainUI(); else if (activeBtn === 'btn-ncp') updateNCPUI(); else if (activeBtn === 'btn-operator') updateOperatorUI(); }
@@ -210,17 +300,18 @@
             document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="downtime-thumb-box"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`).join('');
         }
 
-        // UPDATED: NCP Overview UI
+        // NCP Overview UI with Multi-select Support
         function updateNCPUI() {
-            const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value, reasonSearch = document.getElementById('ncp-filter-reason').value.toLowerCase();
+            const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             
-            // 1. Consumption Context (Based on MC/Shift filter only)
+            // Filter reasons: use the Set
+            const hasSelectedReasons = ncpSelectedReasons.size > 0;
+            
             const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
             const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
             
-            // 2. Filtered NCP Weight (Include Station & Reason Search)
-            const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && (!reasonSearch || d.reasonDesc.toLowerCase().includes(reasonSearch)));
+            const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && (!hasSelectedReasons || ncpSelectedReasons.has(d.reasonDesc)));
             const totalNCP = fForNCP.reduce((acc, curr) => acc + curr.weightNcp, 0);
             const actualPercent = totalConsumption > 0 ? (totalNCP / totalConsumption) * 100 : 0;
             const targetVal = ncpTargets[cleanStr(st)] || 2.00; const diffVal = actualPercent - targetVal;
@@ -231,7 +322,6 @@
             document.getElementById('ncp-kpi-target').textContent = `Target: ${targetVal.toFixed(2)}%`;
             const diffEl = document.getElementById('ncp-kpi-diff'); diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
 
-            // SORT TABLE: Highest Weight First
             const sortedTableData = [...fForNCP].sort((a,b) => b.weightNcp - a.weightNcp);
             document.getElementById('ncp-table-body').innerHTML = sortedTableData.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td><td class="p-5 font-medium">${d.pdr}</td><td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td><td class="p-5 text-slate-600">${d.reasonDesc || d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`).join('');
 
@@ -240,7 +330,6 @@
             const sortedStations = rankingData.sort((a, b) => a.diff - b.diff);
             document.getElementById('ncp-station-list').innerHTML = sortedStations.map((stData, i) => { const thumbsHtml = stData.ops.map((name, idx) => { const img = masterOpList.get(name) || ""; const initial = name.charAt(0); const bgColor = colorPalette[idx % colorPalette.length]; const hasValidImg = img && (img.startsWith('http') || img.startsWith('https')); if (hasValidImg) { return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${initial}</div>`; } else { return `<div class="op-thumb" style="background-color: ${bgColor}" title="${name}">${initial}</div>`; } }).join(''); const diffColor = stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'; return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><span class="text-[10px] font-bold ${diffColor} block italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`; }).join('');
 
-            // TREND CHART: Using Filtered Problem Weight / Total Consumption
             const trendWaste = {}; const trendConRaw = {}; fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
             fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
