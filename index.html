@@ -121,6 +121,19 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3">แนวโน้มเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="flex bg-slate-100 p-1 rounded-xl no-export"><button onclick="setNcpTrendMode('daily')" id="btn-ncp-trend-daily" class="view-btn active">Daily</button><button onclick="setNcpTrendMode('weekly')" id="btn-ncp-trend-weekly" class="view-btn">Weekly</button><button onclick="setNcpTrendMode('monthly')" id="btn-ncp-trend-monthly" class="view-btn">Monthly</button></div></div>
             <div class="chart-container"><canvas id="ncpTrendChart"></canvas></div>
         </div>
+
+        <!-- NEW CHARTS SECTION: TOP 5 REASONS & STATION PROPORTION -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 ปัญหา NCP (น้ำหนัก / %NCP)</h3>
+                <div class="chart-container"><canvas id="ncpTopReasonChart"></canvas></div>
+            </div>
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน NCP ราย Station (น้ำหนัก / %NCP)</h3>
+                <div class="chart-container"><canvas id="ncpStationWeightChart"></canvas></div>
+            </div>
+        </div>
+
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">NCP Performance by Station (น้ำหนัก / %NCP / Diff)</h3><div id="ncp-station-list" class="space-y-6"></div></div>
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
             <div class="p-5 bg-slate-50 border-b"><h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล NCP</h3></div>
@@ -187,8 +200,8 @@
                     date: cl(c[0]), isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj), 
                     machine: cl(c[2]), station: cl(c[3]), stops: parseInt(cl(c[4]))||0, duration: parseFloat(cl(c[5]))||0, 
                     problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), 
-                    pmTarget: parseFloat(cl(c[12]))||0, // Column M (Target PM)
-                    runtime: parseFloat(cl(c[13]))||0, // Column N (Runtime)
+                    pmTarget: parseFloat(cl(c[12]))||0, 
+                    runtime: parseFloat(cl(c[13]))||0, 
                     imgUrl: transformGDriveLink(cl(c[16])) 
                 }; 
             }).filter(d => d); 
@@ -224,75 +237,29 @@
 
         function updateMainUI() {
             const s = document.getElementById('main-start-date').value, e = document.getElementById('main-end-date').value, mc = document.getElementById('main-filter-mc').value, sh = document.getElementById('main-filter-shift').value, fc = document.getElementById('main-filter-factor').value, sr = document.getElementById('main-filter-search').value.toLowerCase();
-            
-            // 1. Calculate Runtime (Col N - Col M)
             const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
-            const uniqueRuntimeGroups = {}; 
-            fForRuntime.forEach(d => { 
-                const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
-                if (!uniqueRuntimeGroups[key]) {
-                    // Net Runtime = Total Runtime per shift - PM Target time
-                    uniqueRuntimeGroups[key] = Math.max(0, d.runtime - d.pmTarget);
-                } 
-            });
+            const uniqueRuntimeGroups = {}; fForRuntime.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueRuntimeGroups[key]) uniqueRuntimeGroups[key] = Math.max(0, d.runtime - d.pmTarget); });
             const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
-
-            // 2. Calculate Downtime (Exclude 'PM' factor)
-            const f = rawData.filter(d => 
-                (!s || d.isoDate >= s) && 
-                (!e || d.isoDate <= e) && 
-                (!mc || d.machine === mc) && 
-                (!sh || d.shift === sh) && 
-                (!fc || d.factor === fc) && 
-                (d.factor.toUpperCase() !== 'PM') && // EXCLUDE PM FACTOR
-                (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr))
-            );
-            
-            const totalDowntime = f.reduce((a, b) => a + b.duration, 0); 
-            const totalCount = f.reduce((a, b) => a + b.stops, 0); 
-            const actualPercent = totalRuntime > 0 ? (totalDowntime / totalRuntime) * 100 : 0;
-            
-            const targetVal = downtimeTargets[cleanStr(fc)] || 6.25; 
-            const diffVal = actualPercent - targetVal;
-
-            document.getElementById('main-total-runtime').textContent = totalRuntime.toLocaleString(); 
-            document.getElementById('main-total-downtime').textContent = totalDowntime.toLocaleString(); 
-            document.getElementById('main-total-count').textContent = totalCount.toLocaleString(); 
-            document.getElementById('main-total-percent').textContent = actualPercent.toFixed(2) + '%';
-            
-            document.getElementById('main-target-val').textContent = `Target: ${targetVal.toFixed(2)}%`; 
-            const diffEl = document.getElementById('main-diff-val'); 
-            diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; 
-            diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
-            
-            document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
-            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
-            
-            // TREND CHART logic using adjusted net runtime
-            const trendDowntime = {}; 
-            const trendRuntimeRaw = {}; 
-            fForRuntime.forEach(d => { 
-                let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
-                const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; 
-                if (!trendRuntimeRaw[uniqueKey]) {
-                    trendRuntimeRaw[uniqueKey] = { label: k, value: Math.max(0, d.runtime - d.pmTarget) };
-                } 
-            });
+            const f = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (!fc || d.factor === fc) && (d.factor.toUpperCase() !== 'PM') && (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr)));
+            const totalDowntime = f.reduce((a, b) => a + b.duration, 0); const totalCount = f.reduce((a, b) => a + b.stops, 0); const actualPercent = totalRuntime > 0 ? (totalDowntime / totalRuntime) * 100 : 0;
+            const targetVal = downtimeTargets[cleanStr(fc)] || 6.25; const diffVal = actualPercent - targetVal;
+            document.getElementById('main-total-runtime').textContent = totalRuntime.toLocaleString(); document.getElementById('main-total-downtime').textContent = totalDowntime.toLocaleString(); document.getElementById('main-total-count').textContent = totalCount.toLocaleString(); document.getElementById('main-total-percent').textContent = actualPercent.toFixed(2) + '%';
+            document.getElementById('main-target-val').textContent = `Target: ${targetVal.toFixed(2)}%`; const diffEl = document.getElementById('main-diff-val'); diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+            document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
+            const trendDowntime = {}; const trendRuntimeRaw = {}; fForRuntime.forEach(d => { let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendRuntimeRaw[uniqueKey]) trendRuntimeRaw[uniqueKey] = { label: k, value: Math.max(0, d.runtime - d.pmTarget) }; });
             const trendRuntimeFinal = {}; Object.values(trendRuntimeRaw).forEach(obj => { trendRuntimeFinal[obj.label] = (trendRuntimeFinal[obj.label] || 0) + obj.value; });
             f.forEach(d => { let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendDowntime[k] = (trendDowntime[k] || 0) + d.duration; });
             const labs = Object.keys(trendRuntimeFinal).sort((a,b) => mainTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
-            
             drawChart('mainTrendChart', { type: 'line', data: { labels: labs, datasets: [ { label: 'Actual % Downtime', data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
-            
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
             drawChart('mainChartStation', { type: 'bar', data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } }, scales: { x: { beginAtZero: true, grace: '40%' } } } });
-            
             const opMap = {}; f.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!opMap[d.operator]) opMap[d.operator] = { t:0, c:0, img: d.imgUrl }; opMap[d.operator].t += d.duration; opMap[d.operator].c += d.stops; }});
             const topOp = Object.entries(opMap).sort((a,b) => b[1].t - a[1].t).slice(0,5); const maxT = topOp.length ? topOp[0][1].t : 1;
             document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="downtime-thumb-box"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`).join('');
         }
 
+        // NCP Overview UI with New Charts
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             const hasSelectedReasons = ncpSelectedReasons.size > 0;
@@ -310,6 +277,64 @@
             const diffEl = document.getElementById('ncp-kpi-diff'); diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
             const sortedTableData = [...fForNCP].sort((a,b) => b.weightNcp - a.weightNcp);
             document.getElementById('ncp-table-body').innerHTML = sortedTableData.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td><td class="p-5 font-medium">${d.pdr}</td><td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td><td class="p-5 text-slate-600">${d.reasonDesc || d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`).join('');
+            
+            // 1. TOP 5 REASONS CHART
+            const reasonMap = {};
+            fForNCP.forEach(d => { const r = d.reasonDesc || "ไม่ระบุ"; reasonMap[r] = (reasonMap[r] || 0) + d.weightNcp; });
+            const topReasons = Object.entries(reasonMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            drawChart('ncpTopReasonChart', {
+                type: 'bar',
+                data: {
+                    labels: topReasons.map(x => x[0]),
+                    datasets: [{
+                        data: topReasons.map(x => x[1]),
+                        backgroundColor: topReasons.map((_, i) => colorPalette[i % colorPalette.length]),
+                        customPercents: topReasons.map(x => totalConsumption > 0 ? (x[1] / totalConsumption * 100) : 0)
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end', align: 'right', textAlign: 'center', color: '#64748b',
+                            font: { size: 9, weight: 'bold' },
+                            formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`
+                        }
+                    },
+                    scales: { x: { beginAtZero: true, grace: '40%' } }
+                }
+            });
+
+            // 2. STATION PROPORTION CHART
+            const stationWeightMap = {};
+            fForNCP.forEach(d => { stationWeightMap[d.station] = (stationWeightMap[d.station] || 0) + d.weightNcp; });
+            const sortedStationsByWeight = Object.entries(stationWeightMap).sort((a,b) => b[1] - a[1]);
+            drawChart('ncpStationWeightChart', {
+                type: 'bar',
+                data: {
+                    labels: sortedStationsByWeight.map(x => x[0]),
+                    datasets: [{
+                        data: sortedStationsByWeight.map(x => x[1]),
+                        backgroundColor: sortedStationsByWeight.map((_, i) => colorPalette[i % colorPalette.length]),
+                        customPercents: sortedStationsByWeight.map(x => totalConsumption > 0 ? (x[1] / totalConsumption * 100) : 0)
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end', align: 'right', textAlign: 'center', color: '#64748b',
+                            font: { size: 9, weight: 'bold' },
+                            formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`
+                        }
+                    },
+                    scales: { x: { beginAtZero: true, grace: '40%' } }
+                }
+            });
+
+            // 3. ORIGINAL STATION PERFORMANCE LIST
             const stationNcpMap = {}; fForNCP.forEach(d => { const stKey = d.station; if (!stKey || !isNaN(stKey)) return; if (!stationNcpMap[stKey]) stationNcpMap[stKey] = { weight: 0, ops: new Set() }; stationNcpMap[stKey].weight += d.weightNcp; const names = d.ncpOpNames ? d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n) : []; names.forEach(name => stationNcpMap[stKey].ops.add(name)); });
             const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; const stDiff = stPercent - stTarget; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stDiff, ops: Array.from(data.ops) }; });
             document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { const thumbsHtml = stData.ops.map((name, idx) => { const img = masterOpList.get(name) || ""; const bgColor = colorPalette[idx % colorPalette.length]; return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${name.charAt(0)}</div>`; }).join(''); return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} block italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`; }).join('');
@@ -321,41 +346,19 @@
             const actualWeights = labs.map(l => (trendWaste[l] || 0));
             const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
             
-            const datasets = [
-                { 
-                    label: 'Actual % NCP', 
-                    data: actualPercents,
-                    customWeights: actualWeights, 
-                    borderColor: 'rgba(99, 102, 241, 1)', 
-                    borderWidth: 3, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)', tension: 0.4 
-                }
-            ];
-            if (!hasSelectedReasons) {
-                datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
-            }
-            
+            const datasets = [{ 
+                label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, 
+                borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)', tension: 0.4 
+            }];
+            if (!hasSelectedReasons) { datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } }); }
             drawChart('ncpTrendChart', { 
-                type: 'line', 
-                data: { 
-                    labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), 
-                    datasets: datasets 
-                }, 
+                type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets: datasets }, 
                 options: { 
                     maintainAspectRatio: false, 
                     plugins: { 
                         datalabels: { 
-                            formatter: (v, ctx) => {
-                                if (ctx.datasetIndex === 0) {
-                                    const w = ctx.dataset.customWeights[ctx.dataIndex];
-                                    return `${v.toFixed(2)}%\n${w.toLocaleString(undefined, {maximumFractionDigits:1})}kg`;
-                                }
-                                return '';
-                            },
-                            textAlign: 'center', 
-                            font: { size: 9, weight: 'bold' }, 
-                            color: '#4f46e5', 
-                            offset: 8, 
-                            align: 'top' 
+                            formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '',
+                            textAlign: 'center', font: { size: 9, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' 
                         }, 
                         legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } 
                     }, 
