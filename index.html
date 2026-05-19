@@ -192,14 +192,17 @@
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
 
-        // ฟังก์ชันดึงรูปตามความสัมพันธ์ 4 เงื่อนไขตรงกัน: เครื่องจักร, กะ, Station Waste, รายชื่อ
+        // ปรับปรุง: ฟังก์ชันดึงรูปโดยเปรียบเทียบตรงกัน 4 คอลัมน์อย่างแม่นยำ 100%
+        // ชีตรายงาน DOWNTIME: เครื่องจักร(Col C), กะ(Col J), Station Waste(Col R), ผู้ปฏิบัติงาน(Col H)
+        // ชีตรายชื่อ: เครื่องจักร(Col B), กะ(Col D), Station Waste(Col F), รายชื่อ(Col A)
+        // คอลัมน์รูปภาพของชีตรายชื่อ: คอลัมน์ E
         function resolveOperatorImage(name, machine, shift, stationWaste) {
             const cleanName = cleanStr(name);
             const cleanMc = cleanStr(machine);
             const cleanShift = cleanStr(shift);
             const cleanSW = cleanStr(stationWaste);
 
-            // 1. ตรวจสอบเงื่อนไขเปรียบเทียบตรงกันทั้งหมดก่อน (Exact Match)
+            // 1. ตรวจสอบเงื่อนไขเปรียบเทียบตรงกันทั้งหมด 4 คอลัมน์ (Exact Match)
             const exactMatch = masterOperators.find(op => 
                 cleanStr(op.name) === cleanName &&
                 cleanStr(op.machine) === cleanMc &&
@@ -210,7 +213,7 @@
                 return exactMatch.img;
             }
 
-            // 2. ตรวจสอบเงื่อนไขสำรองในกรณีข้อมูลกึ่งตรง (พนักงาน, เครื่องจักร, กะ)
+            // 2. ระบบสำรอง 1: หากตรงกัน 3 คอลัมน์ (ชื่อ, เครื่องจักร, กะ) เผื่อมีการระบุ Station คลาดเคลื่อน
             const partialMatch = masterOperators.find(op => 
                 cleanStr(op.name) === cleanName &&
                 cleanStr(op.machine) === cleanMc &&
@@ -220,13 +223,22 @@
                 return partialMatch.img;
             }
 
-            // 3. ระบบสำรอง (Fallback) ค้นหาจากชื่ออย่างเดียว
+            // 3. ระบบสำรอง 2: หากตรงกัน 2 คอลัมน์ (ชื่อ, Station Waste)
+            const stationMatch = masterOperators.find(op => 
+                cleanStr(op.name) === cleanName &&
+                cleanStr(op.stationWaste) === cleanSW
+            );
+            if (stationMatch && stationMatch.img) {
+                return stationMatch.img;
+            }
+
+            // 4. ระบบสำรอง 3: ค้นหาจากชื่ออย่างเดียว
             const nameMatch = masterOperators.find(op => cleanStr(op.name) === cleanName);
             if (nameMatch && nameMatch.img) {
                 return nameMatch.img;
             }
 
-            // 4. ระบบสำรองของระบบเดิม
+            // 5. ระบบสำรองของระบบเดิม
             if (masterOpList.has(name)) {
                 return masterOpList.get(name);
             }
@@ -234,7 +246,7 @@
             return '';
         }
 
-        // ค้นหาพนักงานจากชีตรายชื่อที่ถูกกำหนดให้ดูแลสถานีนี้ภายใต้ฟิลเตอร์ปัจจุบัน
+        // ค้นหาพนักงานจากชีตรายชื่อที่ถูกกำหนดให้ดูแลสถานีนี้ภายใต้ฟิลเตอร์ปัจจุบัน (เครื่องจักร และ กะ)
         function getFilteredOperatorsForStation(stationWasteName, mcFilter, shFilter) {
             const cleanSWName = cleanStr(stationWasteName);
             const cleanMcFilter = cleanStr(mcFilter);
@@ -529,6 +541,7 @@
                 };
             });
 
+            // ดึงข้อมูลการหยุดที่มีจริง
             f.forEach(d => {
                 const stKeyRaw = d.stationWaste;
                 if (!stKeyRaw) return;
@@ -540,7 +553,7 @@
                         const names = d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
                         names.forEach(name => {
                             stationDowntimeMap[matchedSt].ops.add(name);
-                            // บันทึกรายละเอียดคู่พนักงานและข้อมูลกะ เครื่อง เพื่อดึงรูป
+                            // บันทึกรายละเอียดคู่พนักงานและข้อมูลกะ เครื่อง เพื่อดึงรูปตามความสัมพันธ์ 4 มิติ
                             stationDowntimeMap[matchedSt].opDetails.push({
                                 name: name,
                                 machine: d.machine,
@@ -552,14 +565,14 @@
                 }
             });
 
-            // ปรับปรุง: ดึงพนักงานและข้อมูลที่สอดคล้องจากชีตรายชื่อมาสแตนด์บายแม้ไม่มีเวลาสูญเสียก็ตาม (0.00 นาที)
+            // ปรับปรุง: ดึงรูปคนที่อยู่ Station นั้นตามกะและเครื่อง มาแสดงร่วมด้วย แม้ว่าคนนั้นจะไม่มีเวลาสูญเสียตามตัวกรองที่เลือกก็ตาม
             activeStations.forEach(st => {
-                if (stationDowntimeMap[st].ops.size === 0) {
-                    const assignedOps = getFilteredOperatorsForStation(st, mc, sh);
-                    assignedOps.forEach(opName => {
+                const assignedOps = getFilteredOperatorsForStation(st, mc, sh);
+                assignedOps.forEach(opName => {
+                    if (!stationDowntimeMap[st].ops.has(opName)) {
                         stationDowntimeMap[st].ops.add(opName);
                         
-                        // ค้นหาข้อมูลกะและเครื่องจักรที่ถูกมอบหมายในมาสเตอร์เพื่อดึงรูปพนักงานได้ครบถ้วน
+                        // ค้นหาข้อมูลเครื่องจักรและกะที่พนักงานท่านนี้ได้รับการบันทึกมอบหมายใน Master เพื่อให้การดึงภาพโปรไฟล์ทำงานได้ถูกต้อง
                         const cleanOpName = cleanStr(opName);
                         const cleanSt = cleanStr(st);
                         const entry = masterOperators.find(o => 
@@ -575,8 +588,8 @@
                             shift: entry ? entry.shift : sh,
                             stationWaste: st
                         });
-                    });
-                }
+                    }
+                });
             });
 
             const downtimeStationRanking = Object.entries(stationDowntimeMap).map(([stName, data]) => {
@@ -595,11 +608,15 @@
                 };
             });
 
-            // ปรับปรุง: การเรียงลำดับให้เอา Diff ติดลบเยอะที่สุด (ดีที่สุด) ไว้ด้านบนสุด โดยใช้การเรียง ascending (a.diff - b.diff)
-            const sortedRanking = downtimeStationRanking.sort((a, b) => a.diff - b.diff);
+            // ปรับปรุง: การเรียงลำดับให้เอา Diff ลบเยอะที่สุด (ดีที่สุด) ไว้ด้านบนสุด โดยใช้การเรียง ascending (a.diff - b.diff)
+            const sortedRanking = downtimeStationRanking.sort((a, b) => {
+                const valA = isNaN(a.diff) ? 0 : a.diff;
+                const valB = isNaN(b.diff) ? 0 : b.diff;
+                return valA - valB;
+            });
 
             document.getElementById('downtime-station-list').innerHTML = sortedRanking.map((stData, i) => {
-                // คัดกรองรายชื่อพนักงานที่มีการจับคู่ข้อมูลเพื่อดึงรูปที่ระบุในคอลัมน์ E แบบอัจฉริยะ
+                // คัดกรองรายชื่อพนักงานที่มีการจับคู่ข้อมูลเพื่อดึงรูปที่ระบุในคอลัมน์ E แบบเปรียบเทียบ 4 มิติ
                 const resolvedOps = [];
                 const seenOps = new Set();
 
@@ -608,7 +625,7 @@
                     if (seenOps.has(cleanName)) return;
                     seenOps.add(cleanName);
 
-                    // ค้นหาคู่ข้อมูลที่ถูกต้องตามแถวการหยุดหรือแบรนด์พนักงาน
+                    // ค้นหาคู่ข้อมูลที่ถูกต้องจากชุดรายละเอียดเครื่องและกะของแถวนั้นๆ
                     const detail = stData.opDetails.find(d => cleanStr(d.name) === cleanName);
                     let resolvedImg = '';
                     if (detail) {
