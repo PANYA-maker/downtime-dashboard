@@ -77,7 +77,11 @@
         </div>
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label><div class="grid grid-cols-2 gap-2"><input type="date" id="main-start-date"><input type="date" id="main-end-date"></div></div>
-            <div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">กะ (Shift)</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div></div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Station</label><select id="main-filter-station"><option value="">ทั้งหมด</option></select></div>
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">กะ (Shift)</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            </div>
             <div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div></div>
         </div>
         <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
@@ -86,7 +90,7 @@
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 10 Stations (นาที/ครั้ง)</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 Operators (นาที/ครั้ง)</h3><div id="top-operators-list" class="space-y-6"></div></div>
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 Operators (ผลงานดีที่สุดเรียงตาม Diff)</h3><div id="top-operators-list" class="space-y-4"></div></div>
         </div>
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
             <div class="p-5 bg-slate-50/50 border-b flex justify-between items-center"><h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full font-bold">0 รายการ</span></div>
@@ -160,9 +164,26 @@
         let ncpAllReasonOptions = [];
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
         
-        // UPDATED TARGETS (Station Specific)
+        // Target สำหรับหน้า NCP Overview
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
+        
+        // Target สำหรับหน้า DOWNTIME (ปัจจัยหลัก)
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
+
+        // ฟังก์ชันคืนค่า Downtime Target แยกราย Station (DOWNTIME Page)
+        function getStationDowntimeTarget(stationName) {
+            const name = cleanStr(stationName);
+            if (name === 'm-1' || name === 'sf-c' || name === 'm-2' || name === 'm-5' || name === 'df' || name === 'webtrol-c' || name === 'webtrol-b' || name === 'webtrol-e') {
+                return 0.21; // 0.21%
+            }
+            if (name === 'm-3' || name === 'm-4' || name === 'sf-b' || name === 'slitter m1' || name === 'nc-cutter') {
+                return 0.14; // 0.14%
+            }
+            if (name === 'rotary shear' || name === 'stacker') {
+                return 0.07; // 0.07%
+            }
+            return null; // Fallback ไปใช้ target ทั่วไป
+        }
 
         function getSunWeek(date) { let d = new Date(date); d.setHours(0, 0, 0, 0); let start = new Date(d.getFullYear(), 0, 1); let days = Math.floor((d - start) / 86400000); return Math.ceil((days + start.getDay() + 1) / 7); }
         function transformGDriveLink(url) { if (!url) return ""; let cleanUrl = url.toString().trim(); if (!cleanUrl.includes("drive.google.com")) return cleanUrl; let fileId = cleanUrl.includes("/file/d/") ? cleanUrl.split("/file/d/")[1].split("/")[0] : (cleanUrl.includes("id=") ? cleanUrl.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : cleanUrl; }
@@ -212,8 +233,16 @@
 
         function initFilters() {
             const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
-            fillSelect('main-filter-mc', getU(rawData, 'machine')); fillSelect('main-filter-factor', getU(rawData, 'factor')); fillSelect('main-filter-shift', getU(rawData, 'shift'));
-            fillSelect('op-select', getU(rawData, 'operator')); fillSelect('ncp-filter-mc', getU(ncpData, 'machine')); fillSelect('ncp-filter-station', getU(ncpData, 'station').filter(x => isNaN(x))); fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
+            fillSelect('main-filter-mc', getU(rawData, 'machine')); 
+            fillSelect('main-filter-station', getU(rawData, 'station')); 
+            fillSelect('main-filter-factor', getU(rawData, 'factor')); 
+            fillSelect('main-filter-shift', getU(rawData, 'shift'));
+            
+            fillSelect('op-select', getU(rawData, 'operator')); 
+            fillSelect('ncp-filter-mc', getU(ncpData, 'machine')); 
+            fillSelect('ncp-filter-station', getU(ncpData, 'station').filter(x => isNaN(x))); 
+            fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
+            
             ncpAllReasonOptions = getU(ncpData, 'reasonDesc'); renderNcpReasonOptions("");
             document.querySelectorAll('input:not(#ncp-filter-reason-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
             document.addEventListener('click', (e) => { if (!e.target.closest('.multi-select-container')) toggleNcpReasonDropdown(false); });
@@ -237,30 +266,202 @@
         function drawChart(id, config) { const canvas = document.getElementById(id); if (!canvas) return; const ctx = canvas.getContext('2d'); if (charts[id]) charts[id].destroy(); if (config.type === 'line' && config.data.datasets[0]) { const gradient = ctx.createLinearGradient(0, 0, 0, 400); gradient.addColorStop(0, config.data.datasets[0].borderColor.replace('1)', '0.3)')); gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); config.data.datasets[0].backgroundColor = gradient; config.data.datasets[0].fill = true; config.data.datasets[0].tension = 0.4; } charts[id] = new Chart(ctx, config); }
 
         function updateMainUI() {
-            const s = document.getElementById('main-start-date').value, e = document.getElementById('main-end-date').value, mc = document.getElementById('main-filter-mc').value, sh = document.getElementById('main-filter-shift').value, fc = document.getElementById('main-filter-factor').value, sr = document.getElementById('main-filter-search').value.toLowerCase();
+            const s = document.getElementById('main-start-date').value, 
+                  e = document.getElementById('main-end-date').value, 
+                  mc = document.getElementById('main-filter-mc').value, 
+                  selectedStation = document.getElementById('main-filter-station').value,
+                  sh = document.getElementById('main-filter-shift').value, 
+                  fc = document.getElementById('main-filter-factor').value, 
+                  sr = document.getElementById('main-filter-search').value.toLowerCase();
+            
+            // 1. กรองสิทธิ์หาเวลาเดินงาน (Runtime) ของ วัน/เครื่อง/กะที่กำหนด
             const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
-            const uniqueRuntimeGroups = {}; fForRuntime.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueRuntimeGroups[key]) uniqueRuntimeGroups[key] = Math.max(0, d.runtime - d.pmTarget); });
+            
+            // หากเลือก Station ระบบจะนับเฉพาะเวลาเดินงานของวัน/เครื่อง/กะที่สถานีนั้น ๆ มีการปฏิบัติงานจริง
+            let validRuntimeKeys = null;
+            if (selectedStation) {
+                validRuntimeKeys = new Set(
+                    fForRuntime
+                        .filter(d => cleanStr(d.station) === cleanStr(selectedStation))
+                        .map(d => `${d.isoDate}_${d.shift}_${d.machine}`)
+                );
+            }
+
+            const uniqueRuntimeGroups = {}; 
+            fForRuntime.forEach(d => { 
+                const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
+                if (!uniqueRuntimeGroups[key]) {
+                    if (!validRuntimeKeys || validRuntimeKeys.has(key)) {
+                        uniqueRuntimeGroups[key] = Math.max(0, d.runtime - d.pmTarget);
+                    }
+                } 
+            });
             const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
-            const f = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (!fc || d.factor === fc) && (d.factor.toUpperCase() !== 'PM') && (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr)));
-            const totalDowntime = f.reduce((a, b) => a + b.duration, 0); const totalCount = f.reduce((a, b) => a + b.stops, 0); const actualPercent = totalRuntime > 0 ? (totalDowntime / totalRuntime) * 100 : 0;
-            const targetVal = downtimeTargets[cleanStr(fc)] || 6.25; const diffVal = actualPercent - targetVal;
-            document.getElementById('main-total-runtime').textContent = totalRuntime.toLocaleString(); document.getElementById('main-total-downtime').textContent = totalDowntime.toLocaleString(); document.getElementById('main-total-count').textContent = totalCount.toLocaleString(); document.getElementById('main-total-percent').textContent = actualPercent.toFixed(2) + '%';
-            document.getElementById('main-target-val').textContent = `Target: ${targetVal.toFixed(2)}%`; const diffEl = document.getElementById('main-diff-val'); diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
-            document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
-            const trendDowntime = {}; const trendRuntimeRaw = {}; fForRuntime.forEach(d => { let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendRuntimeRaw[uniqueKey]) trendRuntimeRaw[uniqueKey] = { label: k, value: Math.max(0, d.runtime - d.pmTarget) }; });
+
+            // 2. คำนวณเวลาสูญเสียทั้งหมด (ลบ PM และสอดคล้องกับ Station ที่เลือก)
+            const f = rawData.filter(d => 
+                (!s || d.isoDate >= s) && 
+                (!e || d.isoDate <= e) && 
+                (!mc || d.machine === mc) && 
+                (!selectedStation || cleanStr(d.station) === cleanStr(selectedStation)) &&
+                (!sh || d.shift === sh) && 
+                (!fc || d.factor === fc) && 
+                (d.factor.toUpperCase() !== 'PM') && // ปิดการนับปัจจัยหลักที่เป็น PM ออก
+                (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr))
+            );
+            
+            const totalDowntime = f.reduce((a, b) => a + b.duration, 0); 
+            const totalCount = f.reduce((a, b) => a + b.stops, 0); 
+            const actualPercent = totalRuntime > 0 ? (totalDowntime / totalRuntime) * 100 : 0;
+            
+            // 3. กำหนดเป้าหมาย (Target) หากเลือก Station ให้ใช้ของ Station นั้นๆ หากไม่ใช่ให้ดึงตามปัจจัยหลัก
+            let targetVal = downtimeTargets[cleanStr(fc)] || 6.25; 
+            if (selectedStation) {
+                const stationTarget = getStationDowntimeTarget(selectedStation);
+                if (stationTarget !== null) {
+                    targetVal = stationTarget;
+                }
+            }
+            const diffVal = actualPercent - targetVal;
+
+            document.getElementById('main-total-runtime').textContent = totalRuntime.toLocaleString(); 
+            document.getElementById('main-total-downtime').textContent = totalDowntime.toLocaleString(); 
+            document.getElementById('main-total-count').textContent = totalCount.toLocaleString(); 
+            document.getElementById('main-total-percent').textContent = actualPercent.toFixed(2) + '%';
+            
+            document.getElementById('main-target-val').textContent = `Target: ${targetVal.toFixed(2)}%`; 
+            const diffEl = document.getElementById('main-diff-val'); 
+            diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; 
+            diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+            
+            document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
+            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
+            
+            // TREND CHART Logic - อิงกับความคืบหน้าของเวลาเดินงานจริงที่อัปเกรด
+            const trendDowntime = {}; 
+            const trendRuntimeRaw = {}; 
+            fForRuntime.forEach(d => { 
+                let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
+                const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; 
+                if (!trendRuntimeRaw[uniqueKey]) {
+                    if (!validRuntimeKeys || validRuntimeKeys.has(uniqueKey)) {
+                        trendRuntimeRaw[uniqueKey] = { label: k, value: Math.max(0, d.runtime - d.pmTarget) };
+                    }
+                } 
+            });
             const trendRuntimeFinal = {}; Object.values(trendRuntimeRaw).forEach(obj => { trendRuntimeFinal[obj.label] = (trendRuntimeFinal[obj.label] || 0) + obj.value; });
             f.forEach(d => { let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendDowntime[k] = (trendDowntime[k] || 0) + d.duration; });
             const labs = Object.keys(trendRuntimeFinal).sort((a,b) => mainTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
+            
             drawChart('mainTrendChart', { type: 'line', data: { labels: labs, datasets: [ { label: 'Actual % Downtime', data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            
+            // 4. คำนวณ Top 10 Stations Chart
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
             drawChart('mainChartStation', { type: 'bar', data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } }, scales: { x: { beginAtZero: true, grace: '40%' } } } });
-            const opMap = {}; f.forEach(d => { if(d.operator && d.operator !== 'ไม่พบพนักงาน'){ if(!opMap[d.operator]) opMap[d.operator] = { t:0, c:0, img: d.imgUrl }; opMap[d.operator].t += d.duration; opMap[d.operator].c += d.stops; }});
-            const topOp = Object.entries(opMap).sort((a,b) => b[1].t - a[1].t).slice(0,5); const maxT = topOp.length ? topOp[0][1].t : 1;
-            document.getElementById('top-operators-list').innerHTML = topOp.map((x, i) => `<div class="flex items-center gap-5"><div class="downtime-thumb-box"><img src="${x[1].img || ''}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${x[0]}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-700 truncate pr-4">${x[0]}</span><span class="text-[11px] font-black text-blue-600 whitespace-nowrap">${x[1].t.toLocaleString()}น. / ${x[1].c}ค.</span></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${(x[1].t/maxT)*100}%; background: linear-gradient(90deg, ${colorPalette[i % colorPalette.length]}, ${colorPalette[i % colorPalette.length]}99)"></div></div></div></div>`).join('');
+            
+            // 5. คำนวณวิเคราะห์พนักงาน (Operators Top 5) พร้อมดึงค่าเป้าหมายสุทธิรายบุคคล
+            const opShifts = {};
+            f.forEach(d => {
+                if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
+                    const opName = d.operator;
+                    if (!opShifts[opName]) opShifts[opName] = {};
+                    const shiftStationKey = `${d.isoDate}_${d.shift}_${d.machine}_${d.station}`;
+                    if (!opShifts[opName][shiftStationKey]) {
+                        // ดึง Target % ของสถานีนั้นๆ หากไม่เข้าพวก ให้ใช้ targetVal รวม
+                        const recTargetPercent = getStationDowntimeTarget(d.station) || targetVal;
+                        const shiftRuntime = Math.max(0, d.runtime - d.pmTarget);
+                        const shiftTargetMinutes = shiftRuntime * (recTargetPercent / 100);
+                        opShifts[opName][shiftStationKey] = {
+                            runtime: shiftRuntime,
+                            targetPercent: recTargetPercent,
+                            targetMinutes: shiftTargetMinutes
+                        };
+                    }
+                }
+            });
+
+            const opMetrics = {};
+            f.forEach(d => {
+                if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
+                    const opName = d.operator;
+                    if (!opMetrics[opName]) {
+                        opMetrics[opName] = {
+                            actualMinutes: 0,
+                            stops: 0,
+                            imgUrl: d.imgUrl
+                        };
+                    }
+                    opMetrics[opName].actualMinutes += d.duration;
+                    opMetrics[opName].stops += d.stops;
+                }
+            });
+
+            const operatorsList = Object.keys(opMetrics).map(opName => {
+                const metrics = opMetrics[opName];
+                const shifts = opShifts[opName] ? Object.values(opShifts[opName]) : [];
+                const totalOpRuntime = shifts.reduce((sum, s) => sum + s.runtime, 0);
+                const totalTargetMinutes = shifts.reduce((sum, s) => sum + s.targetMinutes, 0);
+                
+                const finalTargetPct = totalOpRuntime > 0 ? (totalTargetMinutes / totalOpRuntime) * 100 : targetVal;
+                const finalActualPct = totalOpRuntime > 0 ? (metrics.actualMinutes / totalOpRuntime) * 100 : 0;
+                const diffMinutes = metrics.actualMinutes - totalTargetMinutes;
+                const diffPercent = finalActualPct - finalTargetPct;
+
+                return {
+                    name: opName,
+                    actualMin: metrics.actualMinutes,
+                    stops: metrics.stops,
+                    targetMin: totalTargetMinutes,
+                    targetPct: finalTargetPct,
+                    actualPct: finalActualPct,
+                    diffMinutes: diffMinutes,
+                    diffPercent: diffPercent,
+                    img: metrics.imgUrl
+                };
+            });
+
+            // เรียงลำดับคนที่ทำผลงานได้ดีที่สุด (Over target น้อยสุด หรือ Under target ดีสุด: ค่าน้อยที่สุด) ไว้เป็นอันดับที่ 1
+            const topOpSorted = operatorsList.sort((a, b) => a.diffMinutes - b.diffMinutes).slice(0, 5);
+            
+            document.getElementById('top-operators-list').innerHTML = topOpSorted.map((x, i) => {
+                const opImg = x.img || '';
+                const isExceeded = x.diffMinutes > 0;
+                const badgeClass = isExceeded ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                const sign = x.diffMinutes > 0 ? '+' : '';
+                return `
+                <div class="flex items-start gap-4 p-4 bg-slate-50/50 rounded-2xl hover:bg-slate-50 transition-all border border-slate-100/50">
+                    <div class="relative flex-shrink-0">
+                        <img src="${opImg}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(x.name)}&background=random'">
+                        <span class="absolute -top-2 -left-2 bg-slate-800 text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-md">${i+1}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <span class="text-sm font-bold text-slate-800 truncate">${x.name}</span>
+                            <span class="text-[10px] font-black px-2 py-1 rounded-lg ${badgeClass}">
+                                Diff: ${sign}${x.diffMinutes.toFixed(1)} น. (${sign}${x.diffPercent.toFixed(2)}%)
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 text-[11px] text-slate-600 mt-1">
+                            <div>
+                                <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">สูญเสีย / ครั้ง</span>
+                                <span class="font-bold text-slate-700">${x.actualMin.toLocaleString()} น. / ${x.stops} ค.</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">Target น. / %</span>
+                                <span class="font-bold text-slate-600">${x.targetMin.toFixed(1)} น. / ${x.targetPct.toFixed(2)}%</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">Actual %</span>
+                                <span class="font-bold text-indigo-600">${x.actualPct.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') || '<div class="text-center p-8 text-xs text-slate-400">ไม่พบข้อมูลพนักงาน</div>';
         }
 
-        // NCP Overview UI with Corrected Targets and Improved Chart Aesthetics
+        // NCP Overview UI - (ไม่มีการแก้ไขใดๆ รักษาโครงสร้างเดิมอย่างสมบูรณ์)
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             const hasSelectedReasons = ncpSelectedReasons.size > 0;
@@ -283,7 +484,6 @@
             const sortedTableData = [...fForNCP].sort((a,b) => b.weightNcp - a.weightNcp);
             document.getElementById('ncp-table-body').innerHTML = sortedTableData.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td><td class="p-5 font-medium">${d.pdr}</td><td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td><td class="p-5 text-slate-600">${d.reasonDesc || d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`).join('');
             
-            // Charts (Top 5 and Station Proportion)
             const reasonMap = {}; fForNCP.forEach(d => { const r = d.reasonDesc || "ไม่ระบุ"; reasonMap[r] = (reasonMap[r] || 0) + d.weightNcp; });
             const topReasons = Object.entries(reasonMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
             drawChart('ncpTopReasonChart', {
@@ -298,7 +498,6 @@
                 options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', textAlign: 'center', color: '#334155', font: { size: 10, weight: 'bold' }, formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`, padding: 4 } }, scales: { x: { beginAtZero: true, grace: '50%', grid: { display: false }, ticks: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#475569' } } } }
             });
 
-            // UPDATED: STATION PERFORMANCE LIST (Showing Target)
             const stationNcpMap = {}; fForNCP.forEach(d => { const stKey = d.station; if (!stKey || !isNaN(stKey)) return; if (!stationNcpMap[stKey]) stationNcpMap[stKey] = { weight: 0, ops: new Set() }; stationNcpMap[stKey].weight += d.weightNcp; const names = d.ncpOpNames ? d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n) : []; names.forEach(name => stationNcpMap[stKey].ops.add(name)); });
             const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; const stDiff = stPercent - stTarget; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stDiff, ops: Array.from(data.ops) }; });
             document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { const thumbsHtml = stData.ops.map((name, idx) => { const img = masterOpList.get(name) || ""; const bgColor = colorPalette[idx % colorPalette.length]; return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${name.charAt(0)}</div>`; }).join(''); return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><div class="flex flex-col items-end"><span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span><span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`; }).join('');
@@ -314,6 +513,7 @@
             drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets: datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
+        // Operator Analysis UI - (ไม่มีการแก้ไขใดๆ รักษาโครงสร้างเดิมอย่างสมบูรณ์)
         function updateOperatorUI() { const n = document.getElementById('op-select').value, s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value, img = document.getElementById('op-profile-img'), ph = document.getElementById('op-img-placeholder'); if (!n) return; const f = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e)); document.getElementById('op-info-mc').textContent = getMode(f.map(d => d.machine)); document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station)); document.getElementById('op-info-shift').textContent = f.length ? f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date)))[0].shift : "-"; const url = f.length ? f.find(d => d.imgUrl && d.imgUrl.includes('google'))?.imgUrl : ""; if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); } document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString(); document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-5 font-bold text-slate-700">${d.date}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5"><span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] uppercase font-bold text-slate-500">${d.factor}</span></td></tr>`).join(''); const trend = {}; f.forEach(d => { let k = opTrendMode === 'daily' ? d.date : (opTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); if(!trend[k]) trend[k] = { t:0, c:0 }; trend[k].t += d.duration; trend[k].c += d.stops; }); const labs = Object.keys(trend).sort((a,b) => opTrendMode === 'daily' ? new Date(formatToISO(a)) - new Date(formatToISO(b)) : a.localeCompare(b)); drawChart('opTrendChart', { type: 'line', data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex]}ค.`, font: { size: 10, weight: 600 }, color: '#334155', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } }); }
         function getMode(arr) { if(!arr.length) return "-"; const m = {}; let max = arr[0], c = 1; arr.forEach(x => { m[x] = (m[x]||0)+1; if(m[x]>c){ max=x; c=m[x]; } }); return max; }
         function setMainTrendMode(m) { mainTrendMode = m; document.querySelectorAll('#btn-main-trend-daily, #btn-main-trend-weekly, #btn-main-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-main-trend-${m}`)); updateMainUI(); }
