@@ -170,9 +170,14 @@
         // Target สำหรับหน้า DOWNTIME (ปัจจัยหลัก)
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
 
+        // ฟังก์ชันช่วยทำความสะอาดและแปลงค่าเป็นตัวเลข (ป้องกันปัญหาเครื่องหมายจุลภาคคั่นหลักพัน เช่น "1,040" หรือ "1,200")
+        function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
+        function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
+
         // ฟังก์ชันคืนค่า Downtime Target แยกราย Station (DOWNTIME Page)
         function getStationDowntimeTarget(stationName) {
             const name = cleanStr(stationName);
+            if (!name) return null;
             if (name === 'm-1' || name === 'sf-c' || name === 'm-2' || name === 'm-5' || 
                 name === 'df' || name === 'webtrol-c' || name === 'webtrol-b' || name === 'webtrol-e') {
                 return 0.21; // 0.21%
@@ -189,8 +194,6 @@
 
         function getSunWeek(date) { let d = new Date(date); d.setHours(0, 0, 0, 0); let start = new Date(d.getFullYear(), 0, 1); let days = Math.floor((d - start) / 86400000); return Math.ceil((days + start.getDay() + 1) / 7); }
         function transformGDriveLink(url) { if (!url) return ""; let cleanUrl = url.toString().trim(); if (!cleanUrl.includes("drive.google.com")) return cleanUrl; let fileId = cleanUrl.includes("/file/d/") ? cleanUrl.split("/file/d/")[1].split("/")[0] : (cleanUrl.includes("id=") ? cleanUrl.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : cleanUrl; }
-        function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
-        function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
         function fixYear(year) { let y = parseInt(year); if (isNaN(y)) return year; if (y > 2400) return (y - 543).toString(); if (y < 100) return (y + 2000).toString(); return y.toString(); }
         function parseUnifiedDate(dateStr) { if (!dateStr || !dateStr.includes('/')) return ''; const p = dateStr.split('/'); if (p.length < 3) return ''; const y = fixYear(p[2]); return `${y}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
         function formatToISO(d) { return parseUnifiedDate(d); }
@@ -222,10 +225,12 @@
                 const dObj = new Date(iso); 
                 return { 
                     date: cl(c[0]), isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj), 
-                    machine: cl(c[2]), station: cl(c[3]), stops: parseInt(cl(c[4]))||0, duration: parseFloat(cl(c[5]))||0, 
+                    machine: cl(c[2]), station: cl(c[3]), 
+                    stops: Math.round(parseNum(cl(c[4]))), 
+                    duration: parseNum(cl(c[5])), 
                     problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), 
-                    pmTarget: parseFloat(cl(c[12]))||0, 
-                    runtime: parseFloat(cl(c[13]))||0, 
+                    pmTarget: parseNum(cl(c[12])), 
+                    runtime: parseNum(cl(c[13])), 
                     imgUrl: transformGDriveLink(cl(c[16])) 
                 }; 
             }).filter(d => d); 
@@ -423,7 +428,7 @@
                 };
             });
 
-            // เรียงลำดับคนที่ทำผลงานได้ดีที่สุด (Over target น้อยสุด หรือ Under target ดีสุด: ค่าน้อยที่สุด) ไว้เป็นอันดับที่ 1
+            // เรียงลำดับคนที่ทำผลงานได้ดีที่สุด (มีค่า Diff นาทีติดลบมากที่สุด หรือทำ Downtime ได้น้อยกว่าเป้าหมายมากที่สุด) ขึ้นเป็นอันดับที่ 1
             const topOpSorted = operatorsList.sort((a, b) => a.diffMinutes - b.diffMinutes).slice(0, 5);
             
             document.getElementById('top-operators-list').innerHTML = topOpSorted.map((x, i) => {
@@ -447,7 +452,7 @@
                         <div class="grid grid-cols-3 gap-3 text-[11px] text-slate-600 mt-1">
                             <div>
                                 <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">สูญเสีย / ครั้ง</span>
-                                <span class="font-bold text-slate-700">${x.actualMin.toLocaleString()} น. / ${x.stops} ค.</span>
+                                <span class="font-bold text-slate-700">${x.actualMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${x.stops} ค.</span>
                             </div>
                             <div>
                                 <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">Target น. / %</span>
@@ -521,7 +526,7 @@
         function setMainTrendMode(m) { mainTrendMode = m; document.querySelectorAll('#btn-main-trend-daily, #btn-main-trend-weekly, #btn-main-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-main-trend-${m}`)); updateMainUI(); }
         function setOpTrendMode(m) { opTrendMode = m; document.querySelectorAll('#btn-op-trend-daily, #btn-op-trend-weekly, #btn-op-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-op-trend-${m}`)); updateOperatorUI(); }
         function setNcpTrendMode(m) { ncpTrendMode = m; document.querySelectorAll('#btn-ncp-trend-daily, #btn-ncp-trend-weekly, #btn-ncp-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-ncp-trend-${m}`)); updateNCPUI(); }
-        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.display = 'none'; }); }
+        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.none; }); }
         window.onload = () => { setDefaultDates(); syncData(); };
     </script>
 </body>
