@@ -314,6 +314,22 @@
                   fc = document.getElementById('main-filter-factor').value, 
                   sr = document.getElementById('main-filter-search').value.toLowerCase();
             
+            // สร้างแผนผังฐานข้อมูลเวลาเดินงานจริงของแต่ละ เครื่อง/กะ/วัน จาก rawData ทั้งหมดแบบ 100% เพื่อป้องกันปัญหาเซลล์ว่าง
+            const machineShiftRuntime = {};
+            rawData.forEach(d => {
+                const key = `${d.isoDate}_${d.shift}_${d.machine}`;
+                if (!machineShiftRuntime[key] || d.runtime > machineShiftRuntime[key].runtime) {
+                    machineShiftRuntime[key] = { runtime: d.runtime, pmTarget: d.pmTarget };
+                }
+            });
+
+            // ฟังก์ชันดึงเวลาเดินงานสุทธิ (เวลาเดินงานจริง - PM Target) ของ วัน/กะ/เครื่อง ที่ถูกต้อง
+            function getNetRuntime(date, shift, machine) {
+                const key = `${date}_${shift}_${machine}`;
+                const info = machineShiftRuntime[key];
+                return info ? Math.max(0, info.runtime - info.pmTarget) : 0;
+            }
+
             // 1. กรองสิทธิ์หาเวลาเดินงาน (Runtime) ของ วัน/เครื่อง/กะที่กำหนด
             const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
             
@@ -332,7 +348,7 @@
                 const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
                 if (!uniqueRuntimeGroups[key]) {
                     if (!validRuntimeKeys || validRuntimeKeys.has(key)) {
-                        uniqueRuntimeGroups[key] = Math.max(0, d.runtime - d.pmTarget);
+                        uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
                     }
                 } 
             });
@@ -377,7 +393,7 @@
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             
-            // TREND CHART Logic - อิงกับความคืบหน้าของเวลาเดินงานจริงที่อัปเกรด
+            // TREND CHART Logic
             const trendDowntime = {}; 
             const trendRuntimeRaw = {}; 
             fForRuntime.forEach(d => { 
@@ -385,7 +401,7 @@
                 const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; 
                 if (!trendRuntimeRaw[uniqueKey]) {
                     if (!validRuntimeKeys || validRuntimeKeys.has(uniqueKey)) {
-                        trendRuntimeRaw[uniqueKey] = { label: k, value: Math.max(0, d.runtime - d.pmTarget) };
+                        trendRuntimeRaw[uniqueKey] = { label: k, value: getNetRuntime(d.isoDate, d.shift, d.machine) };
                     }
                 } 
             });
@@ -400,18 +416,26 @@
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
             drawChart('mainChartStation', { type: 'bar', data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex].toLocaleString()}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } }, scales: { x: { beginAtZero: true, grace: '40%' } } } });
             
-            // 5. คำนวณวิเคราะห์พนักงาน (Operators Top 5) พร้อมดึงค่าเป้าหมายสุทธิรายบุคคล
+            // 5. คำนวณวิเคราะห์พนักงาน (Operators Top 5) แบบดึง Target ตามสถานีจริงของรายการนั้น ๆ โดยอัตโนมัติ
             const opShifts = {};
             f.forEach(d => {
                 if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
                     const opName = d.operator;
                     if (!opShifts[opName]) opShifts[opName] = {};
-                    const shiftStationKey = `${d.isoDate}_${d.shift}_${d.machine}_${d.station}`;
+                    
+                    // สร้าง Key รวมระบุวัน เครื่อง กะ และสถานีจริงที่เกิดเหตุ
+                    const shiftStationKey = `${d.isoDate}_${d.shift}_${d.machine}_${cleanStr(d.station)}`;
+                    
                     if (!opShifts[opName][shiftStationKey]) {
-                        // ดึง Target % ของสถานีที่ปฏิบัติงานจริงมาใช้ (ดึงแบบไดนามิกผ่าน ฟังก์ชัน getStationDowntimeTarget)
+                        // ดึง Target % จากประวัติสถานีนั้น ๆ โดยตรง (ไม่ต้องผ่านการเลือกฟิลเตอร์)
                         const recTargetPercent = getStationDowntimeTarget(d.station) || targetVal;
-                        const shiftRuntime = Math.max(0, d.runtime - d.pmTarget);
+                        
+                        // ใช้เวลาเดินงานรวมสุทธิ (เวลาเดินงานจริง - PM Target) จากเครื่องจักรของรอบนั้น
+                        const shiftRuntime = getNetRuntime(d.isoDate, d.shift, d.machine);
+                        
+                        // คำนวณหาเป้าหมายนาที (Target นาที) = Runtime สุทธิ x (Target% / 100)
                         const shiftTargetMinutes = shiftRuntime * (recTargetPercent / 100);
+                        
                         opShifts[opName][shiftStationKey] = {
                             runtime: shiftRuntime,
                             targetPercent: recTargetPercent,
@@ -440,6 +464,8 @@
             const operatorsList = Object.keys(opMetrics).map(opName => {
                 const metrics = opMetrics[opName];
                 const shifts = opShifts[opName] ? Object.values(opShifts[opName]) : [];
+                
+                // รวมสัดส่วนเวลาเดินงานและเป้าหมายนาทีที่สอดคล้องกับพนักงานคนนั้น ๆ
                 const totalOpRuntime = shifts.reduce((sum, s) => sum + s.runtime, 0);
                 const totalTargetMinutes = shifts.reduce((sum, s) => sum + s.targetMinutes, 0);
                 
