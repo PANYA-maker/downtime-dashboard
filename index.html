@@ -57,7 +57,7 @@
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07( 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
     </div>
@@ -79,7 +79,8 @@
             <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label><div class="grid grid-cols-2 gap-2"><input type="date" id="main-start-date"><input type="date" id="main-end-date"></div></div>
             <div class="grid grid-cols-3 gap-2">
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
-                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Station</label><select id="main-filter-station"><option value="">ทั้งหมด</option></select></div>
+                <!-- เปลี่ยนหัวข้อตัวกรองจาก Station เป็น Station Waste -->
+                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Station Waste</label><select id="main-filter-station"><option value="">ทั้งหมด</option></select></div>
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">กะ (Shift)</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div>
             </div>
             <div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div></div>
@@ -88,6 +89,13 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">แนวโน้มเปอร์เซ็นต์เวลาสูญเสีย (% Downtime)</h3><div class="flex bg-slate-100 p-1 rounded-xl no-export"><button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active">Daily</button><button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn">Weekly</button><button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn">Monthly</button></div></div>
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
+
+        <!-- เพิ่มกล่องสรุปประสิทธิภาพสัดส่วนของเสียราย 5 Station ของ Downtime -->
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">Downtime Performance by Station (นาที / %Downtime / Target / Diff)</h3>
+            <div id="downtime-station-list" class="space-y-6"></div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 10 Stations (นาที/ครั้ง)</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 Operators (ผลงานดีที่สุดเรียงตาม Diff)</h3><div id="top-operators-list" class="space-y-4"></div></div>
@@ -264,7 +272,8 @@
                     problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), 
                     pmTarget: parseNum(cl(c[12])), 
                     runtime: parseNum(cl(c[13])), 
-                    imgUrl: transformGDriveLink(cl(c[16])) 
+                    imgUrl: transformGDriveLink(cl(c[16])),
+                    stationWaste: cl(c[17]) // คอลัมน์ R (Station Waste) คือดัชนี 17
                 }; 
             }).filter(d => d); 
         }
@@ -274,7 +283,7 @@
         function initFilters() {
             const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
             fillSelect('main-filter-mc', getU(rawData, 'machine')); 
-            fillSelect('main-filter-station', getU(rawData, 'station')); 
+            fillSelect('main-filter-station', getU(rawData, 'stationWaste')); // ปรับเปลี่ยนตัวกรองจาก 'station' เป็น 'stationWaste'
             fillSelect('main-filter-factor', getU(rawData, 'factor')); 
             fillSelect('main-filter-shift', getU(rawData, 'shift'));
             
@@ -309,7 +318,7 @@
             const s = document.getElementById('main-start-date').value, 
                   e = document.getElementById('main-end-date').value, 
                   mc = document.getElementById('main-filter-mc').value, 
-                  selectedStation = document.getElementById('main-filter-station').value,
+                  selectedStation = document.getElementById('main-filter-station').value, // ตอนนี้ตัวแปรนี้เก็บค่า Station Waste จากคอลัมน์ R
                   sh = document.getElementById('main-filter-shift').value, 
                   fc = document.getElementById('main-filter-factor').value, 
                   sr = document.getElementById('main-filter-search').value.toLowerCase();
@@ -333,12 +342,12 @@
             // 1. กรองสิทธิ์หาเวลาเดินงาน (Runtime) ของ วัน/เครื่อง/กะที่กำหนด
             const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
             
-            // หากเลือก Station ระบบจะนับเฉพาะเวลาเดินงานของวัน/เครื่อง/กะที่สถานีนั้น ๆ มีการปฏิบัติงานจริง
+            // หากเลือก Station Waste ระบบจะนับเฉพาะเวลาเดินงานของวัน/เครื่อง/กะที่สถานีนั้น ๆ มีการปฏิบัติงานจริง
             let validRuntimeKeys = null;
             if (selectedStation) {
                 validRuntimeKeys = new Set(
                     fForRuntime
-                        .filter(d => cleanStr(d.station) === cleanStr(selectedStation))
+                        .filter(d => cleanStr(d.stationWaste) === cleanStr(selectedStation))
                         .map(d => `${d.isoDate}_${d.shift}_${d.machine}`)
                 );
             }
@@ -354,23 +363,23 @@
             });
             const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
 
-            // 2. คำนวณเวลาสูญเสียทั้งหมด (ลบ PM และสอดคล้องกับ Station ที่เลือก)
+            // 2. คำนวณเวลาสูญเสียทั้งหมด (ลบ PM และสอดคล้องกับ Station Waste ที่เลือก)
             const f = rawData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
                 (!mc || d.machine === mc) && 
-                (!selectedStation || cleanStr(d.station) === cleanStr(selectedStation)) &&
+                (!selectedStation || cleanStr(d.stationWaste) === cleanStr(selectedStation)) &&
                 (!sh || d.shift === sh) && 
                 (!fc || d.factor === fc) && 
                 (d.factor.toUpperCase() !== 'PM') && // ปิดการนับปัจจัยหลักที่เป็น PM ออก
-                (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr))
+                (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr) || d.stationWaste.toLowerCase().includes(sr))
             );
             
             const totalDowntime = f.reduce((a, b) => a + b.duration, 0); 
             const totalCount = f.reduce((a, b) => a + b.stops, 0); 
             const actualPercent = totalRuntime > 0 ? (totalDowntime / totalRuntime) * 100 : 0;
             
-            // 3. กำหนดเป้าหมาย (Target) หากเลือก Station ให้ใช้ของ Station นั้นๆ หากไม่ใช่ให้ดึงตามปัจจัยหลัก
+            // 3. กำหนดเป้าหมาย (Target) หากเลือก Station Waste ให้ใช้ของ Station นั้นๆ หากไม่ใช่ให้ดึงตามปัจจัยหลัก
             let targetVal = downtimeTargets[cleanStr(fc)] || 6.25; 
             if (selectedStation) {
                 const stationTarget = getStationDowntimeTarget(selectedStation);
@@ -391,7 +400,7 @@
             diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
             
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
-            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
+            document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station} | ${d.stationWaste || '-'}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             
             // TREND CHART Logic
             const trendDowntime = {}; 
@@ -411,12 +420,73 @@
             
             drawChart('mainTrendChart', { type: 'line', data: { labels: labs, datasets: [ { label: 'Actual % Downtime', data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
             
-            // 4. คำนวณ Top 10 Stations Chart
+            // 4. คำนวณ Downtime Performance แยกราย 5 Station (ดึงข้อมูลจาก Station Waste คอลัมน์ R)
+            const stationDowntimeMap = {};
+            f.forEach(d => {
+                const stKey = d.stationWaste; // ดึงด้วย Station Waste
+                if (!stKey || !isNaN(stKey)) return;
+                if (!stationDowntimeMap[stKey]) {
+                    stationDowntimeMap[stKey] = { duration: 0, stops: 0, ops: new Set() };
+                }
+                stationDowntimeMap[stKey].duration += d.duration;
+                stationDowntimeMap[stKey].stops += d.stops;
+                if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
+                    const names = d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
+                    names.forEach(name => stationDowntimeMap[stKey].ops.add(name));
+                }
+            });
+
+            const downtimeStationRanking = Object.entries(stationDowntimeMap).map(([stName, data]) => {
+                const stPercent = totalRuntime > 0 ? (data.duration / totalRuntime) * 100 : 0;
+                const stTarget = getStationDowntimeTarget(stName) || 6.25;
+                const stDiff = stPercent - stTarget;
+                return {
+                    name: stName,
+                    duration: data.duration,
+                    stops: data.stops,
+                    percent: stPercent,
+                    target: stTarget,
+                    diff: stDiff,
+                    ops: Array.from(data.ops)
+                };
+            });
+
+            document.getElementById('downtime-station-list').innerHTML = downtimeStationRanking.sort((a, b) => a.diff - b.diff).map((stData, i) => {
+                const thumbsHtml = stData.ops.map((name, idx) => {
+                    const img = masterOpList.get(name) || "";
+                    const bgColor = colorPalette[idx % colorPalette.length];
+                    return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${name.charAt(0)}</div>`;
+                }).join('');
+                return `
+                <div class="flex items-center gap-5">
+                    <div class="ncp-thumb-box">${thumbsHtml}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="flex flex-col truncate">
+                                <span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[11px] font-black text-blue-600 block">${stData.duration.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${stData.stops} ค. (${stData.percent.toFixed(2)}%)</span>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span>
+                                    <span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 6.25)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') || '<div class="text-center p-8 text-xs text-slate-400">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</div>';
+
+            // 5. คำนวณ Top 10 Stations Chart (ดรอปดาวน์)
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
             drawChart('mainChartStation', { type: 'bar', data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex].toLocaleString()}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } }, scales: { x: { beginAtZero: true, grace: '40%' } } } });
             
-            // 5. คำนวณวิเคราะห์พนักงาน (Operators Top 5) แบบดึง Target ตามสถานีจริงของรายการนั้น ๆ โดยอัตโนมัติ
+            // 6. คำนวณวิเคราะห์พนักงาน (Operators Top 5) แบบดึง Target ตามสถานีจริงของรายการนั้น ๆ โดยอัตโนมัติ
             const opShifts = {};
             f.forEach(d => {
                 if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
@@ -427,8 +497,8 @@
                     const shiftStationKey = `${d.isoDate}_${d.shift}_${d.machine}_${cleanStr(d.station)}`;
                     
                     if (!opShifts[opName][shiftStationKey]) {
-                        // ดึง Target % จากประวัติสถานีนั้น ๆ โดยตรง (ไม่ต้องผ่านการเลือกฟิลเตอร์)
-                        const recTargetPercent = getStationDowntimeTarget(d.station) || targetVal;
+                        // ดึง Target % จากประวัติสถานีนั้น ๆ โดยตรง (ดึงจาก Station Waste ก่อน หรือไม่พบจึง fallback ไปใช้ station ทั่วไป)
+                        const recTargetPercent = getStationDowntimeTarget(d.stationWaste) || getStationDowntimeTarget(d.station) || targetVal;
                         
                         // ใช้เวลาเดินงานรวมสุทธิ (เวลาเดินงานจริง - PM Target) จากเครื่องจักรของรอบนั้น
                         const shiftRuntime = getNetRuntime(d.isoDate, d.shift, d.machine);
