@@ -178,6 +178,15 @@
         // Target สำหรับหน้า DOWNTIME (ปัจจัยหลัก)
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
 
+        // กำหนด Target DOWNTIME ใหม่เจาะจงราย Station ตามโจทย์กำหนด
+        const downtimeStationTargets = {
+            "single c": 0.63,
+            "single b": 0.28,
+            "double": 0.48,
+            "dryend": 0.14,
+            "stacker": 0.07
+        };
+
         // ฟังก์ชันช่วยทำความสะอาดและแปลงค่าเป็นตัวเลข (ป้องกันปัญหาเครื่องหมายจุลภาคคั่นหลักพัน เช่น "1,040" หรือ "1,200")
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
@@ -186,7 +195,11 @@
         function getStationDowntimeTarget(stationName) {
             const name = cleanStr(stationName);
             if (!name) return null;
-            // เช็คข้อมูลเป้าหมายจาก "ชีตรายชื่อ NCP" ที่เปรียบเทียบจากคอลัมน์ C และ G ก่อน
+            // เช็คข้อมูลเป้าหมายเฉพาะที่กำหนดใน downtimeStationTargets ล่าสุดก่อน
+            if (downtimeStationTargets[name] !== undefined) {
+                return downtimeStationTargets[name];
+            }
+            // เช็คข้อมูลเป้าหมายจาก "ชีตรายชื่อ NCP" ที่เปรียบเทียบจากคอลัมน์ C และ G
             if (stationTargetsFromSheet.has(name)) {
                 return stationTargetsFromSheet.get(name);
             }
@@ -318,7 +331,7 @@
             const s = document.getElementById('main-start-date').value, 
                   e = document.getElementById('main-end-date').value, 
                   mc = document.getElementById('main-filter-mc').value, 
-                  selectedStation = document.getElementById('main-filter-station').value, // ตอนนี้ตัวแปรนี้เก็บค่า Station Waste จากคอลัมน์ R
+                  selectedStation = document.getElementById('main-filter-station').value, // ตัวกรอง Station Waste (คอลัมน์ R)
                   sh = document.getElementById('main-filter-shift').value, 
                   fc = document.getElementById('main-filter-factor').value, 
                   sr = document.getElementById('main-filter-search').value.toLowerCase();
@@ -339,31 +352,19 @@
                 return info ? Math.max(0, info.runtime - info.pmTarget) : 0;
             }
 
-            // 1. กรองสิทธิ์หาเวลาเดินงาน (Runtime) ของ วัน/เครื่อง/กะที่กำหนด
+            // 1. คำนวณเวลาเดินงานรวม (Runtime) ของ วัน/เครื่อง/กะ ที่เลือก (โดยไม่มีการกรองด้วย Station เพื่อใช้เป็นตัวหารเสมอ)
             const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
             
-            // หากเลือก Station Waste ระบบจะนับเฉพาะเวลาเดินงานของวัน/เครื่อง/กะที่สถานีนั้น ๆ มีการปฏิบัติงานจริง
-            let validRuntimeKeys = null;
-            if (selectedStation) {
-                validRuntimeKeys = new Set(
-                    fForRuntime
-                        .filter(d => cleanStr(d.stationWaste) === cleanStr(selectedStation))
-                        .map(d => `${d.isoDate}_${d.shift}_${d.machine}`)
-                );
-            }
-
             const uniqueRuntimeGroups = {}; 
             fForRuntime.forEach(d => { 
                 const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
                 if (!uniqueRuntimeGroups[key]) {
-                    if (!validRuntimeKeys || validRuntimeKeys.has(key)) {
-                        uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
-                    }
+                    uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
                 } 
             });
             const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
 
-            // 2. คำนวณเวลาสูญเสียทั้งหมด (ลบ PM และสอดคล้องกับ Station Waste ที่เลือก)
+            // 2. คำนวณเวลาสูญเสียทั้งหมด (ลบ PM และสอดคล้องกับ Station Waste ที่กรอง)
             const f = rawData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
@@ -379,7 +380,7 @@
             const totalCount = f.reduce((a, b) => a + b.stops, 0); 
             const actualPercent = totalRuntime > 0 ? (totalDowntime / totalRuntime) * 100 : 0;
             
-            // 3. กำหนดเป้าหมาย (Target) หากเลือก Station Waste ให้ใช้ของ Station นั้นๆ หากไม่ใช่ให้ดึงตามปัจจัยหลัก
+            // 3. กำหนดเป้าหมาย (Target) หากเลือก Station Waste ให้ใช้ตามสถานีนั้น ๆ หากไม่ใช่ให้ดึงตามปัจจัยหลัก
             let targetVal = downtimeTargets[cleanStr(fc)] || 6.25; 
             if (selectedStation) {
                 const stationTarget = getStationDowntimeTarget(selectedStation);
@@ -402,37 +403,47 @@
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station} | ${d.stationWaste || '-'}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             
-            // TREND CHART Logic
+            // TREND CHART Logic - คำนวณเป็นเปอร์เซ็นต์อย่างถูกต้อง (เวลาสูญเสียของสถานีหารด้วยเวลาเดินงานรวมในวันเครื่องกะนั้นๆ)
             const trendDowntime = {}; 
             const trendRuntimeRaw = {}; 
             fForRuntime.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
                 const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; 
                 if (!trendRuntimeRaw[uniqueKey]) {
-                    if (!validRuntimeKeys || validRuntimeKeys.has(uniqueKey)) {
-                        trendRuntimeRaw[uniqueKey] = { label: k, value: getNetRuntime(d.isoDate, d.shift, d.machine) };
-                    }
+                    trendRuntimeRaw[uniqueKey] = { label: k, value: getNetRuntime(d.isoDate, d.shift, d.machine) };
                 } 
             });
-            const trendRuntimeFinal = {}; Object.values(trendRuntimeRaw).forEach(obj => { trendRuntimeFinal[obj.label] = (trendRuntimeFinal[obj.label] || 0) + obj.value; });
-            f.forEach(d => { let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendDowntime[k] = (trendDowntime[k] || 0) + d.duration; });
+            const trendRuntimeFinal = {}; 
+            Object.values(trendRuntimeRaw).forEach(obj => { 
+                trendRuntimeFinal[obj.label] = (trendRuntimeFinal[obj.label] || 0) + obj.value; 
+            });
+            
+            f.forEach(d => { 
+                let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
+                trendDowntime[k] = (trendDowntime[k] || 0) + d.duration; 
+            });
             const labs = Object.keys(trendRuntimeFinal).sort((a,b) => mainTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
             
             drawChart('mainTrendChart', { type: 'line', data: { labels: labs, datasets: [ { label: 'Actual % Downtime', data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
             
-            // 4. คำนวณ Downtime Performance แยกราย 5 Station (ดึงข้อมูลจาก Station Waste คอลัมน์ R)
+            // 4. คำนวณ Downtime Performance แยกราย 5 Station ที่ระบุเป้าหมายไว้ในระบบอย่างชัดเจน
+            const activeStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             const stationDowntimeMap = {};
+            activeStations.forEach(st => {
+                stationDowntimeMap[st] = { duration: 0, stops: 0, ops: new Set() };
+            });
+
             f.forEach(d => {
-                const stKey = d.stationWaste; // ดึงด้วย Station Waste
-                if (!stKey || !isNaN(stKey)) return;
-                if (!stationDowntimeMap[stKey]) {
-                    stationDowntimeMap[stKey] = { duration: 0, stops: 0, ops: new Set() };
-                }
-                stationDowntimeMap[stKey].duration += d.duration;
-                stationDowntimeMap[stKey].stops += d.stops;
-                if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
-                    const names = d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
-                    names.forEach(name => stationDowntimeMap[stKey].ops.add(name));
+                const stKeyRaw = d.stationWaste;
+                if (!stKeyRaw) return;
+                const matchedSt = activeStations.find(s => cleanStr(s) === cleanStr(stKeyRaw));
+                if (matchedSt) {
+                    stationDowntimeMap[matchedSt].duration += d.duration;
+                    stationDowntimeMap[matchedSt].stops += d.stops;
+                    if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
+                        const names = d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
+                        names.forEach(name => stationDowntimeMap[matchedSt].ops.add(name));
+                    }
                 }
             });
 
@@ -451,7 +462,7 @@
                 };
             });
 
-            document.getElementById('downtime-station-list').innerHTML = downtimeStationRanking.sort((a, b) => a.diff - b.diff).map((stData, i) => {
+            document.getElementById('downtime-station-list').innerHTML = downtimeStationRanking.sort((a, b) => b.diff - a.diff).map((stData, i) => {
                 const thumbsHtml = stData.ops.map((name, idx) => {
                     const img = masterOpList.get(name) || "";
                     const bgColor = colorPalette[idx % colorPalette.length];
@@ -481,29 +492,23 @@
                 </div>`;
             }).join('') || '<div class="text-center p-8 text-xs text-slate-400">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</div>';
 
-            // 5. คำนวณ Top 10 Stations Chart (ดรอปดาวน์)
+            // 5. คำนวณ Top 10 Stations Chart
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
             drawChart('mainChartStation', { type: 'bar', data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex].toLocaleString()}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } }, scales: { x: { beginAtZero: true, grace: '40%' } } } });
             
-            // 6. คำนวณวิเคราะห์พนักงาน (Operators Top 5) แบบดึง Target ตามสถานีจริงของรายการนั้น ๆ โดยอัตโนมัติ
+            // 6. คำนวณวิเคราะห์พนักงาน (Operators Top 5) พร้อมเปรียบเทียบ Target และ Diff รายบุคคลอย่างละเอียด
             const opShifts = {};
             f.forEach(d => {
                 if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
                     const opName = d.operator;
                     if (!opShifts[opName]) opShifts[opName] = {};
                     
-                    // สร้าง Key รวมระบุวัน เครื่อง กะ และสถานีจริงที่เกิดเหตุ
                     const shiftStationKey = `${d.isoDate}_${d.shift}_${d.machine}_${cleanStr(d.station)}`;
                     
                     if (!opShifts[opName][shiftStationKey]) {
-                        // ดึง Target % จากประวัติสถานีนั้น ๆ โดยตรง (ดึงจาก Station Waste ก่อน หรือไม่พบจึง fallback ไปใช้ station ทั่วไป)
                         const recTargetPercent = getStationDowntimeTarget(d.stationWaste) || getStationDowntimeTarget(d.station) || targetVal;
-                        
-                        // ใช้เวลาเดินงานรวมสุทธิ (เวลาเดินงานจริง - PM Target) จากเครื่องจักรของรอบนั้น
                         const shiftRuntime = getNetRuntime(d.isoDate, d.shift, d.machine);
-                        
-                        // คำนวณหาเป้าหมายนาที (Target นาที) = Runtime สุทธิ x (Target% / 100)
                         const shiftTargetMinutes = shiftRuntime * (recTargetPercent / 100);
                         
                         opShifts[opName][shiftStationKey] = {
@@ -535,7 +540,6 @@
                 const metrics = opMetrics[opName];
                 const shifts = opShifts[opName] ? Object.values(opShifts[opName]) : [];
                 
-                // รวมสัดส่วนเวลาเดินงานและเป้าหมายนาทีที่สอดคล้องกับพนักงานคนนั้น ๆ
                 const totalOpRuntime = shifts.reduce((sum, s) => sum + s.runtime, 0);
                 const totalTargetMinutes = shifts.reduce((sum, s) => sum + s.targetMinutes, 0);
                 
@@ -557,7 +561,6 @@
                 };
             });
 
-            // เรียงลำดับคนที่ทำผลงานได้ดีที่สุด (มีค่า Diff นาทีติดลบมากที่สุด หรือทำ Downtime ได้น้อยกว่าเป้าหมายมากที่สุด) ไว้เป็นอันดับที่ 1
             const topOpSorted = operatorsList.sort((a, b) => a.diffMinutes - b.diffMinutes).slice(0, 5);
             
             document.getElementById('top-operators-list').innerHTML = topOpSorted.map((x, i) => {
