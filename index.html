@@ -98,7 +98,8 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 10 Stations (นาที/ครั้ง)</h3><div class="chart-container"><canvas id="mainChartStation"></canvas></div></div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 Operators (ผลงานดีที่สุดเรียงตาม Diff)</h3><div id="top-operators-list" class="space-y-4"></div></div>
+            <!-- ดึงโครงสร้างกราฟ Top 5 Operators แบบนาที/ครั้ง ตามความต้องการของรูปภาพ 74f702.png กลับมาแทนที่แบบประเมิน Diff -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">TOP 5 OPERATORS (นาที/ครั้ง)</h3><div id="top-operators-list" class="space-y-4"></div></div>
         </div>
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
             <div class="p-5 bg-slate-50/50 border-b flex justify-between items-center"><h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full font-bold">0 รายการ</span></div>
@@ -167,7 +168,7 @@
 
     <script>
         Chart.register(ChartDataLabels);
-        // เพิ่มตัวแปรสำหรับเก็บข้อมูลรายชื่อและโครงสร้างพนักงานแบบละเอียด
+        // ตัวแปรสำหรับเก็บข้อมูลรายชื่อและโครงสร้างพนักงานแบบละเอียด
         let rawData = [], ncpData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily';
         let ncpSelectedReasons = new Set();
         let ncpAllReasonOptions = [];
@@ -192,10 +193,7 @@
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
 
-        // ปรับปรุง: ฟังก์ชันดึงรูปโดยเปรียบเทียบตรงกัน 4 คอลัมน์อย่างแม่นยำ 100%
-        // ชีตรายงาน DOWNTIME: เครื่องจักร(Col C), กะ(Col J), Station Waste(Col R), ผู้ปฏิบัติงาน(Col H)
-        // ชีตรายชื่อ: เครื่องจักร(Col B), กะ(Col D), Station Waste(Col F), รายชื่อ(Col A)
-        // คอลัมน์รูปภาพของชีตรายชื่อ: คอลัมน์ E
+        // ฟังก์ชันดึงรูปโดยเปรียบเทียบตรงกัน 4 คอลัมน์อย่างแม่นยำ 100%
         function resolveOperatorImage(name, machine, shift, stationWaste) {
             const cleanName = cleanStr(name);
             const cleanMc = cleanStr(machine);
@@ -674,34 +672,67 @@
                 </div>`;
             }).join('') || '<div class="text-center p-8 text-xs text-slate-400">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</div>';
 
-            // 5. คำนวณ Top 10 Stations Chart
+            // 5. คำนวณ Top 10 Stations Chart (ปรับให้แสดงผลสวยงาม คลีน และอ่านค่าง่ายขึ้น)
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
-            drawChart('mainChartStation', { type: 'bar', data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), custom: topSt.map(x=>x[1].c) }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex].toLocaleString()}ค.`, font: { size: 9, weight: 600 }, color: '#64748b', offset: 4 } }, scales: { x: { beginAtZero: true, grace: '40%' } } } });
-            
-            // 6. คำนวณวิเคราะห์พนักงาน (Operators Top 5) พร้อมเปรียบเทียบ Target และ Diff รายบุคคลอย่างละเอียด
-            const opShifts = {};
-            f.forEach(d => {
-                if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
-                    const opName = d.operator;
-                    if (!opShifts[opName]) opShifts[opName] = {};
-                    
-                    const shiftStationKey = `${d.isoDate}_${d.shift}_${d.machine}_${cleanStr(d.station)}`;
-                    
-                    if (!opShifts[opName][shiftStationKey]) {
-                        const recTargetPercent = getStationDowntimeTarget(d.stationWaste) || getStationDowntimeTarget(d.station) || targetVal;
-                        const shiftRuntime = getNetRuntime(d.isoDate, d.shift, d.machine);
-                        const shiftTargetMinutes = shiftRuntime * (recTargetPercent / 100);
-                        
-                        opShifts[opName][shiftStationKey] = {
-                            runtime: shiftRuntime,
-                            targetPercent: recTargetPercent,
-                            targetMinutes: shiftTargetMinutes
-                        };
-                    }
-                }
+            drawChart('mainChartStation', { 
+                type: 'bar', 
+                data: { 
+                    labels: topSt.map(x=>x[0]), 
+                    datasets: [{ 
+                        data: topSt.map(x=>x[1].t), 
+                        backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length] + 'CC'), // 80% opacity เพื่อความโมเดิร์น
+                        borderColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]),
+                        borderWidth: 1.5,
+                        borderRadius: 6, // ขอบแท่งกราฟมนสวยงาม
+                        borderSkipped: false,
+                        barThickness: 14, // ขนาดแท่งเรียวดูสบายตา
+                        custom: topSt.map(x=>x[1].c) 
+                    }] 
+                }, 
+                options: { 
+                    indexAxis: 'y', 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { 
+                            anchor: 'end', 
+                            align: 'right', 
+                            formatter: (v,ctx) => `${v.toLocaleString()} น. (${ctx.dataset.custom[ctx.dataIndex].toLocaleString()} ค.)`, 
+                            font: { size: 9, weight: 'bold' }, 
+                            color: '#475569', 
+                            offset: 6 
+                        } 
+                    }, 
+                    scales: { 
+                        x: { 
+                            beginAtZero: true, 
+                            grace: '30%',
+                            grid: {
+                                color: '#f1f5f9',
+                                borderDash: [4, 4],
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 10 }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#475569',
+                                font: { size: 10, weight: 'bold' }
+                            }
+                        }
+                    } 
+                } 
             });
-
+            
+            // 6. คำนวณและแสดงผล TOP 5 OPERATORS (นาที/ครั้ง) ตามความต้องการของรูปภาพ 74f702.png
             const opMetrics = {};
             f.forEach(d => {
                 if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
@@ -718,64 +749,34 @@
                 }
             });
 
-            const operatorsList = Object.keys(opMetrics).map(opName => {
+            const topOpSorted = Object.keys(opMetrics).map(opName => {
                 const metrics = opMetrics[opName];
-                const shifts = opShifts[opName] ? Object.values(opShifts[opName]) : [];
-                
-                const totalOpRuntime = shifts.reduce((sum, s) => sum + s.runtime, 0);
-                const totalTargetMinutes = shifts.reduce((sum, s) => sum + s.targetMinutes, 0);
-                
-                const finalTargetPct = totalOpRuntime > 0 ? (totalTargetMinutes / totalOpRuntime) * 100 : targetVal;
-                const finalActualPct = totalOpRuntime > 0 ? (metrics.actualMinutes / totalOpRuntime) * 100 : 0;
-                const diffMinutes = metrics.actualMinutes - totalTargetMinutes;
-                const diffPercent = finalActualPct - finalTargetPct;
-
                 return {
                     name: opName,
                     actualMin: metrics.actualMinutes,
                     stops: metrics.stops,
-                    targetMin: totalTargetMinutes,
-                    targetPct: finalTargetPct,
-                    actualPct: finalActualPct,
-                    diffMinutes: diffMinutes,
-                    diffPercent: diffPercent,
                     img: metrics.imgUrl
                 };
-            });
+            }).sort((a, b) => b.actualMin - a.actualMin).slice(0, 5);
 
-            const topOpSorted = operatorsList.sort((a, b) => a.diffMinutes - b.diffMinutes).slice(0, 5);
+            const maxOpDuration = topOpSorted.length > 0 ? topOpSorted[0].actualMin : 1;
             
             document.getElementById('top-operators-list').innerHTML = topOpSorted.map((x, i) => {
-                const opImg = x.img || '';
-                const isExceeded = x.diffMinutes > 0;
-                const badgeClass = isExceeded ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100';
-                const sign = x.diffMinutes > 0 ? '+' : '';
+                const opImg = x.img || resolveOperatorImage(x.name, mc, sh, '');
+                const percentWidth = maxOpDuration > 0 ? (x.actualMin / maxOpDuration) * 100 : 0;
+                const barColor = colorPalette[i % colorPalette.length];
                 return `
-                <div class="flex items-start gap-4 p-4 bg-slate-50/50 rounded-2xl hover:bg-slate-50 transition-all border border-slate-100/50">
+                <div class="flex items-center gap-4 py-3 border-b border-slate-50 last:border-b-0">
                     <div class="relative flex-shrink-0">
-                        <img src="${opImg}" class="op-thumb" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(x.name)}&background=random'">
-                        <span class="absolute -top-2 -left-2 bg-slate-800 text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-md">${i+1}</span>
+                        <img src="${opImg}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(x.name)}&background=random'">
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-start gap-2 mb-2">
-                            <span class="text-sm font-bold text-slate-800 truncate">${x.name}</span>
-                            <span class="text-[10px] font-black px-2 py-1 rounded-lg ${badgeClass}">
-                                Diff: ${sign}${x.diffMinutes.toFixed(1)} น. (${sign}${x.diffPercent.toFixed(2)}%)
-                            </span>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-slate-700 truncate">${x.name}</span>
+                            <span class="text-xs font-black text-slate-600">${x.actualMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${x.stops} ค.</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-3 text-[11px] text-slate-600 mt-1">
-                            <div>
-                                <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">สูญเสีย / ครั้ง</span>
-                                <span class="font-bold text-slate-700">${x.actualMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${x.stops} ค.</span>
-                            </div>
-                            <div>
-                                <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">Target น. / %</span>
-                                <span class="font-bold text-slate-600">${x.targetMin.toFixed(1)} น. / ${x.targetPct.toFixed(2)}%</span>
-                            </div>
-                            <div>
-                                <span class="text-slate-400 block font-semibold mb-0.5 uppercase tracking-wide">Actual %</span>
-                                <span class="font-bold text-indigo-600">${x.actualPct.toFixed(2)}%</span>
-                            </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${percentWidth}%; background-color: ${barColor}"></div>
                         </div>
                     </div>
                 </div>`;
