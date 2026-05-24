@@ -29,6 +29,32 @@
         /* สไตล์พิเศษสำหรับภาพพนักงานใน TOP 5 OPERATORS เพื่อไม่ให้ศีรษะเลยหรือหลุดขอบบน */
         .operator-avatar-img { width: 48px; height: 48px; min-width: 48px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         
+        /* สไตล์พิเศษสำหรับหน้าวิเคราะห์สถานีแยกคอลัมน์และขยายขนาด */
+        .station-avatar-img { 
+            width: 52px; 
+            height: 52px; 
+            min-width: 52px; 
+            object-fit: cover; 
+            object-position: center 15% !important; /* ดึงรูปพนักงานในกรอบลงมาพอดี ไม่หลุดล้นขอบบน */
+            border-radius: 50%; 
+            border: 2px solid white; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+        }
+        .station-avatar-fallback { 
+            width: 52px; 
+            height: 52px; 
+            min-width: 52px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            color: white; 
+            font-size: 14px; 
+            border: 2px solid white; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+        }
+        
         .ncp-thumb-box { display: flex; flex-wrap: wrap; gap: 6px; width: 180px; min-width: 180px; justify-content: flex-start; align-items: center; }
         .downtime-thumb-box { display: flex; align-items: center; min-width: 100px; }
         .downtime-thumb-box .op-thumb { margin-right: -25px; z-index: 1; }
@@ -158,7 +184,7 @@
         </div>
     </div>
 
-    <!-- PAGE 3: STATION ANALYSIS (วิเคราะห์สถานีแยกทุกปัญหา - เพิ่มใหม่ตามภาพตัวอย่าง 12cf2f.png) -->
+    <!-- PAGE 3: STATION ANALYSIS (วิเคราะห์สถานีแยกทุกปัญหา - อัปเดตการแสดงผลแยกคอลัมน์และขยายขนาด) -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="space-y-1">
@@ -193,13 +219,14 @@
             <div class="table-responsive">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-100/50 text-[10px] font-bold text-slate-500 uppercase border-b border-slate-200">
-                            <th class="p-5 border-r border-slate-200" rowspan="2">Station / ผู้ปฏิบัติงาน</th>
+                        <tr class="bg-slate-100/50 text-[11px] md:text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
+                            <th class="p-5 border-r border-slate-200 text-center" rowspan="2">Station</th>
+                            <th class="p-5 border-r border-slate-200" rowspan="2">รูปภาพและชื่อพนักงาน</th>
                             <th class="p-3 text-center border-r border-slate-200" colspan="2">เวลาสูญเสีย (Downtime)</th>
                             <th class="p-3 text-center border-r border-slate-200" colspan="2">ขาดจำนวน (Shortage)</th>
                             <th class="p-3 text-center" colspan="2">ของเหลือจากงานซ่อม (Excess)</th>
                         </tr>
-                        <tr class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase border-b border-slate-200">
+                        <tr class="bg-slate-50 text-[10px] md:text-xs font-bold text-slate-400 uppercase border-b border-slate-200">
                             <th class="p-3 text-center border-r border-slate-100">จำนวนครั้ง</th>
                             <th class="p-3 text-center border-r border-slate-200">เวลาหยุด (นาที)</th>
                             <th class="p-3 text-center border-r border-slate-100">Order</th>
@@ -208,7 +235,7 @@
                             <th class="p-3 text-center">จำนวนแผ่น</th>
                         </tr>
                     </thead>
-                    <tbody id="station-analysis-table-body" class="text-xs text-slate-600 divide-y divide-slate-100">
+                    <tbody id="station-analysis-table-body" class="text-xs md:text-sm text-slate-600 divide-y divide-slate-100">
                         <!-- โหลดแถวสถานีอัตโนมัติจาก Javascript -->
                     </tbody>
                 </table>
@@ -1082,40 +1109,44 @@
                     resolvedOps.push({ name, img: resolvedImg });
                 });
 
-                // เจนเนอเรต HTML รูปฟรอนต์เอนด์ (Overlapping Avatars)
+                // เจนเนอเรต HTML รูปฟรอนต์เอนด์ (Overlapping Avatars) ด้วยขนาดที่ใหญ่ขึ้น (52px)
                 const thumbsHtml = resolvedOps.length > 0 ? resolvedOps.map((op, idx) => {
                     const bgColor = colorPalette[idx % colorPalette.length];
                     if (op.img) {
                         return `<div class="relative group" title="${op.name}">
-                                    <img src="${op.img}" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="w-10 h-10 rounded-full items-center justify-center font-bold text-white text-[11px]" style="background-color: ${bgColor}; display: none;">${op.name.charAt(0)}</div>
+                                    <img src="${op.img}" class="station-avatar-img" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="station-avatar-fallback" style="background-color: ${bgColor}; display: none;">${op.name.charAt(0)}</div>
                                 </div>`;
                     } else {
-                        return `<div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[11px] border-2 border-white shadow-sm" style="background-color: ${bgColor};" title="${op.name}">${op.name.charAt(0)}</div>`;
+                        return `<div class="station-avatar-fallback" style="background-color: ${bgColor};" title="${op.name}">${op.name.charAt(0)}</div>`;
                     }
-                }).join('') : `<div class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-slate-100 text-slate-400 border-2 border-dashed border-slate-300">-</div>`;
+                }).join('') : `<div class="station-avatar-fallback !border-dashed !bg-slate-100 !text-slate-400 !border-slate-300" title="ไม่มีผู้ปฏิบัติงาน">-</div>`;
 
                 const opNamesStr = resolvedOps.map(o => o.name).join(', ') || 'ไม่มีผู้ปฏิบัติงาน';
 
                 html += `
                     <tr class="hover:bg-slate-50/50 transition-colors">
+                        <!-- Column 1: Station (ขยายขนาดตัวอักษร) -->
+                        <td class="p-5 border-r border-slate-100 font-black text-slate-800 text-sm md:text-base">
+                            ${st}
+                        </td>
+                        <!-- Column 2: รูปภาพและชื่อพนักงาน (รวมในคอลัมน์ใหม่ตามที่ระบุ) -->
                         <td class="p-5 border-r border-slate-100">
                             <div class="flex items-center gap-4">
-                                <div class="flex -space-x-3 overflow-hidden p-1">
+                                <div class="flex -space-x-4 overflow-hidden p-1">
                                     ${thumbsHtml}
                                 </div>
                                 <div class="min-w-0">
-                                    <span class="text-sm font-black text-slate-800 block">${st}</span>
-                                    <span class="text-[9px] text-slate-400 font-bold block truncate max-w-[200px]" title="${opNamesStr}">${opNamesStr}</span>
+                                    <span class="text-xs md:text-sm font-bold text-slate-700 block max-w-[200px] truncate" title="${opNamesStr}">${opNamesStr}</span>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-5 text-center font-bold text-slate-700 border-r border-slate-100">${dtStops.toLocaleString()}</td>
-                        <td class="p-5 text-center font-black text-rose-500 border-r border-slate-200 bg-rose-50/10">${dtDuration.toLocaleString()}</td>
-                        <td class="p-5 text-center font-bold text-slate-700 border-r border-slate-100">${shortageOrder.toLocaleString()}</td>
-                        <td class="p-5 text-center font-black text-blue-600 border-r border-slate-200 bg-blue-50/10">${shortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
-                        <td class="p-5 text-center font-bold text-slate-700 border-r border-slate-100">${excessOrder.toLocaleString()}</td>
-                        <td class="p-5 text-center font-black text-amber-600 bg-amber-50/10">${excessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
+                        <td class="p-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${dtStops.toLocaleString()}</td>
+                        <td class="p-5 text-center font-black text-rose-500 text-sm md:text-base border-r border-slate-200 bg-rose-50/10">${dtDuration.toLocaleString()}</td>
+                        <td class="p-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${shortageOrder.toLocaleString()}</td>
+                        <td class="p-5 text-center font-black text-blue-600 text-sm md:text-base border-r border-slate-200 bg-blue-50/10">${shortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
+                        <td class="p-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${excessOrder.toLocaleString()}</td>
+                        <td class="p-5 text-center font-black text-amber-600 text-sm md:text-base bg-amber-50/10">${excessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
                     </tr>
                 `;
             });
