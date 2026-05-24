@@ -31,26 +31,26 @@
         
         /* สไตล์พิเศษสำหรับหน้าวิเคราะห์สถานีแยกคอลัมน์และขยายขนาด */
         .station-avatar-img { 
-            width: 52px; 
-            height: 52px; 
-            min-width: 52px; 
+            width: 56px; 
+            height: 56px; 
+            min-width: 56px; 
             object-fit: cover; 
-            object-position: center 15% !important; /* ดึงรูปพนักงานในกรอบลงมาพอดี ไม่หลุดล้นขอบบน */
+            object-position: center 10% !important; /* ปรับดึงรูปพนักงานในกรอบลงมาพอดีให้เห็นศีรษะและใบหน้าสวยงาม */
             border-radius: 50%; 
             border: 2px solid white; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
         }
         .station-avatar-fallback { 
-            width: 52px; 
-            height: 52px; 
-            min-width: 52px; 
+            width: 56px; 
+            height: 56px; 
+            min-width: 56px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             font-weight: bold; 
             color: white; 
-            font-size: 14px; 
+            font-size: 15px; 
             border: 2px solid white; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
         }
@@ -184,9 +184,9 @@
         </div>
     </div>
 
-    <!-- PAGE 3: STATION ANALYSIS (วิเคราะห์สถานีแยกทุกปัญหา - อัปเดตการแสดงผลแยกคอลัมน์และขยายขนาด) -->
-    <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-6 hidden">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- PAGE 3: STATION ANALYSIS (วิเคราะห์สถานีแยกทุกปัญหา - อัปเดตการแสดงผลแยกคอลัมน์ ขยายขนาด และจำกัดการเลื่อนหน้าจอ) -->
+    <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-4 hidden">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label>
                 <div class="grid grid-cols-2 gap-2">
@@ -211,33 +211,36 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
-            <div class="p-5 bg-slate-50/50 border-b flex justify-between items-center">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-4">
+            <div class="p-4 bg-slate-50/50 border-b flex justify-between items-center">
                 <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">ตารางวิเคราะห์ทุกปัญหาแยก Station Waste</h3>
-                <span class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full font-bold">5 สถานีหลัก</span>
+                <span class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-bold">5 สถานีหลัก</span>
             </div>
             <div class="table-responsive">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-100/50 text-[11px] md:text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
-                            <th class="p-5 border-r border-slate-200 text-center" rowspan="2">Station</th>
-                            <th class="p-5 border-r border-slate-200" rowspan="2">รูปภาพและชื่อพนักงาน</th>
-                            <th class="p-3 text-center border-r border-slate-200" colspan="2">เวลาสูญเสีย (Downtime)</th>
-                            <th class="p-3 text-center border-r border-slate-200" colspan="2">ขาดจำนวน (Shortage)</th>
-                            <th class="p-3 text-center" colspan="2">ของเหลือจากงานซ่อม (Excess)</th>
+                            <th class="py-3 px-5 border-r border-slate-200 text-center" rowspan="2">Station</th>
+                            <th class="py-3 px-5 border-r border-slate-200" rowspan="2">รูปภาพและชื่อพนักงาน</th>
+                            <th class="py-2 px-3 text-center border-r border-slate-200" colspan="2">เวลาสูญเสีย (Downtime)</th>
+                            <th class="py-2 px-3 text-center border-r border-slate-200" colspan="2">ขาดจำนวน (Shortage)</th>
+                            <th class="py-2 px-3 text-center" colspan="2">ของเหลือจากงานซ่อม (Excess)</th>
                         </tr>
                         <tr class="bg-slate-50 text-[10px] md:text-xs font-bold text-slate-400 uppercase border-b border-slate-200">
-                            <th class="p-3 text-center border-r border-slate-100">จำนวนครั้ง</th>
-                            <th class="p-3 text-center border-r border-slate-200">เวลาหยุด (นาที)</th>
-                            <th class="p-3 text-center border-r border-slate-100">Order</th>
-                            <th class="p-3 text-center border-r border-slate-200">จำนวนแผ่น</th>
-                            <th class="p-3 text-center border-r border-slate-100">Order</th>
-                            <th class="p-3 text-center">จำนวนแผ่น</th>
+                            <th class="py-2 px-3 text-center border-r border-slate-100">จำนวนครั้ง</th>
+                            <th class="py-2 px-3 text-center border-r border-slate-200">เวลาหยุด (นาที)</th>
+                            <th class="py-2 px-3 text-center border-r border-slate-100">Order</th>
+                            <th class="py-2 px-3 text-center border-r border-slate-200">จำนวนแผ่น</th>
+                            <th class="py-2 px-3 text-center border-r border-slate-100">Order</th>
+                            <th class="py-2 px-3 text-center">จำนวนแผ่น</th>
                         </tr>
                     </thead>
                     <tbody id="station-analysis-table-body" class="text-xs md:text-sm text-slate-600 divide-y divide-slate-100">
                         <!-- โหลดแถวสถานีอัตโนมัติจาก Javascript -->
                     </tbody>
+                    <tfoot id="station-analysis-table-foot">
+                        <!-- โหลดแถวผลรวมจาก Javascript อัตโนมัติ -->
+                    </tfoot>
                 </table>
             </div>
         </div>
@@ -1027,6 +1030,14 @@
             const targetStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             let html = '';
 
+            // ประกาศตัวแปรสำหรับเก็บค่าผลรวม (Grand Totals)
+            let grandDtStops = 0;
+            let grandDtDuration = 0;
+            let grandShortageOrder = 0;
+            let grandShortageSheets = 0;
+            let grandExcessOrder = 0;
+            let grandExcessSheets = 0;
+
             targetStations.forEach(st => {
                 const cleanSt = cleanStr(st);
 
@@ -1044,6 +1055,14 @@
                 const excessEntries = filteredWaste.filter(d => cleanStr(d.station) === cleanSt && d.hasExcess);
                 const excessOrder = excessEntries.length;
                 const excessSheets = excessEntries.reduce((sum, d) => sum + d.excessVal, 0);
+
+                // สะสมผลรวมทั้งหมด
+                grandDtStops += dtStops;
+                grandDtDuration += dtDuration;
+                grandShortageOrder += shortageOrder;
+                grandShortageSheets += shortageSheets;
+                grandExcessOrder += excessOrder;
+                grandExcessSheets += excessSheets;
 
                 // --- 4. ตรวจสอบรายชื่อผู้ปฏิบัติงานร่วมตามสถานี ---
                 const ops = new Set();
@@ -1109,7 +1128,7 @@
                     resolvedOps.push({ name, img: resolvedImg });
                 });
 
-                // เจนเนอเรต HTML รูปฟรอนต์เอนด์ (Overlapping Avatars) ด้วยขนาดที่ใหญ่ขึ้น (52px)
+                // เจนเนอเรต HTML รูปฟรอนต์เอนด์ (Overlapping Avatars) ด้วยขนาดที่ใหญ่ขึ้น (56px) และปรับครอปใบหน้าให้อยู่จุดโฟกัส 10%
                 const thumbsHtml = resolvedOps.length > 0 ? resolvedOps.map((op, idx) => {
                     const bgColor = colorPalette[idx % colorPalette.length];
                     if (op.img) {
@@ -1127,11 +1146,11 @@
                 html += `
                     <tr class="hover:bg-slate-50/50 transition-colors">
                         <!-- Column 1: Station (ขยายขนาดตัวอักษร) -->
-                        <td class="p-5 border-r border-slate-100 font-black text-slate-800 text-sm md:text-base">
+                        <td class="py-2.5 px-5 border-r border-slate-100 font-black text-slate-800 text-sm md:text-base">
                             ${st}
                         </td>
-                        <!-- Column 2: รูปภาพและชื่อพนักงาน (รวมในคอลัมน์ใหม่ตามที่ระบุ) -->
-                        <td class="p-5 border-r border-slate-100">
+                        <!-- Column 2: รูปภาพและชื่อพนักงาน (รวมในคอลัมน์) -->
+                        <td class="py-2.5 px-5 border-r border-slate-100">
                             <div class="flex items-center gap-4">
                                 <div class="flex -space-x-4 overflow-hidden p-1">
                                     ${thumbsHtml}
@@ -1141,17 +1160,36 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="p-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${dtStops.toLocaleString()}</td>
-                        <td class="p-5 text-center font-black text-rose-500 text-sm md:text-base border-r border-slate-200 bg-rose-50/10">${dtDuration.toLocaleString()}</td>
-                        <td class="p-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${shortageOrder.toLocaleString()}</td>
-                        <td class="p-5 text-center font-black text-blue-600 text-sm md:text-base border-r border-slate-200 bg-blue-50/10">${shortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
-                        <td class="p-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${excessOrder.toLocaleString()}</td>
-                        <td class="p-5 text-center font-black text-amber-600 text-sm md:text-base bg-amber-50/10">${excessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
+                        <td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${dtStops.toLocaleString()}</td>
+                        <td class="py-2.5 px-5 text-center font-black text-rose-500 text-sm md:text-base border-r border-slate-200 bg-rose-50/10">${dtDuration.toLocaleString()}</td>
+                        <td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${shortageOrder.toLocaleString()}</td>
+                        <td class="py-2.5 px-5 text-center font-black text-blue-600 text-sm md:text-base border-r border-slate-200 bg-blue-50/10">${shortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
+                        <td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${excessOrder.toLocaleString()}</td>
+                        <td class="py-2.5 px-5 text-center font-black text-amber-600 text-sm md:text-base bg-amber-50/10">${excessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
                     </tr>
                 `;
             });
 
             document.getElementById('station-analysis-table-body').innerHTML = html;
+
+            // ปล่อยแถวผลรวมแบบอัจฉริยะ (Grand Totals) ลงใน tfoot
+            const footHtml = `
+                <tr class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
+                    <td class="py-3 px-5 border-r border-slate-200 text-sm md:text-base" colspan="2">
+                        <div class="flex justify-between items-center">
+                            <span class="uppercase tracking-wider">ผลรวมทั้งหมด (Total)</span>
+                            <span class="text-xs text-slate-400 font-bold italic mr-2">5 สถานี</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandDtStops.toLocaleString()}</td>
+                    <td class="py-3 px-5 text-center text-rose-600 text-sm md:text-base border-r border-slate-300 bg-rose-100/20">${grandDtDuration.toLocaleString()}</td>
+                    <td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandShortageOrder.toLocaleString()}</td>
+                    <td class="py-3 px-5 text-center text-blue-700 text-sm md:text-base border-r border-slate-300 bg-blue-100/20">${grandShortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
+                    <td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandExcessOrder.toLocaleString()}</td>
+                    <td class="py-3 px-5 text-center text-amber-700 text-sm md:text-base bg-amber-100/20">${grandExcessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
+                </tr>
+            `;
+            document.getElementById('station-analysis-table-foot').innerHTML = footHtml;
         }
 
         // Operator Analysis UI - (ไม่มีการแก้ไขใดๆ รักษาโครงสร้างเดิมอย่างสมบูรณ์)
