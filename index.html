@@ -97,7 +97,22 @@
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
-            <div class="card-stat border-rose-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาสูญเสียรวม</p><p id="main-total-downtime" class="text-3xl font-black text-slate-800">0</p></div>
+            <!-- การ์ดเวลาสูญเสียรวม (Downtime) ฉบับปรับปรุง เพิ่ม Target (นาที) และ Diff (นาที) เปลี่ยนสีตามเงื่อนไขลบเป็นเขียว/บวกเป็นแดง -->
+            <div class="card-stat border-rose-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาสูญเสียรวม</p>
+                        <p id="main-total-downtime" class="text-3xl font-black text-slate-800">0</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Target / Diff (นาที)</p>
+                        <div class="flex flex-col items-end">
+                            <span id="main-downtime-target-min" class="text-xs font-bold text-slate-500 italic">Target: 0 น.</span>
+                            <span id="main-downtime-diff-min" class="text-sm font-black">Diff: 0 น.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">จำนวนครั้ง</p><p id="main-total-count" class="text-3xl font-black text-slate-800">0</p></div>
             <div class="card-stat border-indigo-500">
                 <div class="flex justify-between items-start">
@@ -647,11 +662,22 @@
             }
             const diffVal = actualPercent - targetVal;
 
+            // คำนวณค่า Target (นาที) และ Diff (นาที) ใหม่เจาะจงให้เปลี่ยนตามเมื่อผู้ใช้ทำการกรองปัจจัยหลักและ Station Waste
+            const targetDowntimeMin = totalRuntime * (targetVal / 100);
+            const diffDowntimeMin = totalDowntime - targetDowntimeMin;
+
             document.getElementById('main-total-runtime').textContent = totalRuntime.toLocaleString(); 
             document.getElementById('main-total-downtime').textContent = totalDowntime.toLocaleString(); 
             document.getElementById('main-total-count').textContent = totalCount.toLocaleString(); 
             document.getElementById('main-total-percent').textContent = actualPercent.toFixed(2) + '%';
             
+            // อัปเดตข้อมูล Target และ Diff ลงในการ์ดเวลาสูญเสียรวม (Downtime) เป็นหน่วยนาที
+            document.getElementById('main-downtime-target-min').textContent = `Target: ${targetDowntimeMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.`;
+            const diffMinEl = document.getElementById('main-downtime-diff-min');
+            diffMinEl.textContent = `Diff: ${diffDowntimeMin > 0 ? '+' : ''}${diffDowntimeMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.`;
+            // เงื่อนไขสลับสีอัจฉริยะ: ถ้าเป็นลบให้แสดงสีเขียว (emerald-500) ถ้าเป็นบวกแสดงสีแดง (rose-500)
+            diffMinEl.className = `text-sm font-black ${diffDowntimeMin > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+
             document.getElementById('main-target-val').textContent = `Target: ${targetVal.toFixed(2)}%`; 
             const diffEl = document.getElementById('main-diff-val'); 
             diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; 
