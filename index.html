@@ -77,7 +77,6 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <!-- URLs -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
     <input type="hidden" id="op-list-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=593156373&single=true&output=csv">
@@ -88,16 +87,29 @@
         <button onclick="switchPage('station-analysis')" id="btn-station-analysis" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์สถานี</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
         <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07( 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             บันทึกภาพ
         </button>
     </div>
 
-    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
-            <div class="card-stat border-rose-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาสูญเสียรวม</p><p id="main-total-downtime" class="text-3xl font-black text-slate-800">0</p></div>
+            <div class="card-stat border-rose-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาสูญเสียรวม</p>
+                        <p id="main-total-downtime" class="text-3xl font-black text-slate-800">0</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Target / Diff (นาที)</p>
+                        <div class="flex flex-col items-end">
+                            <span id="main-downtime-target-min" class="text-xs font-bold text-slate-500 italic">Target: 0 น.</span>
+                            <span id="main-downtime-diff-min" class="text-sm font-black">Diff: 0 น.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">จำนวนครั้ง</p><p id="main-total-count" class="text-3xl font-black text-slate-800">0</p></div>
             <div class="card-stat border-indigo-500">
                 <div class="flex justify-between items-start">
@@ -110,7 +122,6 @@
             <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label><div class="grid grid-cols-2 gap-2"><input type="date" id="main-start-date"><input type="date" id="main-end-date"></div></div>
             <div class="grid grid-cols-3 gap-2">
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">เครื่องจักร</label><select id="main-filter-mc"><option value="">ทั้งหมด</option></select></div>
-                <!-- ตัวกรองหลักเปลี่ยนเป็น Station Waste -->
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Station Waste</label><select id="main-filter-station"><option value="">ทั้งหมด</option></select></div>
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">กะ (Shift)</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div>
             </div>
@@ -121,14 +132,12 @@
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
 
-        <!-- กล่องสรุปประสิทธิภาพสัดส่วนของเสียราย Station ของ Downtime -->
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
             <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">Downtime Performance by Station (นาที / %Downtime / Target / Diff)</h3>
             <div id="downtime-station-list" class="space-y-6"></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- ขยายความสูงกราฟแท่ง Top 10 Stations เป็น 450px เพื่อให้อ่านง่าย มีมิติ และสวยงามเป็นสัดส่วน -->
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 10 Stations (นาที/ครั้ง)</h3><div class="chart-container !h-[450px]"><canvas id="mainChartStation"></canvas></div></div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">TOP 5 OPERATORS (นาที/ครั้ง)</h3><div id="top-operators-list" class="space-y-4"></div></div>
         </div>
@@ -138,7 +147,6 @@
         </div>
     </div>
 
-    <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -184,7 +192,6 @@
         </div>
     </div>
 
-    <!-- PAGE 3: STATION ANALYSIS (วิเคราะห์สถานีแยกทุกปัญหา - เอาแทบเลื่อนแนวตั้งออก เพื่อความต่อเนื่อง) -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-4 hidden">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
@@ -216,7 +223,7 @@
                 <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">ตารางวิเคราะห์ทุกปัญหาแยก Station Waste</h3>
                 <span class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-bold">5 สถานีหลัก</span>
             </div>
-            <div class="overflow-x-auto w-full"> <!-- ปรับปรุงคลาสนี้ เพื่อไม่ให้มีแทบเลื่อนแนวตั้งในตาราง (ดูข้อมูลสถานีและผลรวมได้ทั้งหมด) -->
+            <div class="overflow-x-auto w-full"> 
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-100/50 text-[11px] md:text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
@@ -236,17 +243,14 @@
                         </tr>
                     </thead>
                     <tbody id="station-analysis-table-body" class="text-xs md:text-sm text-slate-600 divide-y divide-slate-100">
-                        <!-- โหลดแถวสถานีอัตโนมัติจาก Javascript -->
                     </tbody>
                     <tfoot id="station-analysis-table-foot">
-                        <!-- โหลดแถวผลรวมจาก Javascript อัตโนมัติ -->
                     </tfoot>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- PAGE 4: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -261,119 +265,74 @@
 
     <script>
         Chart.register(ChartDataLabels);
-        // ตัวแปรสำหรับเก็บข้อมูลรายชื่อและโครงสร้างพนักงานแบบละเอียด
         let rawData = [], ncpData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily';
         let ncpSelectedReasons = new Set();
         let ncpAllReasonOptions = [];
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
         
-        // Target สำหรับหน้า NCP Overview
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
-        
-        // Target สำหรับหน้า DOWNTIME (ปัจจัยหลัก)
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
+        const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
 
-        // กำหนด Target DOWNTIME ใหม่เจาะจงราย Station ตามโจทย์กำหนด
-        const downtimeStationTargets = {
-            "single c": 0.63,
-            "single b": 0.28,
-            "double": 0.48,
-            "dryend": 0.14,
-            "stacker": 0.07
-        };
-
-        // ฟังก์ชันช่วยทำความสะอาดและแปลงค่าเป็นตัวเลข
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
 
-        // ฟังก์ชันดึงรูปโดยเปรียบเทียบตรงกัน 4 คอลัมน์อย่างแม่นยำ 100%
         function resolveOperatorImage(name, machine, shift, stationWaste) {
             const cleanName = cleanStr(name);
             const cleanMc = cleanStr(machine);
             const cleanShift = cleanStr(shift);
             const cleanSW = cleanStr(stationWaste);
 
-            // 1. ตรวจสอบเงื่อนไขเปรียบเทียบตรงกันทั้งหมด 4 คอลัมน์ (Exact Match)
             const exactMatch = masterOperators.find(op => 
                 cleanStr(op.name) === cleanName &&
                 cleanStr(op.machine) === cleanMc &&
                 cleanStr(op.shift) === cleanShift &&
                 cleanStr(op.stationWaste) === cleanSW
             );
-            if (exactMatch && exactMatch.img) {
-                return exactMatch.img;
-            }
+            if (exactMatch && exactMatch.img) return exactMatch.img;
 
-            // 2. ระบบสำรอง 1: หากตรงกัน 3 คอลัมน์ (ชื่อ, เครื่องจักร, กะ) เผื่อมีการระบุ Station คลาดเคลื่อน
             const partialMatch = masterOperators.find(op => 
                 cleanStr(op.name) === cleanName &&
                 cleanStr(op.machine) === cleanMc &&
                 cleanStr(op.shift) === cleanShift
             );
-            if (partialMatch && partialMatch.img) {
-                return partialMatch.img;
-            }
+            if (partialMatch && partialMatch.img) return partialMatch.img;
 
-            // 3. ระบบสำรอง 2: หากตรงกัน 2 คอลัมน์ (ชื่อ, Station Waste)
             const stationMatch = masterOperators.find(op => 
                 cleanStr(op.name) === cleanName &&
                 cleanStr(op.stationWaste) === cleanSW
             );
-            if (stationMatch && stationMatch.img) {
-                return stationMatch.img;
-            }
+            if (stationMatch && stationMatch.img) return stationMatch.img;
 
-            // 4. ระบบสำรอง 3: ค้นหาจากชื่ออย่างเดียว
             const nameMatch = masterOperators.find(op => cleanStr(op.name) === cleanName);
-            if (nameMatch && nameMatch.img) {
-                return nameMatch.img;
-            }
-
-            // 5. ระบบสำรองของระบบเดิม
-            if (masterOpList.has(name)) {
-                return masterOpList.get(name);
-            }
-
+            if (nameMatch && nameMatch.img) return nameMatch.img;
+            if (masterOpList.has(name)) return masterOpList.get(name);
             return '';
         }
 
-        // ค้นหาพนักงานจากชีตรายชื่อที่ถูกกำหนดให้ดูแลสถานีนี้ภายใต้ฟิลเตอร์ปัจจุบัน (เครื่องจักร และ กะ)
         function getFilteredOperatorsForStation(stationWasteName, mcFilter, shFilter) {
             const cleanSWName = cleanStr(stationWasteName);
             const cleanMcFilter = cleanStr(mcFilter);
             const cleanShFilter = cleanStr(shFilter);
-
             const matches = masterOperators.filter(op => {
                 const matchSW = cleanStr(op.stationWaste) === cleanSWName;
                 const matchMc = !cleanMcFilter || cleanStr(op.machine) === cleanMcFilter;
                 const matchSh = !cleanShFilter || cleanStr(op.shift) === cleanShFilter;
                 return matchSW && matchMc && matchSh;
             });
-
             return [...new Set(matches.map(op => op.name))];
         }
 
-        // ฟังก์ชันคืนค่า Downtime Target แยกราย Station (DOWNTIME Page)
         function getStationDowntimeTarget(stationName) {
             const name = cleanStr(stationName);
             if (!name) return null;
-            if (downtimeStationTargets[name] !== undefined) {
-                return downtimeStationTargets[name];
-            }
-            if (stationTargetsFromSheet.has(name)) {
-                return stationTargetsFromSheet.get(name);
-            }
+            if (downtimeStationTargets[name] !== undefined) return downtimeStationTargets[name];
+            if (stationTargetsFromSheet.has(name)) return stationTargetsFromSheet.get(name);
             if (name === 'm-1' || name === 'sf-c' || name === 'm-2' || name === 'm-5' || 
-                name === 'df' || name === 'webtrol-c' || name === 'webtrol-b' || name === 'webtrol-e') {
-                return 0.21;
-            }
+                name === 'df' || name === 'webtrol-c' || name === 'webtrol-b' || name === 'webtrol-e') return 0.21;
             if (name === 'm-3' || name === 'm-4' || name === 'sf-b' || 
-                name === 'slitter m1' || name === 'slitter m2' || name === 'nc-cutter') {
-                return 0.14;
-            }
-            if (name === 'rotary shear' || name === 'stacker') {
-                return 0.07;
-            }
+                name === 'slitter m1' || name === 'slitter m2' || name === 'nc-cutter') return 0.14;
+            if (name === 'rotary shear' || name === 'stacker') return 0.07;
             return null;
         }
 
@@ -416,36 +375,21 @@
                 
                 if (name) {
                     masterOpList.set(name, img);
-                    masterOperators.push({
-                        name: name,
-                        machine: mc,
-                        station: station,
-                        shift: shift,
-                        img: img,
-                        stationWaste: stationWaste
-                    });
-
+                    masterOperators.push({ name, machine: mc, station, shift, img, stationWaste });
                     const cleanSt = cleanStr(stationWaste || station);
                     if (cleanSt) {
-                        if (!stationOperatorsMap.has(cleanSt)) {
-                            stationOperatorsMap.set(cleanSt, new Set());
-                        }
+                        if (!stationOperatorsMap.has(cleanSt)) stationOperatorsMap.set(cleanSt, new Set());
                         stationOperatorsMap.get(cleanSt).add(name);
                     }
                 }
-
-                // ดึง Target Station จากคอลัมน์ G (ดัชนี 6) เปรียบเทียบกับคอลัมน์ C (ดัชนี 2)
                 if (c.length >= 7) {
                     const rawStation = c[2] ? c[2].trim().replace(/"/g, '') : '';
                     const rawTarget = c[6] ? c[6].trim().replace(/"/g, '') : '';
                     if (rawStation && rawTarget) {
                         const targetVal = parseNum(rawTarget);
                         stationTargetsFromSheet.set(cleanStr(rawStation), targetVal);
-                        const stations = rawStation.split(',').map(s => cleanStr(s.trim()));
-                        stations.forEach(st => {
-                            if (st) {
-                                stationTargetsFromSheet.set(st, targetVal);
-                            }
+                        rawStation.split(',').map(s => cleanStr(s.trim())).forEach(st => {
+                            if (st) stationTargetsFromSheet.set(st, targetVal);
                         });
                     }
                 }
@@ -469,7 +413,7 @@
                     pmTarget: parseNum(cl(c[12])), 
                     runtime: parseNum(cl(c[13])), 
                     imgUrl: transformGDriveLink(cl(c[16])),
-                    stationWaste: cl(c[17]) // คอลัมน์ R (Station Waste) คือดัชนี 17
+                    stationWaste: cl(c[17])
                 }; 
             }).filter(d => d); 
         }
@@ -482,30 +426,14 @@
                 const iso = parseUnifiedDate(cl(c[27])); 
                 if (!iso) return null; 
                 const dObj = new Date(iso); 
-                
-                // ดึงข้อมูลสำหรับวิเคราะห์ปริมาณแผ่นเสีย (Col AL = ขาดจำนวน, Col AN = ของเหลือจากงานซ่อม)
                 const valAL = c[37] ? parseNum(cl(c[37])) : 0;
                 const valAN = c[39] ? parseNum(cl(c[39])) : 0;
-
                 return { 
-                    shift: cl(c[1]), 
-                    pdr: cl(c[2]), 
-                    machine: cl(c[6]), 
-                    station: cl(c[33]), 
-                    problem: cl(c[32]), 
-                    weightNcp: c[24] ? parseNum(cl(c[24])) : 0, 
-                    consumption: c[35] ? parseNum(cl(c[35])) : 0, 
-                    ncpOpNames: c[34] ? cl(c[34]) : '', 
-                    isoDate: iso, 
-                    date: cl(c[27]), 
-                    reasonDesc: c[20] ? cl(c[20]) : '', 
-                    year: dObj.getFullYear(), 
-                    month: dObj.getMonth()+1, 
-                    weekNum: getSunWeek(dObj),
-                    shortageVal: valAL,
-                    excessVal: valAN,
-                    hasShortage: valAL !== 0,
-                    hasExcess: valAN !== 0
+                    shift: cl(c[1]), pdr: cl(c[2]), machine: cl(c[6]), station: cl(c[33]), problem: cl(c[32]), 
+                    weightNcp: c[24] ? parseNum(cl(c[24])) : 0, consumption: c[35] ? parseNum(cl(c[35])) : 0, 
+                    ncpOpNames: c[34] ? cl(c[34]) : '', isoDate: iso, date: cl(c[27]), reasonDesc: c[20] ? cl(c[20]) : '', 
+                    year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj),
+                    shortageVal: valAL, excessVal: valAN, hasShortage: valAL !== 0, hasExcess: valAN !== 0
                 }; 
             }).filter(d => d); 
         }
@@ -513,19 +441,15 @@
         function initFilters() {
             const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
             fillSelect('main-filter-mc', getU(rawData, 'machine')); 
-            fillSelect('main-filter-station', getU(rawData, 'stationWaste')); // ปรับเปลี่ยนตัวกรองจาก 'station' เป็น 'stationWaste'
+            fillSelect('main-filter-station', getU(rawData, 'stationWaste')); 
             fillSelect('main-filter-factor', getU(rawData, 'factor')); 
             fillSelect('main-filter-shift', getU(rawData, 'shift'));
-            
             fillSelect('op-select', getU(rawData, 'operator')); 
             fillSelect('ncp-filter-mc', getU(ncpData, 'machine')); 
             fillSelect('ncp-filter-station', getU(ncpData, 'station').filter(x => isNaN(x))); 
             fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
-
-            // เติมตัวกรองของหน้าวิเคราะห์สถานีแยกทุกปัญหา (Page 3)
             fillSelect('station-filter-mc', getU(rawData, 'machine'));
             fillSelect('station-filter-shift', getU(rawData, 'shift'));
-            
             ncpAllReasonOptions = getU(ncpData, 'reasonDesc'); renderNcpReasonOptions("");
             document.querySelectorAll('input:not(#ncp-filter-reason-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
             document.addEventListener('click', (e) => { if (!e.target.closest('.multi-select-container')) toggleNcpReasonDropdown(false); });
@@ -540,45 +464,35 @@
             dropdown.innerHTML = filtered.map(opt => `<div class="multi-select-option" onclick="toggleNcpReasonSelection('${opt}')"><input type="checkbox" ${ncpSelectedReasons.has(opt) ? 'checked' : ''} class="mr-2"><span class="${ncpSelectedReasons.has(opt) ? 'font-bold text-blue-600' : ''}">${opt}</span></div>`).join('') || '<div class="p-4 text-xs text-slate-400">ไม่พบข้อมูล...</div>';
         }
         function toggleNcpReasonSelection(opt) { if (ncpSelectedReasons.has(opt)) ncpSelectedReasons.delete(opt); else ncpSelectedReasons.add(opt); renderNcpReasonChips(); renderNcpReasonOptions(document.getElementById('ncp-filter-reason-input').value); updateNCPUI(); }
-        function renderNcpReasonChips() { const container = document.getElementById('ncp-reason-chips'); container.innerHTML = Array.from(ncpSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleNcpReasonSelection('${opt}')">&times;</button></span>`).join(''); }
+        function renderNcpReasonChips() { const container = document.getElementById('ncp-reason-chips'); container.innerHTML = Array.from(ncpSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleNcpReasonSelection('${opt}')">×</button></span>`).join(''); }
 
         function updateCurrentPage() { 
             const activeBtn = document.querySelector('.nav-btn.active').id; 
             if (activeBtn === 'btn-main') updateMainUI(); 
             else if (activeBtn === 'btn-ncp') updateNCPUI(); 
             else if (activeBtn === 'btn-operator') updateOperatorUI(); 
-            else if (activeBtn === 'btn-station-analysis') updateStationAnalysisUI(); // เรียกใช้งาน UI ฟังก์ชันของหน้าวิเคราะห์ปัญหาแยกตาม Station
+            else if (activeBtn === 'btn-station-analysis') updateStationAnalysisUI(); 
         }
         
         function fillSelect(id, items) { const s = document.getElementById(id); const v = s.value; s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>'; items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); }); s.value = v; }
         
         function setDefaultDates() { 
-            const now = new Date(); 
-            const last7 = new Date(); 
-            last7.setDate(now.getDate()-7); 
-            const f = (d) => d.toISOString().split('T')[0]; 
-            document.getElementById('main-start-date').value = f(last7); 
-            document.getElementById('main-end-date').value = f(now); 
-            document.getElementById('op-start-date').value = f(last7); 
-            document.getElementById('op-end-date').value = f(now); 
-            document.getElementById('ncp-start-date').value = f(last7); 
-            document.getElementById('ncp-end-date').value = f(now); 
-            // กำหนดวันที่เริ่มต้นของหน้าสรุปการวิเคราะห์ปัญหาแยกราย Station
-            document.getElementById('station-start-date').value = f(last7);
-            document.getElementById('station-end-date').value = f(now);
+            const now = new Date(); const last7 = new Date(); last7.setDate(now.getDate()-7); const f = (d) => d.toISOString().split('T')[0]; 
+            document.getElementById('main-start-date').value = f(last7); document.getElementById('main-end-date').value = f(now); 
+            document.getElementById('op-start-date').value = f(last7); document.getElementById('op-end-date').value = f(now); 
+            document.getElementById('ncp-start-date').value = f(last7); document.getElementById('ncp-end-date').value = f(now); 
+            document.getElementById('station-start-date').value = f(last7); document.getElementById('station-end-date').value = f(now);
         }
         
         function switchPage(p) { 
             document.getElementById('page-main').classList.toggle('hidden', p !== 'main'); 
             document.getElementById('page-ncp').classList.toggle('hidden', p !== 'ncp'); 
             document.getElementById('page-operator').classList.toggle('hidden', p !== 'operator'); 
-            document.getElementById('page-station-analysis').classList.toggle('hidden', p !== 'station-analysis'); // สลับการมองเห็นของหน้าวิเคราะห์สถานี
-            
+            document.getElementById('page-station-analysis').classList.toggle('hidden', p !== 'station-analysis'); 
             document.getElementById('btn-main').classList.toggle('active', p === 'main'); 
             document.getElementById('btn-ncp').classList.toggle('active', p === 'ncp'); 
             document.getElementById('btn-operator').classList.toggle('active', p === 'operator'); 
             document.getElementById('btn-station-analysis').classList.toggle('active', p === 'station-analysis'); 
-            
             updateCurrentPage(); 
         }
         
@@ -588,12 +502,11 @@
             const s = document.getElementById('main-start-date').value, 
                   e = document.getElementById('main-end-date').value, 
                   mc = document.getElementById('main-filter-mc').value, 
-                  selectedStation = document.getElementById('main-filter-station').value, // ตัวกรอง Station Waste (คอลัมน์ R)
+                  selectedStation = document.getElementById('main-filter-station').value, 
                   sh = document.getElementById('main-filter-shift').value, 
                   fc = document.getElementById('main-filter-factor').value, 
                   sr = document.getElementById('main-filter-search').value.toLowerCase();
             
-            // สร้างแผนผังฐานข้อมูลเวลาเดินงานจริงของแต่ละ เครื่อง/กะ/วัน จาก rawData ทั้งหมดแบบ 100% เพื่อป้องกันปัญหาเซลล์ว่าง
             const machineShiftRuntime = {};
             rawData.forEach(d => {
                 const key = `${d.isoDate}_${d.shift}_${d.machine}`;
@@ -602,34 +515,24 @@
                 }
             });
 
-            // ฟังก์ชันดึงเวลาเดินงานสุทธิ (เวลาเดินงานจริง - PM Target) ของ วัน/กะ/เครื่อง ที่ถูกต้อง
             function getNetRuntime(date, shift, machine) {
                 const key = `${date}_${shift}_${machine}`;
                 const info = machineShiftRuntime[key];
                 return info ? Math.max(0, info.runtime - info.pmTarget) : 0;
             }
 
-            // 1. คำนวณเวลาเดินงานรวม (Runtime) ของ วัน/เครื่อง/กะ ที่เลือก (โดยไม่มีการกรองด้วย Station เพื่อใช้เป็นตัวหารเสมอ)
             const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
-            
             const uniqueRuntimeGroups = {}; 
             fForRuntime.forEach(d => { 
                 const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
-                if (!uniqueRuntimeGroups[key]) {
-                    uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
-                } 
+                if (!uniqueRuntimeGroups[key]) uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
             });
             const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
 
-            // 2. คำนวณเวลาสูญเสียทั้งหมด (ลบ PM และสอดคล้องกับ Station Waste ที่กรอง)
             const f = rawData.filter(d => 
-                (!s || d.isoDate >= s) && 
-                (!e || d.isoDate <= e) && 
-                (!mc || d.machine === mc) && 
+                (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && 
                 (!selectedStation || cleanStr(d.stationWaste) === cleanStr(selectedStation)) &&
-                (!sh || d.shift === sh) && 
-                (!fc || d.factor === fc) && 
-                (d.factor.toUpperCase() !== 'PM') && // ปิดการนับปัจจัยหลักที่เป็น PM ออก
+                (!sh || d.shift === sh) && (!fc || d.factor === fc) && (d.factor.toUpperCase() !== 'PM') && 
                 (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr) || d.stationWaste.toLowerCase().includes(sr))
             );
             
@@ -637,21 +540,26 @@
             const totalCount = f.reduce((a, b) => a + b.stops, 0); 
             const actualPercent = totalRuntime > 0 ? (totalDowntime / totalRuntime) * 100 : 0;
             
-            // 3. กำหนดเป้าหมาย (Target) หากเลือก Station Waste ให้ใช้ตามสถานีนั้น ๆ หากไม่ใช่ให้ดึงตามปัจจัยหลัก
             let targetVal = downtimeTargets[cleanStr(fc)] || 6.25; 
             if (selectedStation) {
                 const stationTarget = getStationDowntimeTarget(selectedStation);
-                if (stationTarget !== null) {
-                    targetVal = stationTarget;
-                }
+                if (stationTarget !== null) targetVal = stationTarget;
             }
             const diffVal = actualPercent - targetVal;
+
+            const targetDowntimeMin = totalRuntime * (targetVal / 100);
+            const diffDowntimeMin = totalDowntime - targetDowntimeMin;
 
             document.getElementById('main-total-runtime').textContent = totalRuntime.toLocaleString(); 
             document.getElementById('main-total-downtime').textContent = totalDowntime.toLocaleString(); 
             document.getElementById('main-total-count').textContent = totalCount.toLocaleString(); 
             document.getElementById('main-total-percent').textContent = actualPercent.toFixed(2) + '%';
             
+            document.getElementById('main-downtime-target-min').textContent = `Target: ${targetDowntimeMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.`;
+            const diffMinEl = document.getElementById('main-downtime-diff-min');
+            diffMinEl.textContent = `Diff: ${diffDowntimeMin > 0 ? '+' : ''}${diffDowntimeMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.`;
+            diffMinEl.className = `text-sm font-black ${diffDowntimeMin > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+
             document.getElementById('main-target-val').textContent = `Target: ${targetVal.toFixed(2)}%`; 
             const diffEl = document.getElementById('main-diff-val'); 
             diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; 
@@ -660,21 +568,15 @@
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station} | ${d.stationWaste || '-'}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             
-            // TREND CHART Logic - คำนวณเป็นเปอร์เซ็นต์อย่างถูกต้อง (เวลาสูญเสียของสถานีหารด้วยเวลาเดินงานรวมในวันเครื่องกะนั้นๆ)
             const trendDowntime = {}; 
             const trendRuntimeRaw = {}; 
             fForRuntime.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
                 const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; 
-                if (!trendRuntimeRaw[uniqueKey]) {
-                    trendRuntimeRaw[uniqueKey] = { label: k, value: getNetRuntime(d.isoDate, d.shift, d.machine) };
-                } 
+                if (!trendRuntimeRaw[uniqueKey]) trendRuntimeRaw[uniqueKey] = { label: k, value: getNetRuntime(d.isoDate, d.shift, d.machine) };
             });
             const trendRuntimeFinal = {}; 
-            Object.values(trendRuntimeRaw).forEach(obj => { 
-                trendRuntimeFinal[obj.label] = (trendRuntimeFinal[obj.label] || 0) + obj.value; 
-            });
-            
+            Object.values(trendRuntimeRaw).forEach(obj => { trendRuntimeFinal[obj.label] = (trendRuntimeFinal[obj.label] || 0) + obj.value; });
             f.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
                 trendDowntime[k] = (trendDowntime[k] || 0) + d.duration; 
@@ -683,76 +585,35 @@
             
             drawChart('mainTrendChart', { type: 'line', data: { labels: labs, datasets: [ { label: 'Actual % Downtime', data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
             
-            // 4. คำนวณ Downtime Performance แยกราย Station
             let activeStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
-            
-            // ปรับปรุง: เวลากรองเลือก Station ให้แสดงขึ้นเฉพาะ Station ที่เลือก
             if (selectedStation) {
                 const matched = activeStations.find(s => cleanStr(s) === cleanStr(selectedStation));
-                if (matched) {
-                    activeStations = [matched];
-                } else {
-                    activeStations = [selectedStation];
-                }
+                activeStations = matched ? [matched] : [selectedStation];
             }
 
             const stationDowntimeMap = {};
-            activeStations.forEach(st => {
-                stationDowntimeMap[st] = { 
-                    duration: 0, 
-                    stops: 0, 
-                    ops: new Set(),
-                    opDetails: [] // เก็บพารามิเตอร์ [เครื่องจักร, กะ, Station Waste, รายชื่อ] สำหรับใช้เปรียบเทียบดึงรูป
-                };
-            });
-
-            // ดึงข้อมูลการหยุดที่มีจริง
+            activeStations.forEach(st => { stationDowntimeMap[st] = { duration: 0, stops: 0, ops: new Set(), opDetails: [] }; });
             f.forEach(d => {
-                const stKeyRaw = d.stationWaste;
-                if (!stKeyRaw) return;
+                const stKeyRaw = d.stationWaste; if (!stKeyRaw) return;
                 const matchedSt = activeStations.find(s => cleanStr(s) === cleanStr(stKeyRaw));
                 if (matchedSt) {
                     stationDowntimeMap[matchedSt].duration += d.duration;
                     stationDowntimeMap[matchedSt].stops += d.stops;
                     if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
-                        const names = d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
-                        names.forEach(name => {
+                        d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => {
                             stationDowntimeMap[matchedSt].ops.add(name);
-                            // บันทึกรายละเอียดคู่พนักงานและข้อมูลกะ เครื่อง เพื่อดึงรูปตามความสัมพันธ์ 4 มิติ
-                            stationDowntimeMap[matchedSt].opDetails.push({
-                                name: name,
-                                machine: d.machine,
-                                shift: d.shift,
-                                stationWaste: d.stationWaste
-                            });
+                            stationDowntimeMap[matchedSt].opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.stationWaste });
                         });
                     }
                 }
             });
 
-            // ปรับปรุง: ดึงรูปคนที่อยู่ Station นั้นตามกะและเครื่อง มาแสดงร่วมด้วย แม้ว่าคนนั้นจะไม่มีเวลาสูญเสียตามตัวกรองที่เลือกก็ตาม
             activeStations.forEach(st => {
-                const assignedOps = getFilteredOperatorsForStation(st, mc, sh);
-                assignedOps.forEach(opName => {
+                getFilteredOperatorsForStation(st, mc, sh).forEach(opName => {
                     if (!stationDowntimeMap[st].ops.has(opName)) {
                         stationDowntimeMap[st].ops.add(opName);
-                        
-                        // ค้นหาข้อมูลเครื่องจักรและกะที่พนักงานท่านนี้ได้รับการบันทึกมอบหมายใน Master เพื่อให้การดึงภาพโปรไฟล์ทำงานได้ถูกต้อง
-                        const cleanOpName = cleanStr(opName);
-                        const cleanSt = cleanStr(st);
-                        const entry = masterOperators.find(o => 
-                            cleanStr(o.name) === cleanOpName && 
-                            cleanStr(o.stationWaste) === cleanSt && 
-                            (!mc || cleanStr(o.machine) === cleanStr(mc)) && 
-                            (!sh || cleanStr(o.shift) === cleanStr(sh))
-                        );
-
-                        stationDowntimeMap[st].opDetails.push({
-                            name: opName,
-                            machine: entry ? entry.machine : mc,
-                            shift: entry ? entry.shift : sh,
-                            stationWaste: st
-                        });
+                        const entry = masterOperators.find(o => cleanStr(o.name) === cleanStr(opName) && cleanStr(o.stationWaste) === cleanStr(st) && (!mc || cleanStr(o.machine) === cleanStr(mc)) && (!sh || cleanStr(o.shift) === cleanStr(sh)));
+                        stationDowntimeMap[st].opDetails.push({ name: opName, machine: entry ? entry.machine : mc, shift: entry ? entry.shift : sh, stationWaste: st });
                     }
                 });
             });
@@ -760,199 +621,49 @@
             const downtimeStationRanking = Object.entries(stationDowntimeMap).map(([stName, data]) => {
                 const stPercent = totalRuntime > 0 ? (data.duration / totalRuntime) * 100 : 0;
                 const stTarget = getStationDowntimeTarget(stName) || 6.25;
-                const stDiff = stPercent - stTarget;
-                return {
-                    name: stName,
-                    duration: data.duration,
-                    stops: data.stops,
-                    percent: stPercent,
-                    target: stTarget,
-                    diff: stDiff,
-                    ops: Array.from(data.ops),
-                    opDetails: data.opDetails
-                };
+                return { name: stName, duration: data.duration, stops: data.stops, percent: stPercent, target: stTarget, diff: stPercent - stTarget, ops: Array.from(data.ops), opDetails: data.opDetails };
             });
 
-            // ปรับปรุง: การเรียงลำดับให้เอา Diff ลบเยอะที่สุด (ดีที่สุด) ไว้ด้านบนสุด โดยใช้การเรียง ascending (a.diff - b.diff)
-            const sortedRanking = downtimeStationRanking.sort((a, b) => {
-                const valA = isNaN(a.diff) ? 0 : a.diff;
-                const valB = isNaN(b.diff) ? 0 : b.diff;
-                return valA - valB;
-            });
+            const sortedRanking = downtimeStationRanking.sort((a, b) => (isNaN(a.diff) ? 0 : a.diff) - (isNaN(b.diff) ? 0 : b.diff));
 
             document.getElementById('downtime-station-list').innerHTML = sortedRanking.map((stData, i) => {
-                // คัดกรองรายชื่อพนักงานที่มีการจับคู่ข้อมูลเพื่อดึงรูปที่ระบุในคอลัมน์ E แบบเปรียบเทียบ 4 มิติ
-                const resolvedOps = [];
-                const seenOps = new Set();
-
+                const resolvedOps = []; const seenOps = new Set();
                 stData.ops.forEach(name => {
-                    const cleanName = cleanStr(name);
-                    if (seenOps.has(cleanName)) return;
-                    seenOps.add(cleanName);
-
-                    // ค้นหาคู่ข้อมูลที่ถูกต้องจากชุดรายละเอียดเครื่องและกะของแถวนั้นๆ
+                    const cleanName = cleanStr(name); if (seenOps.has(cleanName)) return; seenOps.add(cleanName);
                     const detail = stData.opDetails.find(d => cleanStr(d.name) === cleanName);
-                    let resolvedImg = '';
-                    if (detail) {
-                        resolvedImg = resolveOperatorImage(detail.name, detail.machine, detail.shift, detail.stationWaste);
-                    } else {
-                        resolvedImg = resolveOperatorImage(name, mc, sh, stData.name);
-                    }
-
-                    resolvedOps.push({
-                        name: name,
-                        img: resolvedImg
-                    });
+                    resolvedOps.push({ name, img: detail ? resolveOperatorImage(detail.name, detail.machine, detail.shift, detail.stationWaste) : resolveOperatorImage(name, mc, sh, stData.name) });
                 });
 
                 const thumbsHtml = resolvedOps.length > 0 ? resolvedOps.map((op, idx) => {
                     const bgColor = colorPalette[idx % colorPalette.length];
-                    if (op.img) {
-                        return `<img src="${op.img}" class="op-thumb" crossorigin="anonymous" title="${op.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${op.name}">${op.name.charAt(0)}</div>`;
-                    } else {
-                        // คนที่ไม่มีรูปให้ขึ้นวงกลมระบุอักษรย่อคนนั้น ๆ แทนทันที
-                        return `<div class="op-thumb" style="background-color: ${bgColor}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;" title="${op.name}">${op.name.charAt(0)}</div>`;
-                    }
-                }).join('') : `<div class="op-thumb" style="background-color: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px dashed #cbd5e1;" title="ไม่มีผู้ปฏิบัติงาน">-</div>`;
+                    return op.img ? `<img src="${op.img}" class="op-thumb" crossorigin="anonymous" title="${op.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${op.name}">${op.name.charAt(0)}</div>` : `<div class="op-thumb" style="background-color: ${bgColor}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;" title="${op.name}">${op.name.charAt(0)}</div>`;
+                }).join('') : `<div class="op-thumb" style="background-color: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px dashed #cbd5e1;">-</div>`;
                 
-                return `
-                <div class="flex items-center gap-5">
-                    <div class="ncp-thumb-box">${thumbsHtml}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="flex flex-col truncate">
-                                <span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ') || 'ไม่มีผู้ปฏิบัติงาน'}</span>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-[11px] font-black text-blue-600 block">${stData.duration.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${stData.stops} ค. (${stData.percent.toFixed(2)}%)</span>
-                                <div class="flex flex-col items-end">
-                                    <span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span>
-                                    <span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
-                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 6.25)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div>
-                        </div>
-                    </div>
-                </div>`;
+                return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ') || 'ไม่มีผู้ปฏิบัติงาน'}</span></div><div class="text-right"><span class="text-[11px] font-black text-blue-600 block">${stData.duration.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${stData.stops} ค. (${stData.percent.toFixed(2)}%)</span><div class="flex flex-col items-end"><span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span><span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 6.25)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`;
             }).join('') || '<div class="text-center p-8 text-xs text-slate-400">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</div>';
 
-            // 5. คำนวณ Top 10 Stations Chart (ปรับให้แสดงผลสวยงาม คลีน และขยายความสูงเต็มประสิทธิภาพ)
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
             const topSt = Object.entries(stMap).sort((a,b) => b[1].t - a[1].t).slice(0,10);
             drawChart('mainChartStation', { 
-                type: 'bar', 
-                data: { 
-                    labels: topSt.map(x=>x[0]), 
-                    datasets: [{ 
-                        data: topSt.map(x=>x[1].t), 
-                        backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length] + 'CC'), // 80% opacity เพื่อความโมเดิร์น
-                        borderColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]),
-                        borderWidth: 1.5,
-                        borderRadius: 6, // ขอบแท่งกราฟมนสวยงาม
-                        borderSkipped: false,
-                        gridColor: '#f1f5f9',
-                        barThickness: 16, // ขยายความหนาของแท่งให้สัมพันธ์กับขนาดกราฟที่ใหญ่ขึ้น
-                        custom: topSt.map(x=>x[1].c) 
-                    }] 
-                }, 
-                options: { 
-                    indexAxis: 'y', 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { 
-                            anchor: 'end', 
-                            align: 'right', 
-                            formatter: (v,ctx) => `${v.toLocaleString()} น. (${ctx.dataset.custom[ctx.dataIndex].toLocaleString()} ค.)`, 
-                            font: { size: 9, weight: 'bold' }, 
-                            color: '#475569', 
-                            offset: 6 
-                        } 
-                    }, 
-                    scales: { 
-                        x: { 
-                            beginAtZero: true, 
-                            grace: '30%',
-                            grid: {
-                                color: '#f1f5f9',
-                                borderDash: [4, 4],
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: '#94a3b8',
-                                font: { size: 10 }
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false,
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: '#475569',
-                                font: { size: 10, weight: 'bold' }
-                            }
-                        }
-                    } 
-                } 
+                type: 'bar', data: { labels: topSt.map(x=>x[0]), datasets: [{ data: topSt.map(x=>x[1].t), backgroundColor: topSt.map((_, i) => colorPalette[i % colorPalette.length] + 'CC'), borderColor: topSt.map((_, i) => colorPalette[i % colorPalette.length]), borderWidth: 1.5, borderRadius: 6, borderSkipped: false, barThickness: 16, custom: topSt.map(x=>x[1].c) }] }, 
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', formatter: (v,ctx) => `${v.toLocaleString()} น. (${ctx.dataset.custom[ctx.dataIndex].toLocaleString()} ค.)`, font: { size: 9, weight: 'bold' }, color: '#475569', offset: 6 } }, scales: { x: { beginAtZero: true, grace: '30%', grid: { color: '#f1f5f9', borderDash: [4, 4], drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { grid: { display: false, drawBorder: false }, ticks: { color: '#475569', font: { size: 10, weight: 'bold' } } } } } 
             });
             
-            // 6. คำนวณและแสดงผล TOP 5 OPERATORS (นาที/ครั้ง) พร้อมปรับปรุงมุมองศารูปโปรไฟล์ให้เหมาะสม (ศีรษะไม่ขาดขอบบน)
             const opMetrics = {};
             f.forEach(d => {
                 if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
-                    const opName = d.operator;
-                    if (!opMetrics[opName]) {
-                        opMetrics[opName] = {
-                            actualMinutes: 0,
-                            stops: 0,
-                            imgUrl: d.imgUrl
-                        };
-                    }
-                    opMetrics[opName].actualMinutes += d.duration;
-                    opMetrics[opName].stops += d.stops;
+                    if (!opMetrics[d.operator]) opMetrics[d.operator] = { actualMinutes: 0, stops: 0, imgUrl: d.imgUrl };
+                    opMetrics[d.operator].actualMinutes += d.duration; opMetrics[d.operator].stops += d.stops;
                 }
             });
-
-            const topOpSorted = Object.keys(opMetrics).map(opName => {
-                const metrics = opMetrics[opName];
-                return {
-                    name: opName,
-                    actualMin: metrics.actualMinutes,
-                    stops: metrics.stops,
-                    img: metrics.imgUrl
-                };
-            }).sort((a, b) => b.actualMin - a.actualMin).slice(0, 5);
-
+            const topOpSorted = Object.keys(opMetrics).map(n => ({ name: n, actualMin: opMetrics[n].actualMinutes, stops: opMetrics[n].stops, img: opMetrics[n].imgUrl })).sort((a, b) => b.actualMin - a.actualMin).slice(0, 5);
             const maxOpDuration = topOpSorted.length > 0 ? topOpSorted[0].actualMin : 1;
             
             document.getElementById('top-operators-list').innerHTML = topOpSorted.map((x, i) => {
-                const opImg = x.img || resolveOperatorImage(x.name, mc, sh, '');
-                const percentWidth = maxOpDuration > 0 ? (x.actualMin / maxOpDuration) * 100 : 0;
-                const barColor = colorPalette[i % colorPalette.length];
-                return `
-                <div class="flex items-center gap-4 py-3 border-b border-slate-50 last:border-b-0">
-                    <div class="relative flex-shrink-0">
-                        <!-- ปรับปรุง: ใช้คลาส operator-avatar-img เพื่อดึงรูปพนักงานในกรอบลงมาพอดี ไม่หลุดล้นขอบบนวงกลม -->
-                        <img src="${opImg}" class="operator-avatar-img" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(x.name)}&background=random'">
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-slate-700 truncate">${x.name}</span>
-                            <span class="text-xs font-black text-slate-600">${x.actualMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${x.stops} ค.</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${percentWidth}%; background-color: ${barColor}"></div>
-                        </div>
-                    </div>
-                </div>`;
+                return `<div class="flex items-center gap-4 py-3 border-b border-slate-50 last:border-b-0"><div class="relative flex-shrink-0"><img src="${x.img || resolveOperatorImage(x.name, mc, sh, '')}" class="operator-avatar-img" crossorigin="anonymous" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(x.name)}&background=random'"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-slate-700 truncate">${x.name}</span><span class="text-xs font-black text-slate-600">${x.actualMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${x.stops} ค.</span></div><div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${maxOpDuration > 0 ? (x.actualMin / maxOpDuration) * 100 : 0}%; background-color: ${colorPalette[i % colorPalette.length]}"></div></div></div></div>`;
             }).join('') || '<div class="text-center p-8 text-xs text-slate-400">ไม่พบข้อมูลพนักงาน</div>';
         }
 
-        // NCP Overview UI - (ไม่มีการแก้ไขใดๆ รักษาโครงสร้างเดิมอย่างสมบูรณ์)
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             const hasSelectedReasons = ncpSelectedReasons.size > 0;
@@ -962,9 +673,7 @@
             const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && (!hasSelectedReasons || ncpSelectedReasons.has(d.reasonDesc)));
             const totalNCP = fForNCP.reduce((acc, curr) => acc + curr.weightNcp, 0);
             const actualPercent = totalConsumption > 0 ? (totalNCP / totalConsumption) * 100 : 0;
-            
-            const targetVal = ncpTargets[cleanStr(st)] || 2.00; 
-            const diffVal = actualPercent - targetVal;
+            const targetVal = ncpTargets[cleanStr(st)] || 2.00; const diffVal = actualPercent - targetVal;
             
             document.getElementById('ncp-kpi-weight-mc').textContent = totalConsumption.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('ncp-kpi-weight-ncp').textContent = totalNCP.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -972,8 +681,7 @@
             document.getElementById('ncp-kpi-target').textContent = `Target: ${targetVal.toFixed(2)}%`;
             const diffEl = document.getElementById('ncp-kpi-diff'); diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
             
-            const sortedTableData = [...fForNCP].sort((a,b) => b.weightNcp - a.weightNcp);
-            document.getElementById('ncp-table-body').innerHTML = sortedTableData.slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td><td class="p-5 font-medium">${d.pdr}</td><td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td><td class="p-5 text-slate-600">${d.reasonDesc || d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`).join('');
+            document.getElementById('ncp-table-body').innerHTML = [...fForNCP].sort((a,b) => b.weightNcp - a.weightNcp).slice(0, 100).map(d => `<tr class="border-b hover:bg-indigo-50/30 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td><td class="p-5 font-medium">${d.pdr}</td><td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td><td class="p-5 text-slate-600">${d.reasonDesc || d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`).join('');
             
             const reasonMap = {}; fForNCP.forEach(d => { const r = d.reasonDesc || "ไม่ระบุ"; reasonMap[r] = (reasonMap[r] || 0) + d.weightNcp; });
             const topReasons = Object.entries(reasonMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
@@ -989,212 +697,91 @@
                 options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', textAlign: 'center', color: '#334155', font: { size: 10, weight: 'bold' }, formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`, padding: 4 } }, scales: { x: { beginAtZero: true, grace: '50%', grid: { display: false }, ticks: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#475569' } } } }
             });
 
-            const stationNcpMap = {}; fForNCP.forEach(d => { const stKey = d.station; if (!stKey || !isNaN(stKey)) return; if (!stationNcpMap[stKey]) stationNcpMap[stKey] = { weight: 0, ops: new Set() }; stationNcpMap[stKey].weight += d.weightNcp; const names = d.ncpOpNames ? d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n) : []; names.forEach(name => stationNcpMap[stKey].ops.add(name)); });
-            const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; const stDiff = stPercent - stTarget; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stDiff, ops: Array.from(data.ops) }; });
-            document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { const thumbsHtml = stData.ops.map((name, idx) => { const img = masterOpList.get(name) || ""; const bgColor = colorPalette[idx % colorPalette.length]; return `<img src="${img}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${name}">${name.charAt(0)}</div>`; }).join(''); return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><div class="flex flex-col items-end"><span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span><span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`; }).join('');
+            const stationNcpMap = {}; fForNCP.forEach(d => { if (!d.station || !isNaN(d.station)) return; if (!stationNcpMap[d.station]) stationNcpMap[d.station] = { weight: 0, ops: new Set() }; stationNcpMap[d.station].weight += d.weightNcp; if (d.ncpOpNames) d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => stationNcpMap[d.station].ops.add(name)); });
+            const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stPercent - stTarget, ops: Array.from(data.ops) }; });
+            document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { const thumbsHtml = stData.ops.map((name, idx) => `<img src="${masterOpList.get(name) || ''}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${name.charAt(0)}</div>`).join(''); return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><div class="flex flex-col items-end"><span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span><span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`; }).join('');
 
             const trendWaste = {}; const trendConRaw = {}; fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
             fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
-            const labs = Object.keys(trendConFinal).sort();
-            const actualWeights = labs.map(l => (trendWaste[l] || 0));
-            const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
+            const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
             const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)', tension: 0.4 }];
-            if (!hasSelectedReasons) { datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } }); }
-            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets: datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            if (!hasSelectedReasons) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
+            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
-        // PAGE 3: STATION ANALYSIS (วิเคราะห์สถานีแยกทุกปัญหา - คำนวณสรุปข้อมูลจริงจากทั้งชีต Downtime และชีต Waste)
         function updateStationAnalysisUI() {
-            const s = document.getElementById('station-start-date').value,
-                  e = document.getElementById('station-end-date').value,
-                  mc = document.getElementById('station-filter-mc').value,
-                  sh = document.getElementById('station-filter-shift').value;
-
-            // 1. กรองข้อมูลเวลาสูญเสีย (Downtime)
-            const filteredDowntime = rawData.filter(d => 
-                (!s || d.isoDate >= s) && 
-                (!e || d.isoDate <= e) && 
-                (!mc || d.machine === mc) && 
-                (!sh || d.shift === sh) &&
-                (d.factor.toUpperCase() !== 'PM')
-            );
-
-            // 2. กรองข้อมูลของเสีย (Waste)
-            const filteredWaste = ncpData.filter(d => 
-                (!s || d.isoDate >= s) && 
-                (!e || d.isoDate <= e) && 
-                (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
-                (!sh || cleanStr(d.shift) === cleanStr(sh))
-            );
+            const s = document.getElementById('station-start-date').value, e = document.getElementById('station-end-date').value, mc = document.getElementById('station-filter-mc').value, sh = document.getElementById('station-filter-shift').value;
+            const filteredDowntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (d.factor.toUpperCase() !== 'PM'));
+            const filteredWaste = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
 
             const targetStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
-            let html = '';
-
-            // ประกาศตัวแปรสำหรับเก็บค่าผลรวม (Grand Totals)
-            let grandDtStops = 0;
-            let grandDtDuration = 0;
-            let grandShortageOrder = 0;
-            let grandShortageSheets = 0;
-            let grandExcessOrder = 0;
-            let grandExcessSheets = 0;
+            let html = '', grandDtStops = 0, grandDtDuration = 0, grandShortageOrder = 0, grandShortageSheets = 0, grandExcessOrder = 0, grandExcessSheets = 0;
 
             targetStations.forEach(st => {
                 const cleanSt = cleanStr(st);
-
-                // --- 1. วิเคราะห์เวลาสูญเสีย (Downtime) ---
                 const dtEntries = filteredDowntime.filter(d => cleanStr(d.stationWaste) === cleanSt);
-                const dtStops = dtEntries.reduce((sum, d) => sum + d.stops, 0);
-                const dtDuration = dtEntries.reduce((sum, d) => sum + d.duration, 0);
+                const dtStops = dtEntries.reduce((sum, d) => sum + d.stops, 0), dtDuration = dtEntries.reduce((sum, d) => sum + d.duration, 0);
 
-                // --- 2. วิเคราะห์ขาดจำนวน (Shortage - AL) ---
                 const shortageEntries = filteredWaste.filter(d => cleanStr(d.station) === cleanSt && d.hasShortage);
-                const shortageOrder = shortageEntries.length;
-                const shortageSheets = shortageEntries.reduce((sum, d) => sum + d.shortageVal, 0);
+                const shortageOrder = shortageEntries.length, shortageSheets = shortageEntries.reduce((sum, d) => sum + d.shortageVal, 0);
 
-                // --- 3. วิเคราะห์ของเหลือจากงานซ่อม (Excess - AN) ---
                 const excessEntries = filteredWaste.filter(d => cleanStr(d.station) === cleanSt && d.hasExcess);
-                const excessOrder = excessEntries.length;
-                const excessSheets = excessEntries.reduce((sum, d) => sum + d.excessVal, 0);
+                const excessOrder = excessEntries.length, excessSheets = excessEntries.reduce((sum, d) => sum + d.excessVal, 0);
 
-                // สะสมผลรวมทั้งหมด
-                grandDtStops += dtStops;
-                grandDtDuration += dtDuration;
-                grandShortageOrder += shortageOrder;
-                grandShortageSheets += shortageSheets;
-                grandExcessOrder += excessOrder;
-                grandExcessSheets += excessSheets;
+                grandDtStops += dtStops; grandDtDuration += dtDuration; grandShortageOrder += shortageOrder; grandShortageSheets += shortageSheets; grandExcessOrder += excessOrder; grandExcessSheets += excessSheets;
 
-                // --- 4. ตรวจสอบรายชื่อผู้ปฏิบัติงานร่วมตามสถานี ---
-                const ops = new Set();
-                const opDetails = [];
-
-                // จากรายงาน Downtime ที่เกิดปัญหาจริง
+                const ops = new Set(); const opDetails = [];
                 dtEntries.forEach(d => {
                     if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
-                        const names = d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
-                        names.forEach(name => {
-                            ops.add(name);
-                            opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.stationWaste });
-                        });
+                        d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => { ops.add(name); opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.stationWaste }); });
                     }
                 });
-
-                // จากรายงาน Waste/NCP ที่เกิดปัญหาของเสียจริง
                 shortageEntries.concat(excessEntries).forEach(d => {
                     if (d.ncpOpNames && d.ncpOpNames !== 'ไม่พบพนักงาน') {
-                        const names = d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
-                        names.forEach(name => {
-                            ops.add(name);
-                            opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.station });
-                        });
+                        d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => { ops.add(name); opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.station }); });
                     }
                 });
-
-                // ดึงรายชื่อพนักงานที่ได้รับมอบหมายตามชีตรายชื่อ (แม้ว่าจะไม่มีของเสีย/เวลาสูญเสียก็ตาม)
-                const assignedOps = getFilteredOperatorsForStation(st, mc, sh);
-                assignedOps.forEach(name => {
+                getFilteredOperatorsForStation(st, mc, sh).forEach(name => {
                     if (!ops.has(name)) {
                         ops.add(name);
-                        const entry = masterOperators.find(o => 
-                            cleanStr(o.name) === cleanStr(name) && 
-                            cleanStr(o.stationWaste) === cleanSt && 
-                            (!mc || cleanStr(o.machine) === cleanStr(mc)) && 
-                            (!sh || cleanStr(o.shift) === cleanStr(sh))
-                        );
-                        opDetails.push({
-                            name,
-                            machine: entry ? entry.machine : mc,
-                            shift: entry ? entry.shift : sh,
-                            stationWaste: st
-                        });
+                        const entry = masterOperators.find(o => cleanStr(o.name) === cleanStr(name) && cleanStr(o.stationWaste) === cleanSt && (!mc || cleanStr(o.machine) === cleanStr(mc)) && (!sh || cleanStr(o.shift) === cleanStr(sh)));
+                        opDetails.push({ name, machine: entry ? entry.machine : mc, shift: entry ? entry.shift : sh, stationWaste: st });
                     }
                 });
 
-                // ตรวจสอบดึงรูปตามความสัมพันธ์แบบ 4 มิติ
-                const resolvedOps = [];
-                const seenOps = new Set();
+                const resolvedOps = []; const seenOps = new Set();
                 ops.forEach(name => {
-                    const cleanName = cleanStr(name);
-                    if (seenOps.has(cleanName)) return;
-                    seenOps.add(cleanName);
-
+                    const cleanName = cleanStr(name); if (seenOps.has(cleanName)) return; seenOps.add(cleanName);
                     const detail = opDetails.find(d => cleanStr(d.name) === cleanName);
-                    let resolvedImg = '';
-                    if (detail) {
-                        resolvedImg = resolveOperatorImage(detail.name, detail.machine, detail.shift, detail.stationWaste);
-                    } else {
-                        resolvedImg = resolveOperatorImage(name, mc, sh, st);
-                    }
-                    resolvedOps.push({ name, img: resolvedImg });
+                    resolvedOps.push({ name, img: detail ? resolveOperatorImage(detail.name, detail.machine, detail.shift, detail.stationWaste) : resolveOperatorImage(name, mc, sh, st) });
                 });
 
-                // เจนเนอเรต HTML รูปฟรอนต์เอนด์ (Overlapping Avatars) ด้วยขนาดที่ใหญ่ขึ้น (56px) และปรับครอปใบหน้าให้อยู่จุดโฟกัส 10%
                 const thumbsHtml = resolvedOps.length > 0 ? resolvedOps.map((op, idx) => {
-                    const bgColor = colorPalette[idx % colorPalette.length];
-                    if (op.img) {
-                        return `<div class="relative group" title="${op.name}">
-                                    <img src="${op.img}" class="station-avatar-img" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="station-avatar-fallback" style="background-color: ${bgColor}; display: none;">${op.name.charAt(0)}</div>
-                                </div>`;
-                    } else {
-                        return `<div class="station-avatar-fallback" style="background-color: ${bgColor};" title="${op.name}">${op.name.charAt(0)}</div>`;
-                    }
-                }).join('') : `<div class="station-avatar-fallback !border-dashed !bg-slate-100 !text-slate-400 !border-slate-300" title="ไม่มีผู้ปฏิบัติงาน">-</div>`;
+                    return op.img ? `<div class="relative group" title="${op.name}"><img src="${op.img}" class="station-avatar-img" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="station-avatar-fallback" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${op.name.charAt(0)}</div></div>` : `<div class="station-avatar-fallback" style="background-color: ${colorPalette[idx % colorPalette.length]};" title="${op.name}">${op.name.charAt(0)}</div>`;
+                }).join('') : `<div class="station-avatar-fallback !border-dashed !bg-slate-100 !text-slate-400 !border-slate-300">-</div>`;
 
                 const opNamesStr = resolvedOps.map(o => o.name).join(', ') || 'ไม่มีผู้ปฏิบัติงาน';
 
-                html += `
-                    <tr class="hover:bg-slate-50/50 transition-colors">
-                        <!-- Column 1: Station (ขยายขนาดตัวอักษร) -->
-                        <td class="py-2.5 px-5 border-r border-slate-100 font-black text-slate-800 text-sm md:text-base">
-                            ${st}
-                        </td>
-                        <!-- Column 2: รูปภาพและชื่อพนักงาน (รวมในคอลัมน์) -->
-                        <td class="py-2.5 px-5 border-r border-slate-100">
-                            <div class="flex items-center gap-4">
-                                <div class="flex -space-x-4 overflow-hidden p-1">
-                                    ${thumbsHtml}
-                                </div>
-                                <div class="min-w-0">
-                                    <span class="text-xs md:text-sm font-bold text-slate-700 block max-w-[200px] truncate" title="${opNamesStr}">${opNamesStr}</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${dtStops.toLocaleString()}</td>
-                        <td class="py-2.5 px-5 text-center font-black text-rose-500 text-sm md:text-base border-r border-slate-200 bg-rose-50/10">${dtDuration.toLocaleString()}</td>
-                        <td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${shortageOrder.toLocaleString()}</td>
-                        <td class="py-2.5 px-5 text-center font-black text-blue-600 text-sm md:text-base border-r border-slate-200 bg-blue-50/10">${shortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
-                        <td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${excessOrder.toLocaleString()}</td>
-                        <td class="py-2.5 px-5 text-center font-black text-amber-600 text-sm md:text-base bg-amber-50/10">${excessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
-                    </tr>
-                `;
+                html += `<tr class="hover:bg-slate-50/50 transition-colors"><td class="py-2.5 px-5 border-r border-slate-100 font-black text-slate-800 text-sm md:text-base">${st}</td><td class="py-2.5 px-5 border-r border-slate-100"><div class="flex items-center gap-4"><div class="flex -space-x-4 overflow-hidden p-1">${thumbsHtml}</div><div class="min-w-0"><span class="text-xs md:text-sm font-bold text-slate-700 block max-w-[200px] truncate" title="${opNamesStr}">${opNamesStr}</span></div></div></td><td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${dtStops.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-black text-rose-500 text-sm md:text-base border-r border-slate-200 bg-rose-50/10">${dtDuration.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${shortageOrder.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-black text-blue-600 text-sm md:text-base border-r border-slate-200 bg-blue-50/10">${shortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td><td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${excessOrder.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-black text-amber-600 text-sm md:text-base bg-amber-50/10">${excessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td></tr>`;
             });
 
             document.getElementById('station-analysis-table-body').innerHTML = html;
-
-            // ปล่อยแถวผลรวมแบบอัจฉริยะ (Grand Totals) ลงใน tfoot
-            const footHtml = `
-                <tr class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
-                    <td class="py-3 px-5 border-r border-slate-200 text-sm md:text-base" colspan="2">
-                        <div class="flex justify-between items-center">
-                            <span class="uppercase tracking-wider">ผลรวมทั้งหมด (Total)</span>
-                            <span class="text-xs text-slate-400 font-bold italic mr-2">5 สถานี</span>
-                        </div>
-                    </td>
-                    <td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandDtStops.toLocaleString()}</td>
-                    <td class="py-3 px-5 text-center text-rose-600 text-sm md:text-base border-r border-slate-300 bg-rose-100/20">${grandDtDuration.toLocaleString()}</td>
-                    <td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandShortageOrder.toLocaleString()}</td>
-                    <td class="py-3 px-5 text-center text-blue-700 text-sm md:text-base border-r border-slate-300 bg-blue-100/20">${grandShortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
-                    <td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandExcessOrder.toLocaleString()}</td>
-                    <td class="py-3 px-5 text-center text-amber-700 text-sm md:text-base bg-amber-100/20">${grandExcessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td>
-                </tr>
-            `;
-            document.getElementById('station-analysis-table-foot').innerHTML = footHtml;
+            document.getElementById('station-analysis-table-foot').innerHTML = `<tr class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300"><td class="py-3 px-5 border-r border-slate-200 text-sm md:text-base" colspan="2"><div class="flex justify-between items-center"><span>ผลรวมทั้งหมด (Total)</span><span class="text-xs text-slate-400 font-bold italic mr-2">5 สถานี</span></div></td><td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandDtStops.toLocaleString()}</td><td class="py-3 px-5 text-center text-rose-600 text-sm md:text-base border-r border-slate-300 bg-rose-100/20">${grandDtDuration.toLocaleString()}</td><td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandShortageOrder.toLocaleString()}</td><td class="py-3 px-5 text-center text-blue-700 text-sm md:text-base border-r border-slate-300 bg-blue-100/20">${grandShortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td><td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandExcessOrder.toLocaleString()}</td><td class="py-3 px-5 text-center text-amber-700 text-sm md:text-base bg-amber-100/20">${grandExcessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td></tr>`;
         }
 
-        // Operator Analysis UI - (ไม่มีการแก้ไขใดๆ รักษาโครงสร้างเดิมอย่างสมบูรณ์)
-        function updateOperatorUI() { const n = document.getElementById('op-select').value, s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value, img = document.getElementById('op-profile-img'), ph = document.getElementById('op-img-placeholder'); if (!n) return; const f = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e)); document.getElementById('op-info-mc').textContent = getMode(f.map(d => d.machine)); document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station)); document.getElementById('op-info-shift').textContent = f.length ? f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date)))[0].shift : "-"; const url = f.length ? f.find(d => d.imgUrl && d.imgUrl.includes('google'))?.imgUrl : ""; if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); } document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString(); document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-5 font-bold text-slate-700">${d.date}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5"><span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] uppercase font-bold text-slate-500">${d.factor}</span></td></tr>`).join(''); const trend = {}; f.forEach(d => { let k = opTrendMode === 'daily' ? d.date : (opTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); if(!trend[k]) trend[k] = { t:0, c:0 }; trend[k].t += d.duration; trend[k].c += d.stops; }); const labs = Object.keys(trend).sort((a,b) => opTrendMode === 'daily' ? new Date(formatToISO(a)) - new Date(formatToISO(b)) : a.localeCompare(b)); drawChart('opTrendChart', { type: 'line', data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex].toLocaleString()}ค.`, font: { size: 10, weight: 600 }, color: '#334155', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } }); }
+        function updateOperatorUI() { 
+            const n = document.getElementById('op-select').value, s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value, img = document.getElementById('op-profile-img'), ph = document.getElementById('op-img-placeholder'); if (!n) return; 
+            const f = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e)); 
+            document.getElementById('op-info-mc').textContent = getMode(f.map(d => d.machine)); document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station)); document.getElementById('op-info-shift').textContent = f.length ? f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date)))[0].shift : "-"; 
+            const url = f.length ? f.find(d => d.imgUrl && d.imgUrl.includes('google'))?.imgUrl : ""; 
+            if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); } 
+            document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString(); 
+            document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-5 font-bold text-slate-700">${d.date}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5"><span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] uppercase font-bold text-slate-500">${d.factor}</span></td></tr>`).join(''); 
+            const trend = {}; f.forEach(d => { let k = opTrendMode === 'daily' ? d.date : (opTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); if(!trend[k]) trend[k] = { t:0, c:0 }; trend[k].t += d.duration; trend[k].c += d.stops; }); 
+            const labs = Object.keys(trend).sort((a,b) => opTrendMode === 'daily' ? new Date(formatToISO(a)) - new Date(formatToISO(b)) : a.localeCompare(b)); 
+            drawChart('opTrendChart', { type: 'line', data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex].toLocaleString()}ค.`, font: { size: 10, weight: 600 }, color: '#334155', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } }); 
+        }
         function getMode(arr) { if(!arr.length) return "-"; const m = {}; let max = arr[0], c = 1; arr.forEach(x => { m[x] = (m[x]||0)+1; if(m[x]>c){ max=x; c=m[x]; } }); return max; }
         function setMainTrendMode(m) { mainTrendMode = m; document.querySelectorAll('#btn-main-trend-daily, #btn-main-trend-weekly, #btn-main-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-main-trend-${m}`)); updateMainUI(); }
         function setOpTrendMode(m) { opTrendMode = m; document.querySelectorAll('#btn-op-trend-daily, #btn-op-trend-weekly, #btn-op-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-op-trend-${m}`)); updateOperatorUI(); }
