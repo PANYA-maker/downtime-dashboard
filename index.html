@@ -211,7 +211,7 @@
         </div>
     </div>
 
-    <!-- PAGE 3: SHORTAGE OVERVIEW (หน้าใหม่) -->
+    <!-- PAGE 3: SHORTAGE OVERVIEW -->
     <div id="page-shortage" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500">
@@ -245,30 +245,38 @@
         
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
             <div class="lg:col-span-3">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่ (Col A)</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label>
                 <div class="flex gap-2">
                     <input type="date" id="shortage-start-date" class="w-full">
                     <input type="date" id="shortage-end-date" class="w-full">
                 </div>
             </div>
             <div class="lg:col-span-2">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร (Col H)</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label>
                 <select id="shortage-filter-mc"><option value="">ทั้งหมด</option></select>
             </div>
             <div class="lg:col-span-2">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste (Col BM)</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label>
                 <select id="shortage-filter-station"><option value="">ทั้งหมด</option></select>
             </div>
-            <div class="lg:col-span-2">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift) (Col AC)</label>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label>
                 <select id="shortage-filter-shift"><option value="">ทั้งหมด</option></select>
             </div>
-            <div class="lg:col-span-3">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาลูกค้า (Col L)</label>
+            <div class="lg:col-span-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาลูกค้า</label>
                 <div class="multi-select-container">
                     <div id="shortage-customer-chips" class="flex flex-wrap gap-1 mb-1"></div>
                     <input type="text" id="shortage-filter-customer-input" placeholder="พิมพ์เพื่อค้นหาลูกค้า..." class="w-full" onfocus="toggleShortageCustDropdown(true)" oninput="filterShortageCustOptions(this.value)">
                     <div id="shortage-customer-dropdown" class="multi-select-dropdown"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาสาเหตุ</label>
+                <div class="multi-select-container">
+                    <div id="shortage-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
+                    <input type="text" id="shortage-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาสาเหตุ..." class="w-full" onfocus="toggleShortageReasonDropdown(true)" oninput="filterShortageReasonOptions(this.value)">
+                    <div id="shortage-reason-dropdown" class="multi-select-dropdown"></div>
                 </div>
             </div>
         </div>
@@ -310,8 +318,8 @@
                             <th class="p-5">วันที่/กะ</th>
                             <th class="p-5">PDR/ชื่อลูกค้า</th>
                             <th class="p-5">เครื่องจักร/Station</th>
-                            <th class="p-5">สาเหตุ</th>
-                            <th class="p-5 text-center">จำนวนแผ่น</th>
+                            <th class="p-5">สาเหตุ/จำนวนแผ่น</th>
+                            <th class="p-5">สถานะหยุดเครื่อง/ลักษณะออเดอร์</th>
                         </tr>
                     </thead>
                     <tbody id="shortage-table-body" class="text-xs text-slate-600"></tbody>
@@ -320,7 +328,7 @@
         </div>
     </div>
 
-    <!-- PAGE 4: STATION ANALYSIS (ขยายตัวตารางออกเต็มระบบ ไม่มีแทบเลื่อนแนวตั้ง) -->
+    <!-- PAGE 4: STATION ANALYSIS -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-4 hidden">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
@@ -400,6 +408,8 @@
         let ncpAllReasonOptions = [];
         let shortageSelectedCustomers = new Set();
         let shortageAllCustomerOptions = [];
+        let shortageSelectedReasons = new Set();
+        let shortageAllReasonOptions = [];
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
         
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
@@ -579,7 +589,7 @@
         function parseShortage(text) {
             shortageData = text.split(/\r?\n/).slice(1).map(line => {
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (c.length < 65) return null;
+                if (c.length < 30) return null;
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
                 const rawDate = cl(c[0]);
                 const iso = parseUnifiedDate(rawDate);
@@ -591,14 +601,16 @@
                     year: dObj.getFullYear(),
                     month: dObj.getMonth() + 1,
                     weekNum: getSunWeek(dObj),
-                    machine: cl(c[7]),           // Col H
+                    machine: c[65] ? cl(c[65]) : '',          // Col BN (Index 65)
                     pdr: cl(c[9]),               // Col J
                     customer: cl(c[11]),         // Col L
                     status: cl(c[19]),           // Col T
                     sheets: parseNum(cl(c[20])), // Col U
                     reason: cl(c[25]),           // Col Z
                     shift: cl(c[28]),            // Col AC
-                    station: cl(c[64])           // Col BM (Station Waste)
+                    station: c[64] ? cl(c[64]) : '',          // Col BM
+                    stopStatus: c[53] ? cl(c[53]) : '',       // Col BB
+                    orderPattern: c[54] ? cl(c[54]) : ''      // Col BC
                 };
             }).filter(d => d);
         }
@@ -616,19 +628,24 @@
             fillSelect('station-filter-mc', getU(rawData, 'machine'));
             fillSelect('station-filter-shift', getU(rawData, 'shift'));
             
-            // Shortage Filters
+            // Shortage Filters (Changed to Col BN for Machine Filter automatically)
             fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
             fillSelect('shortage-filter-station', getU(shortageData, 'station'));
             fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
+            
             shortageAllCustomerOptions = getU(shortageData, 'customer');
             renderShortageCustOptions("");
+            
+            shortageAllReasonOptions = getU(shortageData, 'reason').filter(x => x && x !== 'ครบจำนวน');
+            renderShortageReasonOptions("");
 
             ncpAllReasonOptions = getU(ncpData, 'reasonDesc'); renderNcpReasonOptions("");
-            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#shortage-filter-customer-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
+            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#shortage-filter-customer-input):not(#shortage-filter-reason-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
             document.addEventListener('click', (e) => { 
                 if (!e.target.closest('.multi-select-container')) {
                     toggleNcpReasonDropdown(false); 
                     toggleShortageCustDropdown(false);
+                    toggleShortageReasonDropdown(false);
                 } 
             });
         }
@@ -655,6 +672,18 @@
         }
         function toggleShortageCustSelection(opt) { if (shortageSelectedCustomers.has(opt)) shortageSelectedCustomers.delete(opt); else shortageSelectedCustomers.add(opt); renderShortageCustChips(); renderShortageCustOptions(document.getElementById('shortage-filter-customer-input').value); updateShortageUI(); }
         function renderShortageCustChips() { const container = document.getElementById('shortage-customer-chips'); container.innerHTML = Array.from(shortageSelectedCustomers).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageCustSelection('${opt}')">×</button></span>`).join(''); }
+
+        // Shortage Reason Multi-Select Functions
+        function toggleShortageReasonDropdown(show) { const dropdown = document.getElementById('shortage-reason-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
+        function filterShortageReasonOptions(searchText) { renderShortageReasonOptions(searchText); toggleShortageReasonDropdown(true); }
+        function renderShortageReasonOptions(searchText) {
+            const dropdown = document.getElementById('shortage-reason-dropdown');
+            const cleanSearch = searchText.toLowerCase();
+            const filtered = shortageAllReasonOptions.filter(opt => opt.toLowerCase().includes(cleanSearch));
+            dropdown.innerHTML = filtered.map(opt => `<div class="multi-select-option" onclick="toggleShortageReasonSelection('${opt}')"><input type="checkbox" ${shortageSelectedReasons.has(opt) ? 'checked' : ''} class="mr-2"><span class="${shortageSelectedReasons.has(opt) ? 'font-bold text-blue-600' : ''}">${opt}</span></div>`).join('') || '<div class="p-4 text-xs text-slate-400">ไม่พบข้อมูล...</div>';
+        }
+        function toggleShortageReasonSelection(opt) { if (shortageSelectedReasons.has(opt)) shortageSelectedReasons.delete(opt); else shortageSelectedReasons.add(opt); renderShortageReasonChips(); renderShortageReasonOptions(document.getElementById('shortage-filter-reason-input').value); updateShortageUI(); }
+        function renderShortageReasonChips() { const container = document.getElementById('shortage-reason-chips'); container.innerHTML = Array.from(shortageSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageReasonSelection('${opt}')">×</button></span>`).join(''); }
 
         function updateCurrentPage() { 
             const activeBtn = document.querySelector('.nav-btn.active').id; 
@@ -920,6 +949,7 @@
                   st = document.getElementById('shortage-filter-station').value,
                   sh = document.getElementById('shortage-filter-shift').value;
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
+            const hasSelectedReasons = shortageSelectedReasons.size > 0;
 
             const fShortage = shortageData.filter(d => 
                 (!s || d.isoDate >= s) && 
@@ -927,7 +957,8 @@
                 (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
                 (!st || cleanStr(d.station) === cleanStr(st)) && 
                 (!sh || cleanStr(d.shift) === cleanStr(sh)) && 
-                (!hasSelectedCust || shortageSelectedCustomers.has(d.customer))
+                (!hasSelectedCust || shortageSelectedCustomers.has(d.customer)) &&
+                (!hasSelectedReasons || shortageSelectedReasons.has(d.reason))
             );
 
             const validStatusOrders = fShortage.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
@@ -936,18 +967,30 @@
             const shortageOrders = validStatusOrders.filter(d => d.status === 'ขาดจำนวน').length;
             
             const actualPercent = totalOrders > 0 ? (shortageOrders / totalOrders) * 100 : 0;
-            const targetVal = 18.00;
-            const diffVal = actualPercent - targetVal;
+            
+            // Dynamic Target setting logic
+            const hasTarget = !hasSelectedReasons; // When shortage reason is filtered, remove Target.
+            let targetVal = 18.00;
+            if (hasSelectedCust) {
+                targetVal = 10.00; // When customer is filtered, Target is 10.00%
+            }
 
             document.getElementById('shortage-kpi-total').textContent = totalOrders.toLocaleString();
             document.getElementById('shortage-kpi-completed').textContent = completedOrders.toLocaleString();
             document.getElementById('shortage-kpi-shortage').textContent = shortageOrders.toLocaleString();
             document.getElementById('shortage-kpi-percent').textContent = actualPercent.toFixed(2) + '%';
-            document.getElementById('shortage-kpi-target').textContent = `Target: ${targetVal.toFixed(2)}%`;
+            
+            document.getElementById('shortage-kpi-target').textContent = hasTarget ? `Target: ${targetVal.toFixed(2)}%` : `Target: -`;
             
             const diffEl = document.getElementById('shortage-kpi-diff');
-            diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`;
-            diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+            if (hasTarget) {
+                const diffVal = actualPercent - targetVal;
+                diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`;
+                diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+            } else {
+                diffEl.textContent = `Diff: -`;
+                diffEl.className = `text-sm font-black text-slate-400`;
+            }
 
             // 1. Trend Line Chart
             const trendShortage = {};
@@ -967,22 +1010,25 @@
                 label: 'Actual % ขาดจำนวน',
                 data: actualPercents,
                 customCounts: actualCounts,
-                customTotals: labs.map(l => trendTotal[l]),
                 borderColor: 'rgba(99, 102, 241, 1)',
                 borderWidth: 3,
                 fill: true,
                 backgroundColor: 'rgba(99, 102, 241, 0.1)',
                 tension: 0.4
-            }, {
-                label: `Target (${targetVal.toFixed(2)}%)`,
-                data: labs.map(() => targetVal),
-                borderColor: 'rgba(100, 116, 139, 0.6)',
-                borderWidth: 2,
-                borderDash: [5, 5],
-                pointRadius: 0,
-                fill: false,
-                datalabels: { display: false }
             }];
+
+            if (hasTarget) {
+                datasets.push({
+                    label: `Target (${targetVal.toFixed(2)}%)`,
+                    data: labs.map(() => targetVal),
+                    borderColor: 'rgba(100, 116, 139, 0.6)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                    datalabels: { display: false }
+                });
+            }
 
             drawChart('shortageTrendChart', {
                 type: 'line',
@@ -994,7 +1040,8 @@
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]} / ${ctx.dataset.customTotals[ctx.dataIndex]} ออเดอร์)` : '',
+                            // Updated to show only percentage and shortage count (no "ออเดอร์" word)
+                            formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
                             color: '#4f46e5',
@@ -1040,7 +1087,7 @@
                             textAlign: 'center',
                             color: '#334155',
                             font: { size: 10, weight: 'bold' },
-                            formatter: (v, ctx) => `${v.toLocaleString()} ออเดอร์\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`,
+                            formatter: (v, ctx) => `${v.toLocaleString()}\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`,
                             padding: 4
                         }
                     },
@@ -1084,7 +1131,7 @@
                             textAlign: 'center',
                             color: '#334155',
                             font: { size: 10, weight: 'bold' },
-                            formatter: (v, ctx) => `${v.toLocaleString()} ออเดอร์\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`,
+                            formatter: (v, ctx) => `${v.toLocaleString()}\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`,
                             padding: 4
                         }
                     },
@@ -1095,12 +1142,20 @@
                 }
             });
 
-            // 4. Performance by Station List
+            // 4. Performance by Station List (Filter stations dynamically based on selection)
             const stationShortagePerf = {};
-            const shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
+            let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
+            
+            // If specific Station is selected in the filter, only display that station
+            if (st) {
+                const matched = shortageStations.find(s => cleanStr(s) === cleanStr(st));
+                shortageStations = matched ? [matched] : [st];
+            }
+
             shortageStations.forEach(stName => {
                 stationShortagePerf[stName] = { shortageCount: 0, totalCount: 0, ops: new Set() };
             });
+
             validStatusOrders.forEach(d => {
                 const cleanSt = cleanStr(d.station);
                 const matchedSt = shortageStations.find(s => cleanStr(s) === cleanSt);
@@ -1116,6 +1171,7 @@
                     }
                 }
             });
+
             shortageStations.forEach(stName => {
                 getFilteredOperatorsForStation(stName, mc, sh).forEach(opName => {
                     stationShortagePerf[stName].ops.add(opName);
@@ -1123,7 +1179,8 @@
             });
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
-                const stPercent = data.totalCount > 0 ? (data.shortageCount / data.totalCount) * 100 : 0;
+                // Calculated as (Shortage count of Station / Grand total KPI card orders) * 100
+                const stPercent = totalOrders > 0 ? (data.shortageCount / totalOrders) * 100 : 0;
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
@@ -1142,6 +1199,12 @@
                     return `<img src="${imgUrl}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;">${name.charAt(0)}</div>`;
                 }).join('');
                 
+                const targetText = hasTarget ? `${stData.target.toFixed(2)}%` : `-`;
+                const diffText = hasTarget ? `${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%` : `-`;
+                const diffClass = hasTarget ? (stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600') : 'text-slate-400';
+                const barWidth = hasTarget ? Math.min(100, Math.max(5, (stData.percent / (stData.target || 18)) * 50)) : Math.min(100, Math.max(5, stData.percent * 3));
+                const barColor = hasTarget ? (stData.diff > 0 ? '#fb7185' : '#34d399') : '#6366f1';
+                
                 return `
                     <div class="flex items-center gap-5">
                         <div class="ncp-thumb-box">${thumbsHtml}</div>
@@ -1154,28 +1217,28 @@
                                 <div class="text-right">
                                     <span class="text-[11px] font-black text-indigo-600 block">${stData.shortageCount.toLocaleString()} ออเดอร์ (${stData.percent.toFixed(2)}%)</span>
                                     <div class="flex flex-col items-end">
-                                        <span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span>
-                                        <span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span>
+                                        <span class="text-[9px] text-slate-400 font-bold italic">Target: ${targetText}</span>
+                                        <span class="text-[10px] font-bold ${diffClass} italic">Diff: ${diffText}</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
-                                <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 18)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div>
+                                <div class="h-full rounded-full transition-all duration-1000" style="width: ${barWidth}%; background: ${barColor}"></div>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            // 5. Shortage Detailed Table
+            // 5. Shortage Detailed Table (Updated layout with combined columns & new columns Col BB and BC)
             const fShortageTable = fShortage.filter(d => d.status === 'ขาดจำนวน');
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
                     <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td>
                     <td class="p-5 font-medium">PDR: ${d.pdr}<br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.customer}</span></td>
                     <td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td>
-                    <td class="p-5 text-slate-600">${d.reason || '-'}</td>
-                    <td class="p-5 text-center font-black text-rose-500">${d.sheets.toLocaleString()}</td>
+                    <td class="p-5 font-medium">${d.reason || '-'}<br><span class="text-xs font-black text-rose-500">${d.sheets.toLocaleString()} แผ่น</span></td>
+                    <td class="p-5 font-medium text-slate-600">${d.stopStatus || '-'}<br><span class="text-[10px] text-slate-400 font-bold uppercase">${d.orderPattern || '-'}</span></td>
                 </tr>
             `).join('') || '<tr><td colspan="5" class="p-5 text-center text-slate-400">ไม่พบข้อมูลออเดอร์ขาดจำนวนที่ตรงเงื่อนไข</td></tr>';
         }
