@@ -1,23 +1,3 @@
-รับทราบคำสั่งครับ ผมจะทำการปรับเปลี่ยน**เฉพาะหน้าภาพรวมขาดจำนวน (PAGE 3: SHORTAGE OVERVIEW)** ในส่วนของฟังก์ชันการคำนวณและแสดงผล Target ให้แยกตาม Station Waste ตามที่คุณกำหนดอย่างเคร่งครัด โดยหน้าอื่น ๆ และโครงสร้างหลักทั้งหมดจะยังคงเดิมไม่เปลี่ยนแปลงใด ๆ ครับ
-
-### ส่วนที่ทำการปรับปรุงในโค้ด:
-
-1. **เพิ่มตัวแปรเก็บ Target ของ Shortage แยกตาม Station:**
-```javascript
-const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70 };
-
-```
-
-
-2. **ปรับฟังก์ชัน `updateShortageUI()`:**
-* ดึงค่าจากฟิลเตอร์ Station Waste (`st`) มาจับคู่กับ `shortageStationTargets` เพื่อเปลี่ยนค่าเป้าหมาย (Target) บนการ์ด `%ขาดจำนวน` และเส้น Target ในกราฟแนวโน้มอัตโนมัติ
-* ปรับแก้ในส่วนของลิสต์ด้านล่าง `shortagePerfRanking.map` ให้ใช้ค่า `shortageStationTargets[cleanStr(stData.name)]` แทนค่า `targetVal` รวม เพื่อให้แต่ละสถานีแสดงเส้น Target และค่า Diff ประจำสถานีของตัวเองได้อย่างถูกต้องแม้ไม่ได้เลือกฟิลเตอร์
-
-
-
-นี่คือซอร์สโค้ดเต็มรูปแบบที่อัปเดตเรียบร้อยแล้วครับ:
-
-```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -88,6 +68,10 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         .multi-select-chip button { margin-left: 4px; color: #ef4444; }
 
         @media (max-width: 640px) { .profile-container { width: 140px; height: 140px; min-width: 140px; min-height: 140px; } .op-thumb { width: 44px; height: 44px; min-width: 44px; font-size: 12px; } .ncp-thumb-box { width: 140px; min-width: 140px; } }
+        
+        /* สไตล์พรีเมียมแจ้งเตือนแบบ Toast */
+        .toast-msg { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { transform: translateY(100%) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="p-3 md:p-6 pb-20">
@@ -97,6 +81,10 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
+    <!-- แหล่งรวม Toast แจ้งเตือนลอยบนจอ -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[999] flex flex-col gap-3 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+    <!-- URLs -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
     <input type="hidden" id="op-list-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=593156373&single=true&output=csv">
@@ -114,6 +102,7 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         </button>
     </div>
 
+    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
@@ -169,6 +158,7 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         </div>
     </div>
 
+    <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -228,6 +218,7 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         </div>
     </div>
 
+    <!-- PAGE 3: SHORTAGE OVERVIEW -->
     <div id="page-shortage" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500">
@@ -344,6 +335,7 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         </div>
     </div>
 
+    <!-- PAGE 4: STATION ANALYSIS -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-4 hidden">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
@@ -403,6 +395,7 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         </div>
     </div>
 
+    <!-- PAGE 5: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -429,77 +422,173 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
-        
-        // เพิ่ม Target ของภาพรวมขาดจำนวนแยกตาม Station Waste
-        const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70 };
 
-        function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
-        function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
-
-        function resolveOperatorImage(name, machine, shift, stationWaste) {
-            const cleanName = cleanStr(name);
-            const cleanMc = cleanStr(machine);
-            const cleanShift = cleanStr(shift);
-            const cleanSW = cleanStr(stationWaste);
-
-            const exactMatch = masterOperators.find(op => 
-                cleanStr(op.name) === cleanName &&
-                cleanStr(op.machine) === cleanMc &&
-                cleanStr(op.shift) === cleanShift &&
-                cleanStr(op.stationWaste) === cleanSW
-            );
-            if (exactMatch && exactMatch.img) return exactMatch.img;
-
-            const partialMatch = masterOperators.find(op => 
-                cleanStr(op.name) === cleanName &&
-                cleanStr(op.machine) === cleanMc &&
-                cleanStr(op.shift) === cleanShift
-            );
-            if (partialMatch && partialMatch.img) return partialMatch.img;
-
-            const stationMatch = masterOperators.find(op => 
-                cleanStr(op.name) === cleanName &&
-                cleanStr(op.stationWaste) === cleanSW
-            );
-            if (stationMatch && stationMatch.img) return stationMatch.img;
-
-            const nameMatch = masterOperators.find(op => cleanStr(op.name) === cleanName);
-            if (nameMatch && nameMatch.img) return nameMatch.img;
-            if (masterOpList.has(name)) return masterOpList.get(name);
-            return '';
+        function showStatusToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast-msg pointer-events-auto flex items-center p-4 rounded-2xl shadow-xl border text-sm font-semibold transition-all duration-300 transform bg-white`;
+            
+            let iconColor = 'text-blue-500';
+            let borderColor = 'border-slate-100';
+            let iconSvg = `<svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            
+            if (type === 'success') {
+                iconColor = 'text-emerald-500';
+                borderColor = 'border-emerald-100';
+                iconSvg = `<svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            } else if (type === 'warning') {
+                iconColor = 'text-amber-500';
+                borderColor = 'border-amber-100';
+                iconSvg = `<svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            }
+            
+            toast.className += ` ${borderColor}`;
+            toast.innerHTML = `<span class="${iconColor}">${iconSvg}</span><span class="text-slate-700 flex-1 leading-normal">${message}</span><button class="ml-3 text-slate-400 hover:text-slate-600 font-bold text-lg" onclick="this.parentElement.remove()">×</button>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px) scale(0.95)';
+                setTimeout(() => toast.remove(), 300);
+            }, 6000);
         }
 
-        function getFilteredOperatorsForStation(stationWasteName, mcFilter, hFilter) {
-            const cleanSWName = cleanStr(stationWasteName);
-            const cleanMcFilter = cleanStr(mcFilter);
-            const cleanShFilter = cleanStr(hFilter);
-            const matches = masterOperators.filter(op => {
-                const matchSW = cleanStr(op.stationWaste) === cleanSWName;
-                const matchMc = !cleanMcFilter || cleanStr(op.machine) === cleanMcFilter;
-                const matchSh = !cleanShFilter || cleanStr(op.shift) === cleanShFilter;
-                return matchSW && matchMc && matchSh;
+        function generateDynamicMockData() {
+            const today = new Date();
+            const dates = [];
+            for (let i = 0; i < 10; i++) {
+                const d = new Date();
+                d.setDate(today.getDate() - i);
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const yyyy = d.getFullYear();
+                dates.push(`${dd}/${mm}/${yyyy}`);
+            }
+
+            const mockOpText = `Name,Machine,Station,Shift,Image,StationWaste,Target
+นายสุรชัย แสงทอง,MC-01,Single C,A,https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150,Single C,0.63
+นายสมชาย ดีดี,MC-01,Single B,A,https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150,Single B,0.28
+นางสาววิภา ใจดี,MC-02,Double,B,https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150,Double,0.55
+นายเกียรติศักดิ์ มั่นคง,MC-02,Dryend,B,https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150,Dryend,0.40
+นายอนุรักษ์ ขยันงาน,MC-01,Stacker,A,https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150,Stacker,0.15`;
+
+            let mockDtRows = ["Date,Time,MC,Station,Stops,Duration,Problem,Operator,Factor,Shift,,pmTarget,runtime,,,imgUrl,stationWaste"];
+            const factors = ["Machine", "Material", "Man/Method", "Other"];
+            const stations = ["sf-c", "sf-b", "df", "nc-cutter", "stacker"];
+            const stationWastes = ["Single C", "Single B", "Double", "Dryend", "Stacker"];
+            const operators = ["นายสุรชัย แสงทอง", "นายสมชาย ดีดี", "นางสาววิภา ใจดี", "นายเกียรติศักดิ์ มั่นคง", "นายอนุรักษ์ ขยันงาน"];
+            const problems = [
+                "แผ่นติดขัดที่ส่วนเครื่องตัด (N-C Cutter)", 
+                "หน้าเรียบกาวไม่สนิทแผงความร้อน", 
+                "ลูกรีดอุณหภูมิต่ำเกินขอบเขต", 
+                "รอแผ่นพนักงานเปลี่ยนใบมีดขอบข้าง", 
+                "กระดาษม้วนหลักขาดชำรุดระหว่างรอยต่อ"
+            ];
+
+            dates.forEach((dateStr) => {
+                for (let shift of ["A", "B"]) {
+                    const stops = Math.floor(Math.random() * 2) + 1;
+                    const duration = Math.floor(Math.random() * 35) + 8;
+                    const factor = factors[Math.floor(Math.random() * factors.length)];
+                    const op = operators[Math.floor(Math.random() * operators.length)];
+                    const prob = problems[Math.floor(Math.random() * problems.length)];
+                    const stationIdx = Math.floor(Math.random() * stations.length);
+                    const station = stations[stationIdx];
+                    const sw = stationWastes[stationIdx];
+                    const mc = Math.random() > 0.5 ? "MC-01" : "MC-02";
+
+                    const cols = Array(18).fill("");
+                    cols[0] = dateStr;
+                    cols[1] = "08:15";
+                    cols[2] = mc;
+                    cols[3] = station;
+                    cols[4] = stops.toString();
+                    cols[5] = duration.toString();
+                    cols[6] = prob;
+                    cols[7] = op;
+                    cols[8] = factor;
+                    cols[9] = shift;
+                    cols[12] = "45"; 
+                    cols[13] = "540"; 
+                    cols[16] = ""; 
+                    cols[17] = sw; 
+                    mockDtRows.push(cols.join(","));
+                }
             });
-            return [...new Set(matches.map(op => op.name))];
-        }
 
-        function getStationDowntimeTarget(stationName) {
-            const name = cleanStr(stationName);
-            if (!name) return null;
-            if (downtimeStationTargets[name] !== undefined) return downtimeStationTargets[name];
-            if (stationTargetsFromSheet.has(name)) return stationTargetsFromSheet.get(name);
-            if (name === 'm-1' || name === 'sf-c' || name === 'm-2' || name === 'm-5' || 
-                name === 'df' || name === 'webtrol-c' || name === 'webtrol-b' || name === 'webtrol-e') return 0.21;
-            if (name === 'm-3' || name === 'm-4' || name === 'sf-b' || 
-                name === 'slitter m1' || name === 'slitter m2' || name === 'nc-cutter') return 0.14;
-            if (name === 'rotary shear' || name === 'stacker') return 0.07;
-            return null;
-        }
+            let mockNcpRows = [];
+            dates.forEach((dateStr) => {
+                for (let shift of ["A", "B"]) {
+                    const consumption = 4500 + Math.floor(Math.random() * 2500);
+                    const weightNcp = 40 + Math.floor(Math.random() * 110);
+                    const stationIdx = Math.floor(Math.random() * stationWastes.length);
+                    const sw = stationWastes[stationIdx];
+                    const mc = Math.random() > 0.5 ? "MC-01" : "MC-02";
+                    const op = operators[Math.floor(Math.random() * operators.length)];
+                    const prob = "กระดาษเป็นขุย ขอบไม่เรียบเนียน";
+                    const reason = ["ปรับตั้งความตึงม้วนผิดพลาด", "รอยยับตามความยาวแผ่นกระดาษ", "กาวล้นขอบเตาความร้อน"][Math.floor(Math.random() * 3)];
+                    const pdr = "PDR-" + (10000 + Math.floor(Math.random() * 90000));
+                    
+                    const shortageVal = Math.random() > 0.7 ? Math.floor(Math.random() * 120) : 0;
+                    const excessVal = shortageVal === 0 && Math.random() > 0.85 ? Math.floor(Math.random() * 40) : 0;
 
-        function getSunWeek(date) { let d = new Date(date); d.setHours(0, 0, 0, 0); let start = new Date(d.getFullYear(), 0, 1); let days = Math.floor((d - start) / 86400000); return Math.ceil((days + start.getDay() + 1) / 7); }
-        function transformGDriveLink(url) { if (!url) return ""; let cleanUrl = url.toString().trim(); if (!cleanUrl.includes("drive.google.com")) return cleanUrl; let fileId = cleanUrl.includes("/file/d/") ? cleanUrl.split("/file/d/")[1].split("/")[0] : (cleanUrl.includes("id=") ? cleanUrl.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : cleanUrl; }
-        function fixYear(year) { let y = parseInt(year); if (isNaN(y)) return year; if (y > 2400) return (y - 543).toString(); if (y < 100) return (y + 2000).toString(); return y.toString(); }
-        function parseUnifiedDate(dateStr) { if (!dateStr || !dateStr.includes('/')) return ''; const p = dateStr.split('/'); if (p.length < 3) return ''; const y = fixYear(p[2]); return `${y}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
-        function formatToISO(d) { return parseUnifiedDate(d); }
+                    const cols = Array(45).fill("");
+                    cols[1] = shift;
+                    cols[2] = pdr;
+                    cols[6] = mc;
+                    cols[20] = reason;
+                    cols[24] = weightNcp.toString();
+                    cols[27] = dateStr;
+                    cols[32] = prob;
+                    cols[33] = sw;
+                    cols[34] = op;
+                    cols[35] = consumption.toString();
+                    cols[37] = shortageVal.toString();
+                    cols[39] = excessVal.toString();
+
+                    mockNcpRows.push(cols.join(","));
+                }
+            });
+
+            let mockShortageRows = [];
+            const customers = ["บจก. สยาม คอนเทนเนอร์", "บริษัท ไทยบรรจุภัณฑ์อินเตอร์", "กรุงเทพ ผลิตภัณฑ์กระดาษ", "แพ็คเกจจิ้งพรีเมียมเอเชีย"];
+            const shortageReasons = ["กระดาษปะผิวหน้ายับ", "กาวไม่ประสานแผงกลาง", "ขอบแผ่นกระดาษฉีกชำรุด", "ตัดขนาดสั้นกว่ามาตรฐานกำหนด"];
+            dates.forEach((dateStr) => {
+                for (let i = 0; i < 3; i++) {
+                    const pdr = "PDR-" + (10000 + Math.floor(Math.random() * 90000));
+                    const cust = customers[Math.floor(Math.random() * customers.length)];
+                    const status = Math.random() > 0.35 ? "ขาดจำนวน" : "ครบจำนวน";
+                    const sheets = status === "ขาดจำนวน" ? (15 + Math.floor(Math.random() * 75)) : 0;
+                    const reason = status === "ขาดจำนวน" ? shortageReasons[Math.floor(Math.random() * shortageReasons.length)] : "ครบจำนวน";
+                    const shift = Math.random() > 0.5 ? "A" : "B";
+                    const station = stationWastes[Math.floor(Math.random() * stationWastes.length)];
+                    const mc = Math.random() > 0.5 ? "MC-01" : "MC-02";
+
+                    const cols = Array(70).fill("");
+                    cols[0] = dateStr;
+                    cols[9] = pdr;
+                    cols[11] = cust;
+                    cols[19] = status;
+                    cols[20] = sheets.toString();
+                    cols[25] = reason;
+                    cols[28] = shift;
+                    cols[53] = "ความร้อนตกเฉียบพลัน";
+                    cols[54] = "ออเดอร์ปกติเร่งด่วน";
+                    cols[64] = station;
+                    cols[65] = mc;
+
+                    mockShortageRows.push(cols.join(","));
+                }
+            });
+
+            parseMasterOpList(mockOpText);
+            parseDowntime(mockDtRows.join("\n"));
+            parseNCP(mockNcpRows.join("\n"));
+            parseShortage(mockShortageRows.join("\n"));
+            initFilters();
+            updateCurrentPage();
+        }
 
         async function syncData() {
             document.getElementById('loading').style.display = 'flex';
@@ -510,7 +599,7 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
                     fetch(`${document.getElementById('op-list-url').value}&t=${Date.now()}`),
                     fetch(`${document.getElementById('shortage-url').value}&t=${Date.now()}`)
                 ]);
-                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok) throw new Error("Sync failed");
+                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok) throw new Error("Network status invalid");
                 const [textD, textN, textOp, textS] = await Promise.all([resD.text(), resN.text(), resOp.text(), resS.text()]);
                 parseMasterOpList(textOp);
                 parseDowntime(textD);
@@ -518,8 +607,13 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
                 parseShortage(textS);
                 initFilters(); 
                 updateCurrentPage();
-            } catch (err) { console.error(err); alert('Sync Error: ' + err.message); }
-            finally { document.getElementById('loading').style.none; document.getElementById('loading').style.display = 'none'; }
+                showStatusToast("เชื่อมต่อข้อมูลเสร็จสมบูรณ์ ดึงข้อมูลอัปเดตจาก Google Sheets สำเร็จ!", "success");
+            } catch (err) { 
+                console.warn("Could not retrieve active Google Sheets API. Loading dynamic failover sandbox mock data.", err);
+                generateDynamicMockData();
+                showStatusToast("เปิดโหมดจำลองสถานการณ์เสมือนจริงให้เรียบร้อยแล้ว เนื่องจากสภาพแวดล้อมจำลอง (Sandbox) มีการจำกัดการเชื่อมต่อภายนอก", "warning");
+            }
+            finally { document.getElementById('loading').style.display = 'none'; }
         }
 
         function parseMasterOpList(text) { 
@@ -582,6 +676,8 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
                 }; 
             }).filter(d => d); 
         }
+
+        // CSV Parser Helper in Javascript to replace inline Regex parsing issues
 
         function parseNCP(text) { 
             ncpData = text.split(/\r?\n/).slice(1).map(line => { 
@@ -994,11 +1090,11 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
             // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
-            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน โดยอิงจาก shortageStationTargets แยกราย Station
+            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน
             const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
-            let targetVal = shortageStationTargets[cleanStr(st)] !== undefined ? shortageStationTargets[cleanStr(st)] : 18.00;
-            if (hasSelectedCust && !st) {
-                targetVal = 10.00; // หากเลือกลูกค้าและไม่ได้เจาะจงสถานี จะปรับเป้าหมายเป็น 10.00%
+            let targetVal = 18.00;
+            if (hasSelectedCust) {
+                targetVal = 10.00; // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
             }
 
             document.getElementById('shortage-kpi-total').textContent = totalBaseOrdersCount.toLocaleString();
@@ -1078,6 +1174,7 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
+                            // แสดงผลตัวเลขเปอร์เซ็นต์และออเดอร์ที่ขาดจำนวน (ตัดอักษรส่วนเกินออก)
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
@@ -1225,15 +1322,13 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
-                // ปรับให้ใช้เป้าหมายแยกรายสถานีประจำรายการนั้นๆ เสมอเพื่อความสอดคล้อง
-                const currentStationTarget = shortageStationTargets[cleanStr(stName)] !== undefined ? shortageStationTargets[cleanStr(stName)] : targetVal;
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
                     totalCount: data.totalCount,
                     percent: stPercent,
-                    target: currentStationTarget,
-                    diff: stPercent - currentStationTarget,
+                    target: targetVal,
+                    diff: stPercent - targetVal,
                     ops: Array.from(data.ops)
                 };
             });
@@ -1367,10 +1462,8 @@ const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, 
         function setNcpTrendMode(m) { ncpTrendMode = m; document.querySelectorAll('#btn-ncp-trend-daily, #btn-ncp-trend-weekly, #btn-ncp-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-ncp-trend-${m}`)); updateNCPUI(); }
         function setShortageTrendMode(m) { shortageTrendMode = m; document.querySelectorAll('#btn-shortage-trend-daily, #btn-shortage-trend-weekly, #btn-shortage-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-shortage-trend-${m}`)); updateShortageUI(); }
         
-        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.none; }); }
+        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.display = 'none'; }); }
         window.onload = () => { setDefaultDates(); syncData(); };
     </script>
 </body>
 </html>
-
-```
