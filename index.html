@@ -26,16 +26,14 @@
         .profile-img-el { width: 100%; height: 100%; object-fit: cover; object-position: center 10%; display: block; }
         .op-thumb { width: 52px; height: 52px; min-width: 52px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-transform: uppercase; font-size: 14px; overflow: hidden; }
         
-        /* สไตล์พิเศษสำหรับภาพพนักงานใน TOP 5 OPERATORS เพื่อไม่ให้ศีรษะเลยหรือหลุดขอบบน */
         .operator-avatar-img { width: 48px; height: 48px; min-width: 48px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         
-        /* สไตล์พิเศษสำหรับหน้าวิเคราะห์สถานีแยกคอลัมน์และขยายขนาด */
         .station-avatar-img { 
             width: 56px; 
             height: 56px; 
             min-width: 56px; 
             object-fit: cover; 
-            object-position: center 10% !important; /* ปรับดึงรูปพนักงานในกรอบลงมาพอดีให้เห็นศีรษะและใบหน้าสวยงาม */
+            object-position: center 10% !important;
             border-radius: 50%; 
             border: 2px solid white; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
@@ -402,7 +400,13 @@
     </div>
 
     <script>
-        Chart.register(ChartDataLabels);
+        // Safety Guard: ตรวจสอบความพร้อมของไลบรารี Chart.js และ Plugin ตะกร้ากำกับป้ายข้อมูล
+        if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        } else {
+            console.warn("Chart.js or ChartDataLabels plugin could not be loaded. Checking internet connection...");
+        }
+
         let rawData = [], ncpData = [], shortageData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily';
         let ncpSelectedReasons = new Set();
         let ncpAllReasonOptions = [];
@@ -503,7 +507,7 @@
                     fetch(`${document.getElementById('op-list-url').value}&t=${Date.now()}`),
                     fetch(`${document.getElementById('shortage-url').value}&t=${Date.now()}`)
                 ]);
-                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok) throw new Error("Sync failed");
+                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok) throw new Error("Sync failed. โปรดตรวจสอบว่าคุณได้กดเผยแพร่ (Publish) หน้าสเปรดชีตเป็นไฟล์ CSV แล้วหรือยัง");
                 const [textD, textN, textOp, textS] = await Promise.all([resD.text(), resN.text(), resOp.text(), resS.text()]);
                 parseMasterOpList(textOp);
                 parseDowntime(textD);
@@ -511,7 +515,10 @@
                 parseShortage(textS);
                 initFilters(); 
                 updateCurrentPage();
-            } catch (err) { console.error(err); alert('Sync Error: ' + err.message); }
+            } catch (err) { 
+                console.error(err); 
+                alert('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + err.message + '\n\nคำแนะนำ: หากเปิดไฟล์นี้จากคอมพิวเตอร์ของคุณตรงๆ โดยไม่ได้ผ่าน Server หรือโดเมนออนไลน์ เช่น GitHub Pages ระบบเบราว์เซอร์อาจบล็อกการทำงาน (CORS Policy)'); 
+            }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
@@ -638,7 +645,6 @@
             fillSelect('station-filter-mc', getU(rawData, 'machine'));
             fillSelect('station-filter-shift', getU(rawData, 'shift'));
             
-            // Shortage Filters (Changed to Col BN for Machine Filter automatically)
             fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
             fillSelect('shortage-filter-station', getU(shortageData, 'station'));
             fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
@@ -671,7 +677,6 @@
         function toggleNcpReasonSelection(opt) { if (ncpSelectedReasons.has(opt)) ncpSelectedReasons.delete(opt); else ncpSelectedReasons.add(opt); renderNcpReasonChips(); renderNcpReasonOptions(document.getElementById('ncp-filter-reason-input').value); updateNCPUI(); }
         function renderNcpReasonChips() { const container = document.getElementById('ncp-reason-chips'); container.innerHTML = Array.from(ncpSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleNcpReasonSelection('${opt}')">×</button></span>`).join(''); }
 
-        // Shortage Customer Multi-Select Functions
         function toggleShortageCustDropdown(show) { const dropdown = document.getElementById('shortage-customer-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterShortageCustOptions(searchText) { renderShortageCustOptions(searchText); toggleShortageCustDropdown(true); }
         function renderShortageCustOptions(searchText) {
@@ -683,7 +688,6 @@
         function toggleShortageCustSelection(opt) { if (shortageSelectedCustomers.has(opt)) shortageSelectedCustomers.delete(opt); else shortageSelectedCustomers.add(opt); renderShortageCustChips(); renderShortageCustOptions(document.getElementById('shortage-filter-customer-input').value); updateShortageUI(); }
         function renderShortageCustChips() { const container = document.getElementById('shortage-customer-chips'); container.innerHTML = Array.from(shortageSelectedCustomers).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageCustSelection('${opt}')">×</button></span>`).join(''); }
 
-        // Shortage Reason Multi-Select Functions
         function toggleShortageReasonDropdown(show) { const dropdown = document.getElementById('shortage-reason-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterShortageReasonOptions(searchText) { renderShortageReasonOptions(searchText); toggleShortageReasonDropdown(true); }
         function renderShortageReasonOptions(searchText) {
@@ -729,7 +733,25 @@
             updateCurrentPage(); 
         }
         
-        function drawChart(id, config) { const canvas = document.getElementById(id); if (!canvas) return; const ctx = canvas.getContext('2d'); if (charts[id]) charts[id].destroy(); if (config.type === 'line' && config.data.datasets[0]) { const gradient = ctx.createLinearGradient(0, 0, 0, 400); gradient.addColorStop(0, config.data.datasets[0].borderColor.replace('1)', '0.3)')); gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); config.data.datasets[0].backgroundColor = gradient; config.data.datasets[0].fill = true; config.data.datasets[0].tension = 0.4; } charts[id] = new Chart(ctx, config); }
+        function drawChart(id, config) { 
+            if (typeof Chart === 'undefined') {
+                console.warn(`Chart.js isn't loaded correctly. Cannot render chart on element #${id}`);
+                return;
+            }
+            const canvas = document.getElementById(id); 
+            if (!canvas) return; 
+            const ctx = canvas.getContext('2d'); 
+            if (charts[id]) charts[id].destroy(); 
+            if (config.type === 'line' && config.data.datasets[0]) { 
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400); 
+                gradient.addColorStop(0, config.data.datasets[0].borderColor.replace('1)', '0.3)')); 
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); 
+                config.data.datasets[0].backgroundColor = gradient; 
+                config.data.datasets[0].fill = true; 
+                config.data.datasets[0].tension = 0.4; 
+            } 
+            charts[id] = new Chart(ctx, config); 
+        }
 
         function updateMainUI() {
             const s = document.getElementById('main-start-date').value, 
@@ -960,7 +982,6 @@
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
 
-            // 1. Base filtered data - สำหรับเป็นตัวหารคำนวณสัดส่วนของออเดอร์ผลิตทั้งหมด (ไม่ถูกกรองตาม Station และ สาเหตุ)
             const fShortageBase = shortageData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
@@ -970,32 +991,24 @@
             );
 
             const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
-            const totalBaseOrdersCount = baseValidOrders.length; // Denominator หลักของสัดส่วนทั้งหมด
+            const totalBaseOrdersCount = baseValidOrders.length; 
 
-            // 2. Final filtered data - ยอดออเดอร์ขาดสะสมจริงที่กรองครบเงื่อนไขทุกอย่างรวมถึง Station และ สาเหตุ
             const shortageOrdersList = fShortageBase.filter(d => 
                 d.status === 'ขาดจำนวน' &&
                 (!st || cleanStr(d.station) === cleanStr(st)) &&
                 (!hasSelectedReasons || shortageSelectedReasons.has(d.reason))
             );
-            const shortageOrdersCount = shortageOrdersList.length; // Numerator
+            const shortageOrdersCount = shortageOrdersList.length; 
 
-            // ออเดอร์ที่ครบจำนวนหรืออื่นๆ (คำนวณแบบหักลบเพื่อให้สถิติบนการ์ดลื่นไหลและตรงตามสัดส่วน)
             const completedOrdersCount = Math.max(0, totalBaseOrdersCount - shortageOrdersCount);
-            
-            // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
-            
-            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน
-            const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
+            const hasTarget = !hasSelectedReasons; 
             
             let targetVal = 18.00;
             if (st) {
-                // หากกรอง Station Waste จะเปลี่ยน Target ตามเป้าหมายที่ตั้งไว้เฉพาะสถานี
                 const cleanSt = cleanStr(st);
                 targetVal = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 0.2;
             } else if (hasSelectedCust) {
-                // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
                 targetVal = 10.00;
             }
 
@@ -1016,17 +1029,14 @@
                 diffEl.className = `text-sm font-black text-slate-400`;
             }
 
-            // 1. กราฟแนวโน้มเปอร์เซ็นต์ขาดจำนวน (% Shortage Trend)
             const trendShortage = {};
             const trendTotal = {};
             
-            // สะสมยอดออเดอร์รวมต่อวัน/สัปดาห์/เดือน (ตัวหาร) - ไม่รวมผลกระทบจากฟิลเตอร์ station และ reason
             baseValidOrders.forEach(d => {
                 let k = shortageTrendMode === 'daily' ? d.isoDate : (shortageTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
                 trendTotal[k] = (trendTotal[k] || 0) + 1;
             });
             
-            // สะสมยอดออเดอร์ขาดจำนวนต่อวัน/สัปดาห์/เดือน (ตัวเศษ) - คัดกรองตามเงื่อนไข Station และ สาเหตุ ที่เลือกจริง
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน') {
                     const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
@@ -1076,7 +1086,6 @@
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            // แสดงผลตัวเลขเปอร์เซ็นต์และออเดอร์ที่ขาดจำนวน (ตัดอักษรส่วนเกินออก)
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
@@ -1090,7 +1099,6 @@
                 }
             });
 
-            // 2. Top 5 ปัญหา ขาดจำนวน (Exclude ครบจำนวน)
             const problemMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.reason && d.reason !== 'ครบจำนวน') {
@@ -1138,7 +1146,6 @@
                 }
             });
 
-            // 3. สัดส่วน ขาดจำนวน ราย Station (Col BM)
             const shortageStationMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.station) {
@@ -1186,7 +1193,6 @@
                 }
             });
 
-            // 4. Performance by Station List (แสดงผลเฉพาะสถานีที่ถูกคัดเลือกและใช้ Target แยกรายสถานีอย่างถูกต้อง)
             const stationShortagePerf = {};
             let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             
@@ -1224,7 +1230,6 @@
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
-                // ดึง Target ข้อมูลเฉพาะสำหรับแต่ละสถานี
                 const stClean = cleanStr(stName);
                 const stTarget = shortageStationTargets[stClean] !== undefined ? shortageStationTargets[stClean] : 0.2;
                 return {
@@ -1276,7 +1281,6 @@
                 `;
             }).join('');
 
-            // 5. Shortage Detailed Table (ตารางรายละเอียด)
             const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
@@ -1367,7 +1371,40 @@
         function setNcpTrendMode(m) { ncpTrendMode = m; document.querySelectorAll('#btn-ncp-trend-daily, #btn-ncp-trend-weekly, #btn-ncp-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-ncp-trend-${m}`)); updateNCPUI(); }
         function setShortageTrendMode(m) { shortageTrendMode = m; document.querySelectorAll('#btn-shortage-trend-daily, #btn-shortage-trend-weekly, #btn-shortage-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-shortage-trend-${m}`)); updateShortageUI(); }
         
-        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.none; }); }
+        async function takeScreenshot() { 
+            document.getElementById('loading').style.display = 'flex'; 
+            const imgs = Array.from(document.querySelectorAll('img')); 
+            const originalSrcs = imgs.map(i => i.src); 
+            for (let img of imgs) { 
+                if (img.src.startsWith('http')) { 
+                    try { 
+                        const res = await fetch(img.src); 
+                        const blob = await res.blob(); 
+                        img.src = await new Promise(r => { 
+                            const reader = new FileReader(); 
+                            reader.onloadend = () => r(reader.result); 
+                            reader.readAsDataURL(blob); 
+                        }); 
+                    } catch(e) {} 
+                } 
+            } 
+            document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); 
+            html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { 
+                document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); 
+                imgs.forEach((img, idx) => img.src = originalSrcs[idx]); 
+                const dataUrl = canvas.toDataURL("image/png"); 
+                const link = document.createElement('a'); 
+                link.download = `Production_Analysis_${new Date().getTime()}.png`; 
+                link.href = dataUrl; 
+                if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { 
+                    const newTab = window.open(); 
+                    newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); 
+                } else { 
+                    link.click(); 
+                } 
+                document.getElementById('loading').style.display = 'none'; 
+            }); 
+        }
         window.onload = () => { setDefaultDates(); syncData(); };
     </script>
 </body>
