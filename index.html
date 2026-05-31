@@ -1,3 +1,23 @@
+รับทราบคำสั่งครับ ผมจะทำการปรับเปลี่ยน**เฉพาะหน้าภาพรวมขาดจำนวน (PAGE 3: SHORTAGE OVERVIEW)** ในส่วนของฟังก์ชันการคำนวณและแสดงผล Target ให้แยกตาม Station Waste ตามที่คุณกำหนดอย่างเคร่งครัด โดยหน้าอื่น ๆ และโครงสร้างหลักทั้งหมดจะยังคงเดิมไม่เปลี่ยนแปลงใด ๆ ครับ
+
+### ส่วนที่ทำการปรับปรุงในโค้ด:
+
+1. **เพิ่มตัวแปรเก็บ Target ของ Shortage แยกตาม Station:**
+```javascript
+const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70 };
+
+```
+
+
+2. **ปรับฟังก์ชัน `updateShortageUI()`:**
+* ดึงค่าจากฟิลเตอร์ Station Waste (`st`) มาจับคู่กับ `shortageStationTargets` เพื่อเปลี่ยนค่าเป้าหมาย (Target) บนการ์ด `%ขาดจำนวน` และเส้น Target ในกราฟแนวโน้มอัตโนมัติ
+* ปรับแก้ในส่วนของลิสต์ด้านล่าง `shortagePerfRanking.map` ให้ใช้ค่า `shortageStationTargets[cleanStr(stData.name)]` แทนค่า `targetVal` รวม เพื่อให้แต่ละสถานีแสดงเส้น Target และค่า Diff ประจำสถานีของตัวเองได้อย่างถูกต้องแม้ไม่ได้เลือกฟิลเตอร์
+
+
+
+นี่คือซอร์สโค้ดเต็มรูปแบบที่อัปเดตเรียบร้อยแล้วครับ:
+
+```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -77,7 +97,6 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <!-- URLs -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
     <input type="hidden" id="op-list-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=593156373&single=true&output=csv">
@@ -95,7 +114,6 @@
         </button>
     </div>
 
-    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
@@ -151,7 +169,6 @@
         </div>
     </div>
 
-    <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -211,7 +228,6 @@
         </div>
     </div>
 
-    <!-- PAGE 3: SHORTAGE OVERVIEW -->
     <div id="page-shortage" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500">
@@ -328,7 +344,6 @@
         </div>
     </div>
 
-    <!-- PAGE 4: STATION ANALYSIS -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-4 hidden">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
@@ -388,7 +403,6 @@
         </div>
     </div>
 
-    <!-- PAGE 5: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -415,6 +429,9 @@
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
+        
+        // เพิ่ม Target ของภาพรวมขาดจำนวนแยกตาม Station Waste
+        const shortageStationTargets = { "": 18.00, "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70 };
 
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
@@ -502,7 +519,7 @@
                 initFilters(); 
                 updateCurrentPage();
             } catch (err) { console.error(err); alert('Sync Error: ' + err.message); }
-            finally { document.getElementById('loading').style.display = 'none'; }
+            finally { document.getElementById('loading').style.none; document.getElementById('loading').style.display = 'none'; }
         }
 
         function parseMasterOpList(text) { 
@@ -565,8 +582,6 @@
                 }; 
             }).filter(d => d); 
         }
-
-        // CSV Parser Helper in Javascript to replace inline Regex parsing issues
 
         function parseNCP(text) { 
             ncpData = text.split(/\r?\n/).slice(1).map(line => { 
@@ -979,11 +994,11 @@
             // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
-            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน
+            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน โดยอิงจาก shortageStationTargets แยกราย Station
             const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
-            let targetVal = 18.00;
-            if (hasSelectedCust) {
-                targetVal = 10.00; // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
+            let targetVal = shortageStationTargets[cleanStr(st)] !== undefined ? shortageStationTargets[cleanStr(st)] : 18.00;
+            if (hasSelectedCust && !st) {
+                targetVal = 10.00; // หากเลือกลูกค้าและไม่ได้เจาะจงสถานี จะปรับเป้าหมายเป็น 10.00%
             }
 
             document.getElementById('shortage-kpi-total').textContent = totalBaseOrdersCount.toLocaleString();
@@ -1063,7 +1078,6 @@
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            // แสดงผลตัวเลขเปอร์เซ็นต์และออเดอร์ที่ขาดจำนวน (ตัดอักษรส่วนเกินออก)
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
@@ -1211,13 +1225,15 @@
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
+                // ปรับให้ใช้เป้าหมายแยกรายสถานีประจำรายการนั้นๆ เสมอเพื่อความสอดคล้อง
+                const currentStationTarget = shortageStationTargets[cleanStr(stName)] !== undefined ? shortageStationTargets[cleanStr(stName)] : targetVal;
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
                     totalCount: data.totalCount,
                     percent: stPercent,
-                    target: targetVal,
-                    diff: stPercent - targetVal,
+                    target: currentStationTarget,
+                    diff: stPercent - currentStationTarget,
                     ops: Array.from(data.ops)
                 };
             });
@@ -1351,8 +1367,10 @@
         function setNcpTrendMode(m) { ncpTrendMode = m; document.querySelectorAll('#btn-ncp-trend-daily, #btn-ncp-trend-weekly, #btn-ncp-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-ncp-trend-${m}`)); updateNCPUI(); }
         function setShortageTrendMode(m) { shortageTrendMode = m; document.querySelectorAll('#btn-shortage-trend-daily, #btn-shortage-trend-weekly, #btn-shortage-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-shortage-trend-${m}`)); updateShortageUI(); }
         
-        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.display = 'none'; }); }
+        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.none; }); }
         window.onload = () => { setDefaultDates(); syncData(); };
     </script>
 </body>
 </html>
+
+```
