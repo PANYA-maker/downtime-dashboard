@@ -453,7 +453,6 @@
         }
 
         function getFilteredOperatorsForStation(stationWasteName, mcFilter, hFilter) {
-            // Unused but kept original arguments as requested to keep Downtime page intact
             const cleanSWName = cleanStr(stationWasteName);
             const cleanMcFilter = cleanStr(mcFilter);
             const cleanShFilter = cleanStr(hFilter);
@@ -952,46 +951,40 @@
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
 
-            // 1. Base filtered data (ignoring the shortage reason filter for accurate baseline calculations)
+            // 1. Base filtered data - สำหรับเป็นตัวหารคำนวณสัดส่วนของออเดอร์ผลิตทั้งหมด (ไม่ถูกกรองตาม Station และ สาเหตุ)
             const fShortageBase = shortageData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
                 (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
-                (!st || cleanStr(d.station) === cleanStr(st)) && 
                 (!sh || cleanStr(d.shift) === cleanStr(sh)) && 
                 (!hasSelectedCust || shortageSelectedCustomers.has(d.customer))
             );
 
-            // 2. Final filtered data (applying all filters including shortage reason)
-            const fShortageFinal = fShortageBase.filter(d =>
+            const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
+            const totalBaseOrdersCount = baseValidOrders.length; // Denominator หลักของสัดส่วนทั้งหมด
+
+            // 2. Final filtered data - ยอดออเดอร์ขาดสะสมจริงที่กรองครบเงื่อนไขทุกอย่างรวมถึง Station และ สาเหตุ
+            const shortageOrdersList = fShortageBase.filter(d => 
+                d.status === 'ขาดจำนวน' &&
+                (!st || cleanStr(d.station) === cleanStr(st)) &&
                 (!hasSelectedReasons || shortageSelectedReasons.has(d.reason))
             );
+            const shortageOrdersCount = shortageOrdersList.length; // Numerator
 
-            const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
-            const totalBaseOrdersCount = baseValidOrders.length;
-
-            const finalValidOrders = fShortageFinal.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
-            const finalTotalOrdersCount = finalValidOrders.length;
-            const completedOrdersCount = fShortageFinal.filter(d => d.status === 'ครบจำนวน').length;
-            const shortageOrdersCount = fShortageFinal.filter(d => d.status === 'ขาดจำนวน').length;
+            // ออเดอร์ที่ครบจำนวนหรืออื่นๆ (คำนวณแบบหักลบเพื่อให้สถิติบนการ์ดลื่นไหลและตรงตามสัดส่วน)
+            const completedOrdersCount = Math.max(0, totalBaseOrdersCount - shortageOrdersCount);
             
-            // Calculate dynamic percentage
-            let actualPercent = 0;
-            if (hasSelectedReasons) {
-                // When reason filter is active, percentage = (Shortage orders matching reason) / (Total base production orders) * 100
-                actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
-            } else {
-                actualPercent = finalTotalOrdersCount > 0 ? (shortageOrdersCount / finalTotalOrdersCount) * 100 : 0;
-            }
+            // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
+            const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
-            // Dynamic Target setting logic
-            const hasTarget = !hasSelectedReasons; // When shortage reason is filtered, remove Target.
+            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน
+            const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
             let targetVal = 18.00;
             if (hasSelectedCust) {
-                targetVal = 10.00; // When customer is filtered, Target is 10.00%
+                targetVal = 10.00; // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
             }
 
-            document.getElementById('shortage-kpi-total').textContent = finalTotalOrdersCount.toLocaleString();
+            document.getElementById('shortage-kpi-total').textContent = totalBaseOrdersCount.toLocaleString();
             document.getElementById('shortage-kpi-completed').textContent = completedOrdersCount.toLocaleString();
             document.getElementById('shortage-kpi-shortage').textContent = shortageOrdersCount.toLocaleString();
             document.getElementById('shortage-kpi-percent').textContent = actualPercent.toFixed(2) + '%';
@@ -1008,21 +1001,25 @@
                 diffEl.className = `text-sm font-black text-slate-400`;
             }
 
-            // 1. Trend Line Chart (Populate with proper dynamic baseline calculations)
+            // 1. กราฟแนวโน้มเปอร์เซ็นต์ขาดจำนวน (% Shortage Trend)
             const trendShortage = {};
             const trendTotal = {};
             
-            // Populate total denominator per date bucket using baseValidOrders (so denominator respects Date/MC/Shift/Customer/Station, but ignores Reason filter)
+            // สะสมยอดออเดอร์รวมต่อวัน/สัปดาห์/เดือน (ตัวหาร) - ไม่รวมผลกระทบจากฟิลเตอร์ station และ reason
             baseValidOrders.forEach(d => {
                 let k = shortageTrendMode === 'daily' ? d.isoDate : (shortageTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
                 trendTotal[k] = (trendTotal[k] || 0) + 1;
             });
             
-            // Populate numerator count per date bucket using final valid shortage orders
-            fShortageFinal.forEach(d => {
+            // สะสมยอดออเดอร์ขาดจำนวนต่อวัน/สัปดาห์/เดือน (ตัวเศษ) - คัดกรองตามเงื่อนไข Station และ สาเหตุ ที่เลือกจริง
+            fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน') {
-                    let k = shortageTrendMode === 'daily' ? d.isoDate : (shortageTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
-                    trendShortage[k] = (trendShortage[k] || 0) + 1;
+                    const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
+                    const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
+                    if (matchesStation && matchesReason) {
+                        let k = shortageTrendMode === 'daily' ? d.isoDate : (shortageTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
+                        trendShortage[k] = (trendShortage[k] || 0) + 1;
+                    }
                 }
             });
 
@@ -1064,7 +1061,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            // Displays formatted Percentage and dynamic Shortage count in parentheses
+                            // แสดงผลตัวเลขเปอร์เซ็นต์และออเดอร์ที่ขาดจำนวน (ตัดอักษรส่วนเกินออก)
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
@@ -1078,11 +1075,15 @@
                 }
             });
 
-            // 2. Top 5 Reasons Horizontal Bar Chart (Exclude ครบจำนวน)
+            // 2. Top 5 ปัญหา ขาดจำนวน (Exclude ครบจำนวน)
             const problemMap = {};
-            fShortageFinal.forEach(d => {
+            fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.reason && d.reason !== 'ครบจำนวน') {
-                    problemMap[d.reason] = (problemMap[d.reason] || 0) + 1;
+                    const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
+                    const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
+                    if (matchesStation && matchesReason) {
+                        problemMap[d.reason] = (problemMap[d.reason] || 0) + 1;
+                    }
                 }
             });
             const topProblems = Object.entries(problemMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -1122,11 +1123,15 @@
                 }
             });
 
-            // 3. Station Shortage Share Chart (Col BM)
+            // 3. สัดส่วน ขาดจำนวน ราย Station (Col BM)
             const stationShortageMap = {};
-            fShortageFinal.forEach(d => {
+            fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.station) {
-                    stationShortageMap[d.station] = (stationShortageMap[d.station] || 0) + 1;
+                    const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
+                    const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
+                    if (matchesStation && matchesReason) {
+                        stationShortageMap[d.station] = (stationShortageMap[d.station] || 0) + 1;
+                    }
                 }
             });
             const sortedStationShortage = Object.entries(stationShortageMap).sort((a, b) => b[1] - a[1]);
@@ -1166,11 +1171,10 @@
                 }
             });
 
-            // 4. Performance by Station List (Filter stations dynamically based on selection)
+            // 4. Performance by Station List (แสดงเฉพาะสถานีที่ถูกคัดเลือกและคำนวณเปรียบเทียบกับฐานหลักอย่างถูกต้อง)
             const stationShortagePerf = {};
             let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             
-            // If specific Station is selected in the filter, only display that station
             if (st) {
                 const matched = shortageStations.find(s => cleanStr(s) === cleanStr(st));
                 shortageStations = matched ? [matched] : [st];
@@ -1180,12 +1184,13 @@
                 stationShortagePerf[stName] = { shortageCount: 0, totalCount: 0, ops: new Set() };
             });
 
-            finalValidOrders.forEach(d => {
+            fShortageBase.forEach(d => {
                 const cleanSt = cleanStr(d.station);
                 const matchedSt = shortageStations.find(s => cleanStr(s) === cleanSt);
                 if (matchedSt) {
                     stationShortagePerf[matchedSt].totalCount += 1;
-                    if (d.status === 'ขาดจำนวน') {
+                    const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
+                    if (d.status === 'ขาดจำนวน' && matchesReason) {
                         stationShortagePerf[matchedSt].shortageCount += 1;
                     }
                     if (d.ncpOpNames && d.ncpOpNames !== 'ไม่พบพนักงาน') {
@@ -1203,8 +1208,7 @@
             });
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
-                // Calculated as (Shortage count of Station / Grand total KPI card orders) * 100
-                const stPercent = finalTotalOrdersCount > 0 ? (data.shortageCount / finalTotalOrdersCount) * 100 : 0;
+                const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
@@ -1254,8 +1258,8 @@
                 `;
             }).join('');
 
-            // 5. Shortage Detailed Table (Updated layout with combined columns & new columns Col BB and BC)
-            const fShortageTable = fShortageFinal.filter(d => d.status === 'ขาดจำนวน');
+            // 5. Shortage Detailed Table (ตารางรายละเอียด)
+            const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
                     <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td>
