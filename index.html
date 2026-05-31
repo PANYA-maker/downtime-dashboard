@@ -402,7 +402,13 @@
     </div>
 
     <script>
-        Chart.register(ChartDataLabels);
+        // บรรเทาอาการหน้าจอดับ (Safe Guard) กรณี CDN ปลั๊กอินภายนอกไม่ทำงานหรือโหลดช้า
+        if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        } else {
+            console.warn("Chart.js or ChartDataLabels plugin could not be loaded. Please ensure internet access.");
+        }
+
         let rawData = [], ncpData = [], shortageData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily';
         let ncpSelectedReasons = new Set();
         let ncpAllReasonOptions = [];
@@ -415,6 +421,9 @@
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
+        
+        // เพิ่ม Target ราย Station Waste สกุลเงิน/สัดส่วน % ขาดจำนวน (Shortage Target)
+        const shortageStationTargets = { "single c": 4.8, "single b": 1.5, "double": 4.8, "dryend": 5.0, "stacker": 1.7, "other": 0.2 };
 
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
@@ -926,8 +935,7 @@
             const sortedStationsByWeight = Object.entries(stationWeightMap).sort((a,b) => b[1] - a[1]);
             drawChart('ncpStationWeightChart', {
                 type: 'bar', data: { labels: sortedStationsByWeight.map(x => x[0]), datasets: [{ data: sortedStationsByWeight.map(x => x[1]), backgroundColor: sortedStationsByWeight.map((_, i) => colorPalette[(i+2) % colorPalette.length] + 'CC'), borderColor: sortedStationsByWeight.map((_, i) => colorPalette[(i+2) % colorPalette.length]), borderWidth: 2, borderRadius: 8, barThickness: 28, customPercents: sortedStationsByWeight.map(x => totalConsumption > 0 ? (x[1] / totalConsumption * 100) : 0) }] },
-                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', textAlign: 'center', color: '#334155', font: { size: 10, weight: 'bold' }, formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`, padding: 4 } }, scales: { x: { beginAtZero: true, grace: '50%', grid: { display: false }, ticks: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#475569' } } } }
-            });
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', textAlign: 'center', color: '#334155', font: { size: 10, weight: 'bold' }, formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`, padding: 4 } }, scales: { x: { beginAtZero: true, grace: '50%', grid: { display: false }, ticks: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#475569' } } } });
 
             const stationNcpMap = {}; fForNCP.forEach(d => { if (!d.station || !isNaN(d.station)) return; if (!stationNcpMap[d.station]) stationNcpMap[d.station] = { weight: 0, ops: new Set() }; stationNcpMap[d.station].weight += d.weightNcp; if (d.ncpOpNames) d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => stationNcpMap[d.station].ops.add(name)); });
             const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stPercent - stTarget, ops: Array.from(data.ops) }; });
@@ -977,10 +985,20 @@
             // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
-            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน
+            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน (ปรับปรุง: เพิ่มเงื่อนไขแยกตาม Station Waste)
             const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
-            let targetVal = 18.00;
-            if (hasSelectedCust) {
+            
+            let targetVal = 18.00; // ค่าเริ่มต้นของหน้านี้
+            const cleanStFilter = cleanStr(st);
+            
+            if (cleanStFilter) {
+                // หากกรองเลือก Station Waste ให้ดึงค่าเป้าหมายรายสถานีมาใช้
+                if (shortageStationTargets[cleanStFilter] !== undefined) {
+                    targetVal = shortageStationTargets[cleanStFilter];
+                } else {
+                    targetVal = shortageStationTargets["other"]; // OTHER = 0.2%
+                }
+            } else if (hasSelectedCust) {
                 targetVal = 10.00; // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
             }
 
@@ -1171,7 +1189,7 @@
                 }
             });
 
-            // 4. Performance by Station List (แสดงเฉพาะสถานีที่ถูกคัดเลือกและคำนวณเปรียบเทียบกับฐานหลักอย่างถูกต้อง)
+            // 4. Performance by Station List (แสดงเฉพาะสถานีที่ถูกคัดเลือกและคำนวณเปรียบเทียบกับเป้าหมายเฉพาะตัวอย่างถูกต้อง)
             const stationShortagePerf = {};
             let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             
@@ -1207,15 +1225,27 @@
                 });
             });
 
+            // ปรับปรุง: การคำนวณสถิติและหักลบเป้าหมาย (Target/Diff) แยกเป้าหมายตามราย Station ในรายการสรุปโดยตรง
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
+                
+                // กำหนดเป้าหมายเฉพาะตัวสำหรับแต่ละสถานี
+                const cleanStName = cleanStr(stName);
+                let stTarget = 18.00; // default
+                
+                if (shortageStationTargets[cleanStName] !== undefined) {
+                    stTarget = shortageStationTargets[cleanStName];
+                } else {
+                    stTarget = shortageStationTargets["other"]; // OTHER = 0.2%
+                }
+                
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
                     totalCount: data.totalCount,
                     percent: stPercent,
-                    target: targetVal,
-                    diff: stPercent - targetVal,
+                    target: stTarget,
+                    diff: stPercent - stTarget,
                     ops: Array.from(data.ops)
                 };
             });
@@ -1230,6 +1260,8 @@
                 const targetText = hasTarget ? `${stData.target.toFixed(2)}%` : `-`;
                 const diffText = hasTarget ? `${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%` : `-`;
                 const diffClass = hasTarget ? (stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600') : 'text-slate-400';
+                
+                // ปรับเกลเพื่อวาดความกว้างของแถบความคืบหน้าให้เข้ากับค่าเป้าหมายใหม่ที่ลดลง
                 const barWidth = hasTarget ? Math.min(100, Math.max(5, (stData.percent / (stData.target || 18)) * 50)) : Math.min(100, Math.max(5, stData.percent * 3));
                 const barColor = hasTarget ? (stData.diff > 0 ? '#fb7185' : '#34d399') : '#6366f1';
                 
@@ -1349,7 +1381,40 @@
         function setNcpTrendMode(m) { ncpTrendMode = m; document.querySelectorAll('#btn-ncp-trend-daily, #btn-ncp-trend-weekly, #btn-ncp-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-ncp-trend-${m}`)); updateNCPUI(); }
         function setShortageTrendMode(m) { shortageTrendMode = m; document.querySelectorAll('#btn-shortage-trend-daily, #btn-shortage-trend-weekly, #btn-shortage-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-shortage-trend-${m}`)); updateShortageUI(); }
         
-        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.none; }); }
+        async function takeScreenshot() { 
+            document.getElementById('loading').style.display = 'flex'; 
+            const imgs = Array.from(document.querySelectorAll('img')); 
+            const originalSrcs = imgs.map(i => i.src); 
+            for (let img of imgs) { 
+                if (img.src.startsWith('http')) { 
+                    try { 
+                        const res = await fetch(img.src); 
+                        const blob = await res.blob(); 
+                        img.src = await new Promise(r => { 
+                            const reader = new FileReader(); 
+                            reader.onloadend = () => r(reader.result); 
+                            reader.readAsDataURL(blob); 
+                        }); 
+                    } catch(e) {} 
+                } 
+            } 
+            document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); 
+            html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { 
+                document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); 
+                imgs.forEach((img, idx) => img.src = originalSrcs[idx]); 
+                const dataUrl = canvas.toDataURL("image/png"); 
+                const link = document.createElement('a'); 
+                link.download = `Production_Analysis_${new Date().getTime()}.png`; 
+                link.href = dataUrl; 
+                if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { 
+                    const newTab = window.open(); 
+                    newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); 
+                } else { 
+                    link.click(); 
+                } 
+                document.getElementById('loading').style.display = 'none'; 
+            }); 
+        }
         window.onload = () => { setDefaultDates(); syncData(); };
     </script>
 </body>
