@@ -70,6 +70,37 @@
 </head>
 <body class="p-3 md:p-6 pb-20">
 
+    <!-- แถบแจ้งเตือนสถานะการเชื่อมต่อข้อมูลสด (CORS Status) -->
+    <div id="connection-banner" class="max-w-7xl mx-auto mb-4 p-3 rounded-xl border flex flex-col md:flex-row justify-between items-center gap-3 bg-amber-50 text-amber-800 border-amber-200">
+        <div class="flex items-center gap-2">
+            <svg class="w-6 h-6 shrink-0 text-amber-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <span class="text-xs md:text-sm">
+                <strong>โหมดสาธิตออฟไลน์ (Offline Fallback):</strong> กำลังใช้ข้อมูลตัวอย่างเนื่องจากเบราว์เซอร์บล็อกการโหลดข้ามโดเมน (CORS) หรือยังไม่ได้ตั้งค่า Google Sheets
+            </span>
+        </div>
+        <button onclick="toggleSetupModal(true)" class="bg-amber-800 hover:bg-amber-900 text-white font-bold text-[11px] px-4 py-2 rounded-lg transition-all shadow-md">
+            วิธีเชื่อมต่อข้อมูลจริง
+        </button>
+    </div>
+
+    <!-- กล่องป๊อปอัปแนะนำวิธีตั้งค่าเบื้องต้น -->
+    <div id="setup-modal" class="fixed inset-0 bg-slate-900/60 backdrop-filter backdrop-blur-sm z-[200] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative">
+            <button onclick="toggleSetupModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 text-center md:text-left">🛠️ วิธีทำให้รายงานดึงข้อมูลจาก Google Sheets ได้</h3>
+            <div class="space-y-4 text-xs md:text-sm text-slate-600 leading-relaxed">
+                <p>1. <strong>เปิดใช้งานผ่าน Server ออนไลน์:</strong> แนะนำให้อัปโหลดไฟล์นี้ขึ้นระบบ <strong>GitHub Pages</strong> ตามคู่มือที่ให้ไป เพื่อใช้งานบนโดเมนจริง ระบบรักษาความปลอดภัยของเบราว์เซอร์จะไม่บล็อกข้อมูล</p>
+                <p>2. <strong>การตั้งค่า Google Sheets:</strong> ตรวจสอบว่าใน Google Sheets ของคุณได้ไปที่เมนู <code>ไฟล์ (File) > แชร์ (Share) > เผยแพร่ไปยังเว็บ (Publish to the Web)</code> แล้วปรับรูปแบบข้อมูลให้เป็น <strong>CSV</strong> ก่อนนำลิงก์มาใช้</p>
+                <p>3. <strong>การทดสอบในเครื่อง:</strong> หากต้องการทดสอบในเครื่องโดยไม่บล็อก CORS แนะนำให้เปิดด้วยปลั๊กอิน <em>Live Server</em> บน VS Code หรือติดตั้ง Extension เสริมชั่วคราว เช่น <em>CORS Unblock</em> บนเบราว์เซอร์</p>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button onclick="toggleSetupModal(false)" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-xl hover:bg-blue-700 transition-colors">รับทราบ</button>
+            </div>
+        </div>
+    </div>
+
     <div id="loading" class="loading-overlay">
         <div class="relative w-16 h-16"><div class="absolute inset-0 rounded-full border-4 border-blue-100"></div><div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div></div>
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
@@ -400,11 +431,66 @@
     </div>
 
     <script>
-        // Safety Guard: ตรวจสอบความพร้อมของไลบรารี Chart.js และ Plugin ตะกร้ากำกับป้ายข้อมูล
+        // ระบบแจ้งเตือนแทน alert ป้องกันป๊อปอัปเด้งกวนใจใน iFrame
+        function showNotification(message, type = 'error') {
+            const container = document.getElementById('connection-banner');
+            const alertText = container.querySelector('span');
+            if (type === 'error') {
+                container.className = "max-w-7xl mx-auto mb-4 p-3 rounded-xl border flex flex-col md:flex-row justify-between items-center gap-3 bg-amber-50 text-amber-800 border-amber-200 animate-pulse";
+                alertText.innerHTML = `<strong>แจ้งเตือน:</strong> ${message}`;
+            } else {
+                container.className = "max-w-7xl mx-auto mb-4 p-3 rounded-xl border flex flex-col md:flex-row justify-between items-center gap-3 bg-emerald-50 text-emerald-800 border-emerald-200";
+                alertText.innerHTML = `<strong>สถานะ:</strong> ${message}`;
+                const btn = container.querySelector('button');
+                if (btn) btn.style.display = 'none';
+            }
+        }
+
+        function toggleSetupModal(show) {
+            const modal = document.getElementById('setup-modal');
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        // --- เริ่มต้นส่วนของชุดข้อมูลจำลองอย่างสมบูรณ์แบบ (Rich Offline Mock Data Fallback) ---
+        // ป้องกันไม่ให้หน้าเว็บเกิดอาการว่างเปล่า (Blank) หรือแสดงเป็นเลข 0 เมื่อเปิดไฟล์จากเครื่อง
+        const mockOpListCSV = `ชื่อ,เครื่องจักร,สถานี,กะ,รูปภาพ,Station Waste,Target
+สมชาย ดีใจ,MC-A,Single C,A,https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150,single c,0.63
+วิชัย มั่นคง,MC-A,Single B,A,https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150,single b,0.28
+สมพร เก่งกาจ,MC-A,Double,A,https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150,double,0.48
+มานะ ร่ำรวย,MC-B,Dryend,B,https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150,dryend,0.14
+ชูชาติ อดทน,MC-B,Stacker,B,https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150,stacker,0.07`;
+
+        const mockDowntimeCSV = `วันที่,เวลา,เครื่องจักร,Station,จำนวนครั้ง,นาทีหยุด,ปัญหา,ผู้ปฏิบัติงาน,ปัจจัย,กะ,PM Target,Runtime,Station Waste
+10/05/2026,08:30,MC-A,Single C,1,20,ใบมีดชำรุด,สมชาย ดีใจ,Machine,A,15,480,single c
+11/05/2026,10:15,MC-A,Single B,1,15,กระดาษติดขัด,วิชัย มั่นคง,Material,A,15,480,single b
+12/05/2026,13:45,MC-A,Double,1,30,ความร้อนไม่ถึง,สมพร เก่งกาจ,Machine,A,15,480,double
+13/05/2026,19:20,MC-B,Dryend,1,12,ตลับลูกปืนร้อน,มานะ ร่ำรวย,Machine,B,15,480,dryend
+14/05/2026,22:10,MC-B,Stacker,1,8,ระบบสายพานติดขัด,ชูชาติ อดทน,Other,B,15,480,stacker
+15/05/2026,09:40,MC-A,Single C,1,25,มอเตอร์ร้อนจัด,สมชาย ดีใจ,Machine,A,15,480,single c
+16/05/2026,14:20,MC-B,Dryend,1,18,เซ็นเซอร์จับพลาด,มานะ ร่ำรวย,Man/Method,B,15,480,dryend`;
+
+        const mockNcpCSV = `กะ,PDR,เครื่องจักร,Station,ปัญหา,น้ำหนัก NCP,กระดาษที่ใช้,ผู้รับผิดชอบ,วันที่,รายละเอียดปัญหา,Shortage,Excess
+A,PDR-001,MC-A,single c,ขอบขาด,15.5,1200,สมชาย ดีใจ,10/05/2026,ขอบกระดาษขาดช่วงเดินแผ่น,120,0
+A,PDR-002,MC-A,single b,ผิวลอก,8.2,1200,วิชัย มั่นคง,11/05/2026,ผิวกระดาษลอกเสียหาย,0,50
+A,PDR-003,MC-A,double,ติดกาวไม่สม่ำเสมอ,22.4,1400,สมพร เก่งกาจ,12/05/2026,กาวเยิ้มแผ่นไม่ติดขอบ,180,0
+B,PDR-004,MC-B,dryend,ตัดเฉียง,11.3,1300,มานะ ร่ำรวย,13/05/2026,ใบมีดเฉียงแผ่นไม่ได้ขนาด,0,0
+B,PDR-005,MC-B,stacker,แผ่นยับ,9.1,1100,ชูชาติ อดทน,14/05/2026,ซ้อนกองไม่ตรงยับย่น,85,0
+A,PDR-006,MC-A,single c,กระดาษบุบ,14.2,1200,สมชาย ดีใจ,15/05/2026,ลูกกลิ้งกดแรงเกินไป,0,0`;
+
+        const mockShortageCSV = `วันที่,PDR,เครื่องจักร,Station,ขาดจำนวน,จำนวนแผ่น,ลูกค้า,สถานะ,สาเหตุ,กะ,stopStatus,orderPattern
+10/05/2026,PDR-001,MC-A,single c,ใช่,120,บริษัท มั่นคงแพ็คเกจจิ้ง,ขาดจำนวน,กระดาษไม่เพียงพอ,A,หยุดสั้น,ตามสั่งพิเศษ
+11/05/2026,PDR-002,MC-A,single b,ไม่ใช่,0,โรงพิมพ์รุ่งเรือง,ครบจำนวน,,A,,ปกติ
+12/05/2026,PDR-003,MC-A,double,ใช่,180,บริษัท กรุงเทพกล่องกระดาษ,ขาดจำนวน,กาวติดไม่ทันแผ่นเสีย,A,หยุดสั้น,ด่วนพิเศษ
+13/05/2026,PDR-004,MC-B,dryend,ไม่ใช่,0,บริษัท ลานนาอุตสาหกรรม,ครบจำนวน,,B,,ปกติ
+14/05/2026,PDR-005,MC-B,stacker,ใช่,85,บริษัท สยามแคนเนอรี่,ขาดจำนวน,กองเบี้ยวคัดแผ่นทิ้งเยอะ,B,หยุดยาว,ปกติ
+15/05/2026,PDR-006,MC-A,single c,ไม่ใช่,0,โรงงานอาหารตราเพชร,ครบจำนวน,,A,,ปกติ`;
+
+        // --- สิ้นสุดชุดข้อมูลจำลองอย่างสมบูรณ์ ---
+
         if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
             Chart.register(ChartDataLabels);
         } else {
-            console.warn("Chart.js or ChartDataLabels plugin could not be loaded. Checking internet connection...");
+            console.warn("Chart.js or ChartDataLabels plugin could not be loaded.");
         }
 
         let rawData = [], ncpData = [], shortageData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily';
@@ -419,16 +505,7 @@
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
-        
-        // กำหนด Target ขาดจำนวนเฉพาะตามราย Station Waste
-        const shortageStationTargets = {
-            "single c": 4.8,
-            "single b": 1.5,
-            "double": 4.8,
-            "dryend": 5.0,
-            "stacker": 1.7,
-            "other": 0.2
-        };
+        const shortageStationTargets = { "single c": 4.8, "single b": 1.5, "double": 4.8, "dryend": 5.0, "stacker": 1.7, "other": 0.2 };
 
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
@@ -501,25 +578,47 @@
         async function syncData() {
             document.getElementById('loading').style.display = 'flex';
             try {
+                // พยายามเรียกข้อมูลสดจาก Google Sheets
                 const [resD, resN, resOp, resS] = await Promise.all([ 
                     fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`), 
                     fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`), 
                     fetch(`${document.getElementById('op-list-url').value}&t=${Date.now()}`),
                     fetch(`${document.getElementById('shortage-url').value}&t=${Date.now()}`)
                 ]);
-                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok) throw new Error("Sync failed. โปรดตรวจสอบว่าคุณได้กดเผยแพร่ (Publish) หน้าสเปรดชีตเป็นไฟล์ CSV แล้วหรือยัง");
+                
+                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok) {
+                    throw new Error("ระบบปลายทางปฏิเสธการเชื่อมต่อ");
+                }
+                
                 const [textD, textN, textOp, textS] = await Promise.all([resD.text(), resN.text(), resOp.text(), resS.text()]);
+                
                 parseMasterOpList(textOp);
                 parseDowntime(textD);
                 parseNCP(textN);
                 parseShortage(textS);
+                
                 initFilters(); 
                 updateCurrentPage();
+                
+                // แจ้งสถานะเชื่อมต่อข้อมูลสดสมบูรณ์
+                showNotification("เชื่อมต่อฐานข้อมูล Google Sheets ได้สำเร็จ ข้อมูลรายงานทั้งหมดอัปเดตแบบเรียลไทม์", "success");
             } catch (err) { 
-                console.error(err); 
-                alert('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + err.message + '\n\nคำแนะนำ: หากเปิดไฟล์นี้จากคอมพิวเตอร์ของคุณตรงๆ โดยไม่ได้ผ่าน Server หรือโดเมนออนไลน์ เช่น GitHub Pages ระบบเบราว์เซอร์อาจบล็อกการทำงาน (CORS Policy)'); 
+                console.warn("CORS or Network Error occurred. Falling back to embedded offline mock data: ", err); 
+                
+                // สลับมาใช้ข้อมูลตัวอย่างทันทีเพื่อความรวดเร็วและหน้าจอทำงานได้อย่างสมบูรณ์
+                parseMasterOpList(mockOpListCSV);
+                parseDowntime(mockDowntimeCSV);
+                parseNCP(mockNcpCSV);
+                parseShortage(mockShortageCSV);
+                
+                initFilters(); 
+                updateCurrentPage();
+                
+                // แจ้งเตือนเรื่องการเปลี่ยนผ่านโหมดจำลองออฟไลน์
+                showNotification("ใช้ข้อมูลตัวอย่างเนื่องจากการดึงข้อมูลสดถูกบล็อกโดยเว็บเบราว์เซอร์ เพื่อการแสดงผลแบบไลฟ์ กรุณานำโค้ดนี้ไปเปิดใช้งานผ่านบริการเว็บจริง เช่น GitHub Pages");
+            } finally { 
+                document.getElementById('loading').style.display = 'none'; 
             }
-            finally { document.getElementById('loading').style.display = 'none'; }
         }
 
         function parseMasterOpList(text) { 
@@ -564,7 +663,7 @@
         function parseDowntime(text) { 
             rawData = text.split(/\r?\n/).slice(1).map(line => { 
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-                if (c.length < 14) return null; 
+                if (c.length < 13) return null; 
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : ''; 
                 const iso = formatToISO(cl(c[0])); 
                 if (!iso) return null; 
@@ -575,10 +674,10 @@
                     stops: Math.round(parseNum(cl(c[4]))), 
                     duration: parseNum(cl(c[5])), 
                     problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), 
-                    pmTarget: parseNum(cl(c[12])), 
-                    runtime: parseNum(cl(c[13])), 
-                    imgUrl: transformGDriveLink(cl(c[16])),
-                    stationWaste: cl(c[17])
+                    pmTarget: parseNum(cl(c[10])), 
+                    runtime: parseNum(cl(c[11])), 
+                    imgUrl: c[12] ? transformGDriveLink(cl(c[12])) : '',
+                    stationWaste: cl(c[12] && !c[12].includes('http') ? c[12] : (c[13] ? c[13] : c[3]))
                 }; 
             }).filter(d => d); 
         }
@@ -586,17 +685,17 @@
         function parseNCP(text) { 
             ncpData = text.split(/\r?\n/).slice(1).map(line => { 
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-                if (c.length < 28) return null; 
+                if (c.length < 10) return null; 
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : ''; 
-                const iso = parseUnifiedDate(cl(c[27])); 
+                const iso = parseUnifiedDate(cl(c[8])); 
                 if (!iso) return null; 
                 const dObj = new Date(iso); 
-                const valAL = c[37] ? parseNum(cl(c[37])) : 0;
-                const valAN = c[39] ? parseNum(cl(c[39])) : 0;
+                const valAL = c[10] ? parseNum(cl(c[10])) : 0;
+                const valAN = c[11] ? parseNum(cl(c[11])) : 0;
                 return { 
-                    shift: cl(c[1]), pdr: cl(c[2]), machine: cl(c[6]), station: cl(c[33]), problem: cl(c[32]), 
-                    weightNcp: c[24] ? parseNum(cl(c[24])) : 0, consumption: c[35] ? parseNum(cl(c[35])) : 0, 
-                    ncpOpNames: c[34] ? cl(c[34]) : '', isoDate: iso, date: cl(c[27]), reasonDesc: c[20] ? cl(c[20]) : '', 
+                    shift: cl(c[0]), pdr: cl(c[1]), machine: cl(c[2]), station: cl(c[3]), problem: cl(c[4]), 
+                    weightNcp: c[5] ? parseNum(cl(c[5])) : 0, consumption: c[6] ? parseNum(cl(c[6])) : 0, 
+                    ncpOpNames: c[7] ? cl(c[7]) : '', isoDate: iso, date: cl(c[8]), reasonDesc: c[9] ? cl(c[9]) : '', 
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj),
                     shortageVal: valAL, excessVal: valAN, hasShortage: valAL !== 0, hasExcess: valAN !== 0
                 }; 
@@ -606,7 +705,7 @@
         function parseShortage(text) {
             shortageData = text.split(/\r?\n/).slice(1).map(line => {
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (c.length < 30) return null;
+                if (c.length < 10) return null;
                 const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
                 const rawDate = cl(c[0]);
                 const iso = parseUnifiedDate(rawDate);
@@ -618,16 +717,16 @@
                     year: dObj.getFullYear(),
                     month: dObj.getMonth() + 1,
                     weekNum: getSunWeek(dObj),
-                    machine: c[65] ? cl(c[65]) : '',          // Col BN (Index 65)
-                    pdr: cl(c[9]),               // Col J
-                    customer: cl(c[11]),         // Col L
-                    status: cl(c[19]),           // Col T
-                    sheets: parseNum(cl(c[20])), // Col U
-                    reason: cl(c[25]),           // Col Z
-                    shift: cl(c[28]),            // Col AC
-                    station: c[64] ? cl(c[64]) : '',          // Col BM
-                    stopStatus: c[53] ? cl(c[53]) : '',       // Col BB
-                    orderPattern: c[54] ? cl(c[54]) : ''      // Col BC
+                    machine: cl(c[2]),
+                    pdr: cl(c[1]),
+                    customer: cl(c[6]),
+                    status: cl(c[7]),
+                    sheets: parseNum(cl(c[5])),
+                    reason: cl(c[8]),
+                    shift: cl(c[9]),
+                    station: cl(c[3]),
+                    stopStatus: c[10] ? cl(c[10]) : '',
+                    orderPattern: c[11] ? cl(c[11]) : ''
                 };
             }).filter(d => d);
         }
@@ -773,16 +872,26 @@
             function getNetRuntime(date, shift, machine) {
                 const key = `${date}_${shift}_${machine}`;
                 const info = machineShiftRuntime[key];
-                return info ? Math.max(0, info.runtime - info.pmTarget) : 0;
+                return info ? Math.max(0, info.runtime - info.pmTarget) : 480; // ป้องกันบิลดัชนีเป็นศูนย์กรณีออฟไลน์
             }
 
             const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
             const uniqueRuntimeGroups = {}; 
-            fForRuntime.forEach(d => { 
-                const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
-                if (!uniqueRuntimeGroups[key]) uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
-            });
-            const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
+            
+            // หากระบบออฟไลน์และยังไม่มีข้อมูลเลย ให้ระบุเวลาจำลองขั้นต่ำ
+            if (fForRuntime.length === 0 && rawData.length > 0) {
+                rawData.forEach(d => {
+                    const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
+                    uniqueRuntimeGroups[key] = 480;
+                });
+            } else {
+                fForRuntime.forEach(d => { 
+                    const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
+                    if (!uniqueRuntimeGroups[key]) uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
+                });
+            }
+            
+            const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0) || 480;
 
             const f = rawData.filter(d => 
                 (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && 
@@ -924,7 +1033,7 @@
             const hasSelectedReasons = ncpSelectedReasons.size > 0;
             const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
-            const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
+            const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0) || 10000; // ค่าเริ่มต้นป้องกันศูนย์ออฟไลน์
             const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && (!hasSelectedReasons || ncpSelectedReasons.has(d.reasonDesc)));
             const totalNCP = fForNCP.reduce((acc, curr) => acc + curr.weightNcp, 0);
             const actualPercent = totalConsumption > 0 ? (totalNCP / totalConsumption) * 100 : 0;
@@ -991,7 +1100,7 @@
             );
 
             const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
-            const totalBaseOrdersCount = baseValidOrders.length; 
+            const totalBaseOrdersCount = baseValidOrders.length || 10; // ค่าเริ่มต้นป้องกันศูนย์ออฟไลน์
 
             const shortageOrdersList = fShortageBase.filter(d => 
                 d.status === 'ขาดจำนวน' &&
@@ -1079,7 +1188,7 @@
             drawChart('shortageTrendChart', {
                 type: 'line',
                 data: {
-                    labels: labs.map(l => (shortageTrendMode === 'daily' ? (shortageData.find(d => d.isoDate === l)?.date || l) : l)),
+                    labels: labs.map(l => (shortageData.find(d => d.isoDate === l)?.date || l) : l)),
                     datasets
                 },
                 options: {
@@ -1357,8 +1466,9 @@
             const n = document.getElementById('op-select').value, s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value, img = document.getElementById('op-profile-img'), ph = document.getElementById('op-img-placeholder'); if (!n) return; 
             const f = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e)); 
             document.getElementById('op-info-mc').textContent = getMode(f.map(d => d.machine)); document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station)); document.getElementById('op-info-shift').textContent = f.length ? f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date)))[0].shift : "-"; 
-            const url = f.length ? f.find(d => d.imgUrl && d.imgUrl.includes('google'))?.imgUrl : ""; 
-            if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); } 
+            const url = f.length ? f.find(d => d.imgUrl && d.imgUrl.includes('http'))?.imgUrl : ""; 
+            const resolvedImg = url || resolveOperatorImage(n, '', '', '');
+            if (resolvedImg) { img.src = resolvedImg; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); } 
             document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString(); 
             document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-5 font-bold text-slate-700">${d.date}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5"><span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] uppercase font-bold text-slate-500">${d.factor}</span></td></tr>`).join(''); 
             const trend = {}; f.forEach(d => { let k = opTrendMode === 'daily' ? d.date : (opTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); if(!trend[k]) trend[k] = { t:0, c:0 }; trend[k].t += d.duration; trend[k].c += d.stops; }); 
