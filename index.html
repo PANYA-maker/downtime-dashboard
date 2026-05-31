@@ -452,10 +452,11 @@
             return '';
         }
 
-        function getFilteredOperatorsForStation(stationWasteName, mcFilter, shFilter) {
+        function getFilteredOperatorsForStation(stationWasteName, mcFilter, hFilter) {
+            // Unused but kept original arguments as requested to keep Downtime page intact
             const cleanSWName = cleanStr(stationWasteName);
             const cleanMcFilter = cleanStr(mcFilter);
-            const cleanShFilter = cleanStr(shFilter);
+            const cleanShFilter = cleanStr(hFilter);
             const matches = masterOperators.filter(op => {
                 const matchSW = cleanStr(op.stationWaste) === cleanSWName;
                 const matchMc = !cleanMcFilter || cleanStr(op.machine) === cleanMcFilter;
@@ -795,7 +796,7 @@
             const trendRuntimeRaw = {}; 
             fForRuntime.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
-                const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; 
+                const uniqueKey = `${k}_${d.shift}_${d.machine}`; 
                 if (!trendRuntimeRaw[uniqueKey]) trendRuntimeRaw[uniqueKey] = { label: k, value: getNetRuntime(d.isoDate, d.shift, d.machine) };
             });
             const trendRuntimeFinal = {}; 
@@ -933,7 +934,7 @@
             const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stPercent - stTarget, ops: Array.from(data.ops) }; });
             document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { const thumbsHtml = stData.ops.map((name, idx) => `<img src="${masterOpList.get(name) || ''}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${name.charAt(0)}</div>`).join(''); return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><div class="flex flex-col items-end"><span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span><span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`; }).join('');
 
-            const trendWaste = {}; const trendConRaw = {}; fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
+            const trendWaste = {}; const trendConRaw = {}; fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${k}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
             fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
             const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
@@ -951,22 +952,37 @@
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
 
-            const fShortage = shortageData.filter(d => 
+            // 1. Base filtered data (ignoring the shortage reason filter for accurate baseline calculations)
+            const fShortageBase = shortageData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
                 (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
                 (!st || cleanStr(d.station) === cleanStr(st)) && 
                 (!sh || cleanStr(d.shift) === cleanStr(sh)) && 
-                (!hasSelectedCust || shortageSelectedCustomers.has(d.customer)) &&
+                (!hasSelectedCust || shortageSelectedCustomers.has(d.customer))
+            );
+
+            // 2. Final filtered data (applying all filters including shortage reason)
+            const fShortageFinal = fShortageBase.filter(d =>
                 (!hasSelectedReasons || shortageSelectedReasons.has(d.reason))
             );
 
-            const validStatusOrders = fShortage.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
-            const totalOrders = validStatusOrders.length;
-            const completedOrders = validStatusOrders.filter(d => d.status === 'ครบจำนวน').length;
-            const shortageOrders = validStatusOrders.filter(d => d.status === 'ขาดจำนวน').length;
+            const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
+            const totalBaseOrdersCount = baseValidOrders.length;
+
+            const finalValidOrders = fShortageFinal.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
+            const finalTotalOrdersCount = finalValidOrders.length;
+            const completedOrdersCount = fShortageFinal.filter(d => d.status === 'ครบจำนวน').length;
+            const shortageOrdersCount = fShortageFinal.filter(d => d.status === 'ขาดจำนวน').length;
             
-            const actualPercent = totalOrders > 0 ? (shortageOrders / totalOrders) * 100 : 0;
+            // Calculate dynamic percentage
+            let actualPercent = 0;
+            if (hasSelectedReasons) {
+                // When reason filter is active, percentage = (Shortage orders matching reason) / (Total base production orders) * 100
+                actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
+            } else {
+                actualPercent = finalTotalOrdersCount > 0 ? (shortageOrdersCount / finalTotalOrdersCount) * 100 : 0;
+            }
             
             // Dynamic Target setting logic
             const hasTarget = !hasSelectedReasons; // When shortage reason is filtered, remove Target.
@@ -975,9 +991,9 @@
                 targetVal = 10.00; // When customer is filtered, Target is 10.00%
             }
 
-            document.getElementById('shortage-kpi-total').textContent = totalOrders.toLocaleString();
-            document.getElementById('shortage-kpi-completed').textContent = completedOrders.toLocaleString();
-            document.getElementById('shortage-kpi-shortage').textContent = shortageOrders.toLocaleString();
+            document.getElementById('shortage-kpi-total').textContent = finalTotalOrdersCount.toLocaleString();
+            document.getElementById('shortage-kpi-completed').textContent = completedOrdersCount.toLocaleString();
+            document.getElementById('shortage-kpi-shortage').textContent = shortageOrdersCount.toLocaleString();
             document.getElementById('shortage-kpi-percent').textContent = actualPercent.toFixed(2) + '%';
             
             document.getElementById('shortage-kpi-target').textContent = hasTarget ? `Target: ${targetVal.toFixed(2)}%` : `Target: -`;
@@ -992,16 +1008,24 @@
                 diffEl.className = `text-sm font-black text-slate-400`;
             }
 
-            // 1. Trend Line Chart
+            // 1. Trend Line Chart (Populate with proper dynamic baseline calculations)
             const trendShortage = {};
             const trendTotal = {};
-            validStatusOrders.forEach(d => {
+            
+            // Populate total denominator per date bucket using baseValidOrders (so denominator respects Date/MC/Shift/Customer/Station, but ignores Reason filter)
+            baseValidOrders.forEach(d => {
                 let k = shortageTrendMode === 'daily' ? d.isoDate : (shortageTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
                 trendTotal[k] = (trendTotal[k] || 0) + 1;
+            });
+            
+            // Populate numerator count per date bucket using final valid shortage orders
+            fShortageFinal.forEach(d => {
                 if (d.status === 'ขาดจำนวน') {
+                    let k = shortageTrendMode === 'daily' ? d.isoDate : (shortageTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
                     trendShortage[k] = (trendShortage[k] || 0) + 1;
                 }
             });
+
             const labs = Object.keys(trendTotal).sort();
             const actualCounts = labs.map(l => (trendShortage[l] || 0));
             const actualPercents = labs.map(l => trendTotal[l] > 0 ? (trendShortage[l] || 0) / trendTotal[l] * 100 : 0);
@@ -1040,7 +1064,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            // Updated to show only percentage and shortage count (no "ออเดอร์" word)
+                            // Displays formatted Percentage and dynamic Shortage count in parentheses
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
@@ -1056,7 +1080,7 @@
 
             // 2. Top 5 Reasons Horizontal Bar Chart (Exclude ครบจำนวน)
             const problemMap = {};
-            fShortage.forEach(d => {
+            fShortageFinal.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.reason && d.reason !== 'ครบจำนวน') {
                     problemMap[d.reason] = (problemMap[d.reason] || 0) + 1;
                 }
@@ -1073,7 +1097,7 @@
                         borderWidth: 2,
                         borderRadius: 8,
                         barThickness: 28,
-                        customPercents: topProblems.map(x => totalOrders > 0 ? (x[1] / totalOrders * 100) : 0)
+                        customPercents: topProblems.map(x => totalBaseOrdersCount > 0 ? (x[1] / totalBaseOrdersCount * 100) : 0)
                     }]
                 },
                 options: {
@@ -1100,7 +1124,7 @@
 
             // 3. Station Shortage Share Chart (Col BM)
             const stationShortageMap = {};
-            fShortage.forEach(d => {
+            fShortageFinal.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.station) {
                     stationShortageMap[d.station] = (stationShortageMap[d.station] || 0) + 1;
                 }
@@ -1117,7 +1141,7 @@
                         borderWidth: 2,
                         borderRadius: 8,
                         barThickness: 28,
-                        customPercents: sortedStationShortage.map(x => totalOrders > 0 ? (x[1] / totalOrders * 100) : 0)
+                        customPercents: sortedStationShortage.map(x => totalBaseOrdersCount > 0 ? (x[1] / totalBaseOrdersCount * 100) : 0)
                     }]
                 },
                 options: {
@@ -1156,7 +1180,7 @@
                 stationShortagePerf[stName] = { shortageCount: 0, totalCount: 0, ops: new Set() };
             });
 
-            validStatusOrders.forEach(d => {
+            finalValidOrders.forEach(d => {
                 const cleanSt = cleanStr(d.station);
                 const matchedSt = shortageStations.find(s => cleanStr(s) === cleanSt);
                 if (matchedSt) {
@@ -1180,7 +1204,7 @@
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 // Calculated as (Shortage count of Station / Grand total KPI card orders) * 100
-                const stPercent = totalOrders > 0 ? (data.shortageCount / totalOrders) * 100 : 0;
+                const stPercent = finalTotalOrdersCount > 0 ? (data.shortageCount / finalTotalOrdersCount) * 100 : 0;
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
@@ -1231,7 +1255,7 @@
             }).join('');
 
             // 5. Shortage Detailed Table (Updated layout with combined columns & new columns Col BB and BC)
-            const fShortageTable = fShortage.filter(d => d.status === 'ขาดจำนวน');
+            const fShortageTable = fShortageFinal.filter(d => d.status === 'ขาดจำนวน');
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
                     <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td>
