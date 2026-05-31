@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
@@ -83,16 +82,12 @@
     <input type="hidden" id="op-list-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=593156373&single=true&output=csv">
     <input type="hidden" id="shortage-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=97773984&single=true&output=csv">
 
-    <div class="max-w-7xl mx-auto mb-8 flex flex-wrap bg-white p-2 rounded-2xl shadow-sm gap-2 no-export">
+    <div class="max-w-7xl mx-auto mb-8 flex flex-wrap bg-white p-2 rounded-2xl shadow-sm gap-2">
         <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม DOWNTIME</button>
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('shortage')" id="btn-shortage" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวมขาดจำนวน</button>
         <button onclick="switchPage('station-analysis')" id="btn-station-analysis" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์สถานี</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
-        <button onclick="takeScreenshot()" class="bg-slate-800 hover:bg-slate-900 px-5 rounded-xl text-white flex items-center gap-2 font-bold text-xs transition-all shadow-lg shadow-slate-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            บันทึกภาพ
-        </button>
     </div>
 
     <!-- PAGE 1: DOWNTIME -->
@@ -132,7 +127,7 @@
             <div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div></div>
         </div>
         <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">แนวโน้มเปอร์เซ็นต์เวลาสูญเสีย (% Downtime)</h3><div class="flex bg-slate-100 p-1 rounded-xl no-export"><button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active">Daily</button><button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn">Weekly</button><button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn">Monthly</button></div></div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">แนวโน้มเปอร์เซ็นต์เวลาสูญเสีย (% Downtime)</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active">Daily</button><button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn">Weekly</button><button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn">Monthly</button></div></div>
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
         </div>
 
@@ -189,7 +184,7 @@
         </div>
 
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3">แนวโน็นเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="flex bg-slate-100 p-1 rounded-xl no-export"><button onclick="setNcpTrendMode('daily')" id="btn-ncp-trend-daily" class="view-btn active">Daily</button><button onclick="setNcpTrendMode('weekly')" id="btn-ncp-trend-weekly" class="view-btn">Weekly</button><button onclick="setNcpTrendMode('monthly')" id="btn-ncp-trend-monthly" class="view-btn">Monthly</button></div></div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3">แนวโน็นเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setNcpTrendMode('daily')" id="btn-ncp-trend-daily" class="view-btn active">Daily</button><button onclick="setNcpTrendMode('weekly')" id="btn-ncp-trend-weekly" class="view-btn">Weekly</button><button onclick="setNcpTrendMode('monthly')" id="btn-ncp-trend-monthly" class="view-btn">Monthly</button></div></div>
             <div class="chart-container"><canvas id="ncpTrendChart"></canvas></div>
         </div>
 
@@ -284,7 +279,7 @@
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                 <h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3">แนวโน้มเปอร์เซ็นต์ขาดจำนวน (% Shortage)</h3>
-                <div class="flex bg-slate-100 p-1 rounded-xl no-export">
+                <div class="flex bg-slate-100 p-1 rounded-xl">
                     <button onclick="setShortageTrendMode('daily')" id="btn-shortage-trend-daily" class="view-btn active">Daily</button>
                     <button onclick="setShortageTrendMode('weekly')" id="btn-shortage-trend-weekly" class="view-btn">Weekly</button>
                     <button onclick="setShortageTrendMode('monthly')" id="btn-shortage-trend-monthly" class="view-btn">Monthly</button>
@@ -398,7 +393,7 @@
             <div class="grid grid-cols-2 gap-6 mt-12 pt-12 border-t border-slate-100"><div class="bg-blue-50/50 p-8 rounded-3xl text-center"><p class="text-[10px] text-blue-400 uppercase font-bold tracking-widest mb-1">เวลาสูญเสีย (นาที)</p><p id="op-kpi-time" class="text-4xl font-black text-blue-700">0</p></div><div class="bg-rose-50/50 p-8 rounded-3xl text-center"><p class="text-[10px] text-rose-400 uppercase font-bold tracking-widest mb-1">จำนวนครั้ง</p><p id="op-kpi-count" class="text-4xl font-black text-rose-700">0</p></div></div>
         </div>
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden"><div class="table-responsive"><table class="w-full text-left"><thead class="bg-slate-50 border-b text-[10px] font-bold text-slate-400 uppercase"><tr><th class="p-5">วันที่</th><th class="p-5">Station</th><th class="p-5">ปัญหา</th><th class="p-5 text-center">นาที</th><th class="p-5">ปัจจัยหลัก</th></tr></thead><tbody id="op-table-body" class="text-xs text-slate-600"></tbody></table></div></div>
-        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-12"><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">วิเคราะห์แนวโน้มรายบุคคล</h3><div class="flex bg-slate-100 p-1 rounded-xl no-export"><button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active">Daily</button><button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn">Weekly</button><button onclick="setOpTrendMode('monthly')" id="btn-op-trend-monthly" class="view-btn">Monthly</button></div></div><div class="chart-container"><canvas id="opTrendChart"></canvas></div></div>
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-12"><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">วิเคราะห์แนวโน้มรายบุคคล</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active">Daily</button><button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn">Weekly</button><button onclick="setOpTrendMode('monthly')" id="btn-op-trend-monthly" class="view-btn">Monthly</button></div></div><div class="chart-container"><canvas id="opTrendChart"></canvas></div></div>
     </div>
 
     <script>
@@ -628,7 +623,7 @@
             fillSelect('station-filter-mc', getU(rawData, 'machine'));
             fillSelect('station-filter-shift', getU(rawData, 'shift'));
             
-            // Shortage Filters (Changed to Col BN for Machine Filter automatically)
+            // Shortage Filters
             fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
             fillSelect('shortage-filter-station', getU(shortageData, 'station'));
             fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
@@ -1061,7 +1056,6 @@
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            // แสดงผลตัวเลขเปอร์เซ็นต์และออเดอร์ที่ขาดจำนวน (ตัดอักษรส่วนเกินออก)
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
@@ -1171,7 +1165,7 @@
                 }
             });
 
-            // 4. Performance by Station List (แสดงเฉพาะสถานีที่ถูกคัดเลือกและคำนวณเปรียบเทียบกับฐานหลักอย่างถูกต้อง)
+            // 4. Performance by Station List
             const stationShortagePerf = {};
             let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             
@@ -1258,7 +1252,7 @@
                 `;
             }).join('');
 
-            // 5. Shortage Detailed Table (ตารางรายละเอียด)
+            // 5. Shortage Detailed Table
             const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
@@ -1349,7 +1343,6 @@
         function setNcpTrendMode(m) { ncpTrendMode = m; document.querySelectorAll('#btn-ncp-trend-daily, #btn-ncp-trend-weekly, #btn-ncp-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-ncp-trend-${m}`)); updateNCPUI(); }
         function setShortageTrendMode(m) { shortageTrendMode = m; document.querySelectorAll('#btn-shortage-trend-daily, #btn-shortage-trend-weekly, #btn-shortage-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-shortage-trend-${m}`)); updateShortageUI(); }
         
-        async function takeScreenshot() { document.getElementById('loading').style.display = 'flex'; const imgs = Array.from(document.querySelectorAll('img')); const originalSrcs = imgs.map(i => i.src); for (let img of imgs) { if (img.src.startsWith('http')) { try { const res = await fetch(img.src); const blob = await res.blob(); img.src = await new Promise(r => { const reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); }); } catch(e) {} } } document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'hidden'); html2canvas(document.body, { backgroundColor: '#f8fafc', useCORS: true, scale: 2, scrollY: -window.scrollY }).then(canvas => { document.querySelectorAll('.no-export').forEach(el => el.style.visibility = 'visible'); imgs.forEach((img, idx) => img.src = originalSrcs[idx]); const dataUrl = canvas.toDataURL("image/png"); const link = document.createElement('a'); link.download = `Production_Analysis_${new Date().getTime()}.png`; link.href = dataUrl; if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { const newTab = window.open(); newTab.document.write('<div style="background:#f8fafc; min-height:100vh; padding:20px;"><img src="' + dataUrl + '" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></div>'); } else { link.click(); } document.getElementById('loading').style.none; }); }
         window.onload = () => { setDefaultDates(); syncData(); };
     </script>
 </body>
