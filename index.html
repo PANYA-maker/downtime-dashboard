@@ -402,13 +402,7 @@
     </div>
 
     <script>
-        // บรรเทาอาการหน้าจอดับ (Safe Guard) กรณี CDN ปลั๊กอินภายนอกไม่ทำงานหรือโหลดช้า
-        if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
-            Chart.register(ChartDataLabels);
-        } else {
-            console.warn("Chart.js or ChartDataLabels plugin could not be loaded. Please ensure internet access.");
-        }
-
+        Chart.register(ChartDataLabels);
         let rawData = [], ncpData = [], shortageData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily';
         let ncpSelectedReasons = new Set();
         let ncpAllReasonOptions = [];
@@ -422,7 +416,7 @@
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
         
-        // เพิ่ม Target ราย Station Waste สกุลเงิน/สัดส่วน % ขาดจำนวน (Shortage Target)
+        // เพิ่ม Target ราย Station Waste ของหน้ารวมขาดจำนวน
         const shortageStationTargets = { "single c": 4.8, "single b": 1.5, "double": 4.8, "dryend": 5.0, "stacker": 1.7, "other": 0.2 };
 
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
@@ -988,11 +982,11 @@
             // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน (ปรับปรุง: เพิ่มเงื่อนไขแยกตาม Station Waste)
             const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
             
-            let targetVal = 18.00; // ค่าเริ่มต้นของหน้านี้
+            let targetVal = 18.00; // ค่าเป้าหมายเริ่มต้น (กรณีไม่กรองสถานี)
             const cleanStFilter = cleanStr(st);
             
             if (cleanStFilter) {
-                // หากกรองเลือก Station Waste ให้ดึงค่าเป้าหมายรายสถานีมาใช้
+                // หากผู้ใช้เลือกกรองตามสถานี ให้ดึงเป้าหมายเฉพาะตัวตามรายชื่อ
                 if (shortageStationTargets[cleanStFilter] !== undefined) {
                     targetVal = shortageStationTargets[cleanStFilter];
                 } else {
@@ -1225,11 +1219,11 @@
                 });
             });
 
-            // ปรับปรุง: การคำนวณสถิติและหักลบเป้าหมาย (Target/Diff) แยกเป้าหมายตามราย Station ในรายการสรุปโดยตรง
+            // คำนวณสถิติและหักลบเป้าหมาย (Target/Diff) แยกเป้าหมายตามราย Station ในรายการสรุปโดยตรง
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
                 
-                // กำหนดเป้าหมายเฉพาะตัวสำหรับแต่ละสถานี
+                // กำหนดเป้าหมายเฉพาะตัวสำหรับแต่ละสถานีโดยตรง
                 const cleanStName = cleanStr(stName);
                 let stTarget = 18.00; // default
                 
@@ -1261,7 +1255,7 @@
                 const diffText = hasTarget ? `${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%` : `-`;
                 const diffClass = hasTarget ? (stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600') : 'text-slate-400';
                 
-                // ปรับเกลเพื่อวาดความกว้างของแถบความคืบหน้าให้เข้ากับค่าเป้าหมายใหม่ที่ลดลง
+                // ปรับความกว้างของแถบความคืบหน้าให้เข้ากับค่าเป้าหมายใหม่
                 const barWidth = hasTarget ? Math.min(100, Math.max(5, (stData.percent / (stData.target || 18)) * 50)) : Math.min(100, Math.max(5, stData.percent * 3));
                 const barColor = hasTarget ? (stData.diff > 0 ? '#fb7185' : '#34d399') : '#6366f1';
                 
