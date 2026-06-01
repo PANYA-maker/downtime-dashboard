@@ -934,7 +934,7 @@
             const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
             const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)', tension: 0.4 }];
             if (!hasSelectedReasons) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
-            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
         function updateShortageUI() {
@@ -1196,8 +1196,8 @@
             });
 
             shortageStations.forEach(stName => {
-                getFilteredOperatorsForStation(stName, mc, hFilter => {
-                    stationShortagePerf[stName].ops.add(hFilter);
+                getFilteredOperatorsForStation(stName, mc, sh).forEach(opName => {
+                    stationShortagePerf[stName].ops.add(opName);
                 });
             });
 
