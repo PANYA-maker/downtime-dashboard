@@ -89,6 +89,7 @@
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
     </div>
 
+    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
@@ -148,6 +149,7 @@
         </div>
     </div>
 
+    <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -173,7 +175,8 @@
             <div class="lg:col-span-3"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label><div class="flex gap-2"><input type="date" id="ncp-start-date" class="w-full"><input type="date" id="ncp-end-date" class="w-full"></div></div>
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
-            <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            <div class="lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            <div class="lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label><input type="color" id="ncp-chart-color" value="#6366f1" class="h-[42px] p-1 cursor-pointer w-full rounded-xl border border-slate-200"></div>
             <div class="lg:col-span-3">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล (Col U)</label>
                 <div class="multi-select-container">
@@ -207,6 +210,7 @@
         </div>
     </div>
 
+    <!-- PAGE 3: SHORTAGE OVERVIEW -->
     <div id="page-shortage" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500">
@@ -246,7 +250,7 @@
                     <input type="date" id="shortage-end-date" class="w-full">
                 </div>
             </div>
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label>
                 <select id="shortage-filter-mc"><option value="">ทั้งหมด</option></select>
             </div>
@@ -257,6 +261,10 @@
             <div class="lg:col-span-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label>
                 <select id="shortage-filter-shift"><option value="">ทั้งหมด</option></select>
+            </div>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
+                <input type="color" id="shortage-chart-color" value="#4f46e5" class="h-[42px] p-1 cursor-pointer w-full rounded-xl border border-slate-200">
             </div>
             <div class="lg:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาลูกค้า</label>
@@ -323,6 +331,7 @@
         </div>
     </div>
 
+    <!-- PAGE 4: STATION ANALYSIS -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-4 hidden">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
@@ -382,6 +391,7 @@
         </div>
     </div>
 
+    <!-- PAGE 5: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
@@ -642,6 +652,8 @@
                 } 
             });
             document.getElementById('main-chart-color').addEventListener('input', updateMainUI);
+            document.getElementById('ncp-chart-color').addEventListener('input', updateNCPUI);
+            document.getElementById('shortage-chart-color').addEventListener('input', updateShortageUI);
         }
 
         function toggleNcpReasonDropdown(show) { const dropdown = document.getElementById('ncp-reason-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
@@ -801,7 +813,61 @@
             });
             const labs = Object.keys(trendRuntimeFinal).sort((a,b) => mainTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
             
-            drawChart('mainTrendChart', { type: 'line', data: { labels: labs, datasets: [ { label: 'Actual % Downtime', data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), borderColor: chosenColor, borderWidth: 3, fill: true, backgroundColor: chosenColor + '1A', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, datalabels: { display: true, anchor: 'end', align: 'top', formatter: (v,ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            drawChart('mainTrendChart', { 
+                type: 'line', 
+                data: { 
+                    labels: labs, 
+                    datasets: [ 
+                        { 
+                            label: 'Actual % Downtime', 
+                            data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), 
+                            customMinutes: labs.map(l => (trendDowntime[l] || 0)),
+                            borderColor: chosenColor, 
+                            borderWidth: 3, 
+                            fill: true, 
+                            backgroundColor: chosenColor + '1A', 
+                            tension: 0.4 
+                        }, 
+                        { 
+                            label: `Target (${targetVal.toFixed(2)}%)`, 
+                            data: labs.map(() => targetVal), 
+                            borderColor: 'rgba(100, 116, 139, 0.6)', 
+                            borderWidth: 2, 
+                            borderDash: [5, 5], 
+                            pointRadius: 0, 
+                            fill: false, 
+                            datalabels: { display: false } 
+                        } 
+                    ] 
+                }, 
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            display: true, 
+                            position: 'top', 
+                            labels: { boxWidth: 15, font: { size: 10 } } 
+                        }, 
+                        datalabels: { 
+                            display: true, 
+                            anchor: 'end', 
+                            align: 'top', 
+                            textAlign: 'center',
+                            formatter: (v,ctx) => {
+                                if (ctx.datasetIndex === 0) {
+                                    const mins = ctx.dataset.customMinutes[ctx.dataIndex];
+                                    return `${v.toFixed(2)}%\n(${mins.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
+                                }
+                                return '';
+                            },
+                            font: { size: 9, weight: 600 }, 
+                            color: '#475569', 
+                            offset: 8 
+                        } 
+                    }, 
+                    scales: { y: { beginAtZero: true, grace: '25%' } } 
+                } 
+            });
             
             let activeStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             if (selectedStation) {
@@ -884,6 +950,7 @@
 
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
+            const chosenNcpColor = document.getElementById('ncp-chart-color').value;
             const hasSelectedReasons = ncpSelectedReasons.size > 0;
             const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
@@ -932,9 +999,9 @@
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
             fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
             const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
-            const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)', tension: 0.4 }];
+            const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: chosenNcpColor, borderWidth: 3, fill: true, backgroundColor: chosenNcpColor + '1A', tension: 0.4 }];
             if (!hasSelectedReasons) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
-            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: '#4f46e5', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: chosenNcpColor, offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
         function updateShortageUI() {
@@ -943,6 +1010,7 @@
                   mc = document.getElementById('shortage-filter-mc').value,
                   st = document.getElementById('shortage-filter-station').value,
                   sh = document.getElementById('shortage-filter-shift').value;
+            const chosenShortageColor = document.getElementById('shortage-chart-color').value;
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
 
@@ -1026,10 +1094,10 @@
                 label: 'Actual % ขาดจำนวน',
                 data: actualPercents,
                 customCounts: actualCounts,
-                borderColor: 'rgba(99, 102, 241, 1)',
+                borderColor: chosenShortageColor,
                 borderWidth: 3,
                 fill: true,
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                backgroundColor: chosenShortageColor + '1A',
                 tension: 0.4
             }];
 
@@ -1059,7 +1127,7 @@
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
                             font: { size: 9, weight: 'bold' },
-                            color: '#4f46e5',
+                            color: chosenShortageColor,
                             offset: 8,
                             align: 'top'
                         },
