@@ -418,6 +418,7 @@
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
+        const shortageStationTargets = { "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70, "other": 0.20 };
 
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
@@ -1040,10 +1041,17 @@
             // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
-            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน
+            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน (ปรับตามสถานี และเป้าหมายใหม่)
             const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
             let targetVal = 18.00;
-            if (hasSelectedCust) {
+            if (st) {
+                const cleanSt = cleanStr(st);
+                if (shortageStationTargets[cleanSt] !== undefined) {
+                    targetVal = shortageStationTargets[cleanSt];
+                } else {
+                    targetVal = shortageStationTargets["other"];
+                }
+            } else if (hasSelectedCust) {
                 targetVal = 10.00; // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
             }
 
@@ -1271,13 +1279,15 @@
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
+                const cleanStName = cleanStr(stName);
+                const individualTarget = shortageStationTargets[cleanStName] !== undefined ? shortageStationTargets[cleanStName] : targetVal;
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
                     totalCount: data.totalCount,
                     percent: stPercent,
-                    target: targetVal,
-                    diff: stPercent - targetVal,
+                    target: individualTarget,
+                    diff: stPercent - individualTarget,
                     ops: Array.from(data.ops)
                 };
             });
