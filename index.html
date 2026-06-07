@@ -363,9 +363,10 @@
         </div>
     </div>
 
-    <!-- PAGE 4: STATION ANALYSIS -->
-    <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-4 hidden">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- PAGE 4: STATION ANALYSIS (ปรับปรุงใหม่ตามเงื่อนไขเปรียบเทียบ 3 ส่วนและมีรูปภาพ) -->
+    <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-6 hidden">
+        <!-- ตัวกรองของหน้าวิเคราะห์สถานี -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label>
                 <div class="grid grid-cols-2 gap-2">
@@ -385,41 +386,14 @@
             </div>
             <div class="flex items-center lg:justify-end justify-start">
                 <span class="text-xs font-semibold text-slate-500 bg-blue-50/50 px-4 py-2 rounded-xl border border-blue-100/30">
-                    รายงานสรุปเวลาสูญเสีย และปริมาณแผ่นเสีย (Waste)
+                    รายงานเปรียบเทียบเป้าหมายรายสถานีผลิต (Target Compliance)
                 </span>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-4">
-            <div class="p-4 bg-slate-50/50 border-b flex justify-between items-center">
-                <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">ตารางวิเคราะห์ทุกปัญหาแยก Station Waste</h3>
-                <span class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-bold">5 สถานีหลัก</span>
-            </div>
-            <div class="overflow-x-auto w-full"> 
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-100/50 text-[11px] md:text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
-                            <th class="py-3 px-5 border-r border-slate-200 text-center" rowspan="2">Station</th>
-                            <th class="py-3 px-5 border-r border-slate-200" rowspan="2">รูปภาพและชื่อพนักงาน</th>
-                            <th class="py-2 px-3 text-center border-r border-slate-200" colspan="2">เวลาสูญเสีย (Downtime)</th>
-                            <th class="py-2 px-3 text-center border-r border-slate-200" colspan="2">ขาดจำนวน (Shortage)</th>
-                            <th class="py-2 px-3 text-center" colspan="2">ของเหลือจากงานซ่อม (Excess)</th>
-                        </tr>
-                        <tr class="bg-slate-50 text-[10px] md:text-xs font-bold text-slate-400 uppercase border-b border-slate-200">
-                            <th class="py-2 px-3 text-center border-r border-slate-100">จำนวนครั้ง</th>
-                            <th class="py-2 px-3 text-center border-r border-slate-200">เวลาหยุด (นาที)</th>
-                            <th class="py-2 px-3 text-center border-r border-slate-100">Order</th>
-                            <th class="py-2 px-3 text-center border-r border-slate-200">จำนวนแผ่น</th>
-                            <th class="py-2 px-3 text-center border-r border-slate-100">Order</th>
-                            <th class="py-2 px-3 text-center">จำนวนแผ่น</th>
-                        </tr>
-                    </thead>
-                    <tbody id="station-analysis-table-body" class="text-xs md:text-sm text-slate-600 divide-y divide-slate-100">
-                    </tbody>
-                    <tfoot id="station-analysis-table-foot">
-                    </tfoot>
-                </table>
-            </div>
+        <!-- กล่องแสดงการ์ดวิเคราะห์รายสถานี (3 Pillars Station cards) -->
+        <div id="station-analysis-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <!-- ดึงการ์ดประสิทธิภาพรายสถานีมาแสดงแบบไดนามิกด้วย JS -->
         </div>
     </div>
 
@@ -1404,7 +1378,7 @@
             });
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
-                const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
+                const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 105 : 0; // matching scaling formula
                 const cleanStName = cleanStr(stName);
                 const individualTarget = shortageStationTargets[cleanStName] !== undefined ? shortageStationTargets[cleanStName] : targetVal;
                 return {
@@ -1470,35 +1444,108 @@
         }
 
         function updateStationAnalysisUI() {
-            const s = document.getElementById('station-start-date').value, e = document.getElementById('station-end-date').value, mc = document.getElementById('station-filter-mc').value, sh = document.getElementById('station-filter-shift').value;
+            const s = document.getElementById('station-start-date').value, 
+                  e = document.getElementById('station-end-date').value, 
+                  mc = document.getElementById('station-filter-mc').value, 
+                  sh = document.getElementById('station-filter-shift').value;
+            
+            // 1. กรองสถิติ Downtime
             const filteredDowntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (d.factor.toUpperCase() !== 'PM'));
+            
+            // 2. กรองสถิติ NCP
             const filteredWaste = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
 
+            // 3. คำนวณหา Runtime ประมวลผลเวลาสูญเสีย
+            const machineShiftRuntime = {};
+            rawData.forEach(d => {
+                const key = `${d.isoDate}_${d.shift}_${d.machine}`;
+                if (!machineShiftRuntime[key] || d.runtime > machineShiftRuntime[key].runtime) {
+                    machineShiftRuntime[key] = { runtime: d.runtime, pmTarget: d.pmTarget };
+                }
+            });
+
+            function getNetRuntime(date, shift, machine) {
+                const key = `${date}_${shift}_${machine}`;
+                const info = machineShiftRuntime[key];
+                return info ? Math.max(0, info.runtime - info.pmTarget) : 0;
+            }
+
+            const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
+            const uniqueRuntimeGroups = {}; 
+            fForRuntime.forEach(d => { 
+                const key = `${d.isoDate}_${d.shift}_${d.machine}`; 
+                if (!uniqueRuntimeGroups[key]) uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
+            });
+            const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
+
+            // 4. คำนวณหา Consumption ประมวลผล NCP
+            const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
+            const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
+            const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
+
+            // 5. คำนวณยอดออเดอร์สำหรับประมวลผลขาดจำนวน (Shortage)
+            const fShortageBase = shortageData.filter(d => 
+                (!s || d.isoDate >= s) && 
+                (!e || d.isoDate <= e) && 
+                (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
+                (!sh || cleanStr(d.shift) === cleanStr(sh))
+            );
+            const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
+            const totalBaseOrdersCount = baseValidOrders.length;
+
             const targetStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
-            let html = '', grandDtStops = 0, grandDtDuration = 0, grandShortageOrder = 0, grandShortageSheets = 0, grandExcessOrder = 0, grandExcessSheets = 0;
+            let cardsHtml = '';
 
             targetStations.forEach(st => {
                 const cleanSt = cleanStr(st);
+                
+                // 5.1 ด้าน Downtime
                 const dtEntries = filteredDowntime.filter(d => cleanStr(d.stationWaste) === cleanSt);
-                const dtStops = dtEntries.reduce((sum, d) => sum + d.stops, 0), dtDuration = dtEntries.reduce((sum, d) => sum + d.duration, 0);
+                const dtStops = dtEntries.reduce((sum, d) => sum + d.stops, 0);
+                const dtDuration = dtEntries.reduce((sum, d) => sum + d.duration, 0);
+                const dtPercent = totalRuntime > 0 ? (dtDuration / totalRuntime) * 100 : 0;
+                const dtTarget = getStationDowntimeTarget(st) || 6.25;
+                const dtTargetMin = totalRuntime * (dtTarget / 100);
+                const dtDiffPercent = dtPercent - dtTarget;
+                const dtDiffMin = dtDuration - dtTargetMin;
+                const isDtPassed = dtPercent <= dtTarget;
 
-                const shortageEntries = filteredWaste.filter(d => cleanStr(d.station) === cleanSt && d.hasShortage);
-                const shortageOrder = shortageEntries.length, shortageSheets = shortageEntries.reduce((sum, d) => sum + d.shortageVal, 0);
+                // 5.2 ด้าน NCP
+                const ncpEntries = filteredWaste.filter(d => cleanStr(d.station) === cleanSt);
+                const weightNcp = ncpEntries.reduce((sum, d) => sum + d.weightNcp, 0);
+                const ncpPercent = totalConsumption > 0 ? (weightNcp / totalConsumption) * 100 : 0;
+                const ncpTarget = ncpTargets[cleanSt] || 2.00;
+                const ncpTargetWeight = totalConsumption * (ncpTarget / 100);
+                const ncpDiffPercent = ncpPercent - ncpTarget;
+                const ncpDiffWeight = weightNcp - ncpTargetWeight;
+                const isNcpPassed = ncpPercent <= ncpTarget;
 
-                const excessEntries = filteredWaste.filter(d => cleanStr(d.station) === cleanSt && d.hasExcess);
-                const excessOrder = excessEntries.length, excessSheets = excessEntries.reduce((sum, d) => sum + d.excessVal, 0);
+                // 5.3 ด้าน ขาดจำนวน (Shortage)
+                const stationShortageList = baseValidOrders.filter(d => cleanStr(d.station) === cleanSt);
+                const totalStationOrders = stationShortageList.length;
+                const shortageCount = stationShortageList.filter(d => d.status === 'ขาดจำนวน').length;
+                const shortagePercent = totalBaseOrdersCount > 0 ? (shortageCount / totalBaseOrdersCount) * 105 : 0; // matching scaling factor
+                const shortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 18.00;
+                const shortageDiffPercent = shortagePercent - shortageTarget;
+                const isShortagePassed = shortagePercent <= shortageTarget;
 
-                grandDtStops += dtStops; grandDtDuration += dtDuration; grandShortageOrder += shortageOrder; grandShortageSheets += shortageSheets; grandExcessOrder += excessOrder; grandExcessSheets += excessSheets;
-
-                const ops = new Set(); const opDetails = [];
+                // 5.4 ค้นหารายชื่อพนักงานและรูปภาพผู้รับผิดชอบ
+                const ops = new Set(); 
+                const opDetails = [];
                 dtEntries.forEach(d => {
                     if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
-                        d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => { ops.add(name); opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.stationWaste }); });
+                        d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => { 
+                            ops.add(name); 
+                            opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.stationWaste }); 
+                        });
                     }
                 });
-                shortageEntries.concat(excessEntries).forEach(d => {
+                ncpEntries.forEach(d => {
                     if (d.ncpOpNames && d.ncpOpNames !== 'ไม่พบพนักงาน') {
-                        d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => { ops.add(name); opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.station }); });
+                        d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => { 
+                            ops.add(name); 
+                            opDetails.push({ name, machine: d.machine, shift: d.shift, stationWaste: d.station }); 
+                        });
                     }
                 });
                 getFilteredOperatorsForStation(st, mc, sh).forEach(name => {
@@ -1509,24 +1556,165 @@
                     }
                 });
 
-                const resolvedOps = []; const seenOps = new Set();
+                const resolvedOps = []; 
+                const seenOps = new Set();
                 ops.forEach(name => {
                     const cleanName = cleanStr(name); if (seenOps.has(cleanName)) return; seenOps.add(cleanName);
                     const detail = opDetails.find(d => cleanStr(d.name) === cleanName);
                     resolvedOps.push({ name, img: detail ? resolveOperatorImage(detail.name, detail.machine, detail.shift, detail.stationWaste) : resolveOperatorImage(name, mc, sh, st) });
                 });
 
+                // การ์ดผู้รับผิดชอบ (Operator Avatars)
                 const thumbsHtml = resolvedOps.length > 0 ? resolvedOps.map((op, idx) => {
-                    return op.img ? `<div class="relative group" title="${op.name}"><img src="${op.img}" class="station-avatar-img" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="station-avatar-fallback" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${op.name.charAt(0)}</div></div>` : `<div class="station-avatar-fallback" style="background-color: ${colorPalette[idx % colorPalette.length]};" title="${op.name}">${op.name.charAt(0)}</div>`;
+                    const bgColor = colorPalette[idx % colorPalette.length];
+                    return op.img ? `
+                        <div class="relative flex-shrink-0" title="${op.name}">
+                            <img src="${op.img}" class="station-avatar-img" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="station-avatar-fallback" style="background-color: ${bgColor}; display: none;">${op.name.charAt(0)}</div>
+                        </div>` : `
+                        <div class="station-avatar-fallback" style="background-color: ${bgColor};" title="${op.name}">${op.name.charAt(0)}</div>`;
                 }).join('') : `<div class="station-avatar-fallback !border-dashed !bg-slate-100 !text-slate-400 !border-slate-300">-</div>`;
 
-                const opNamesStr = resolvedOps.map(o => o.name).join(', ') || 'ไม่มีผู้ปฏิบัติงาน';
+                const opNamesStr = resolvedOps.map(o => o.name).join(', ') || 'ไม่มีรายชื่อพนักงานคุม';
 
-                html += `<tr class="hover:bg-slate-50/50 transition-colors"><td class="py-2.5 px-5 border-r border-slate-100 font-black text-slate-800 text-sm md:text-base">${st}</td><td class="py-2.5 px-5 border-r border-slate-100"><div class="flex items-center gap-4"><div class="flex -space-x-4 overflow-hidden p-1">${thumbsHtml}</div><div class="min-w-0"><span class="text-xs md:text-sm font-bold text-slate-700 block max-w-[200px] truncate" title="${opNamesStr}">${opNamesStr}</span></div></div></td><td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${dtStops.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-black text-rose-500 text-sm md:text-base border-r border-slate-200 bg-rose-50/10">${dtDuration.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${shortageOrder.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-black text-blue-600 text-sm md:text-base border-r border-slate-200 bg-blue-50/10">${shortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td><td class="py-2.5 px-5 text-center font-bold text-slate-700 text-sm md:text-base border-r border-slate-100">${excessOrder.toLocaleString()}</td><td class="py-2.5 px-5 text-center font-black text-amber-600 text-sm md:text-base bg-amber-50/10">${excessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td></tr>`;
+                // โครงสร้างการ์ด Station Card
+                cardsHtml += `
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col justify-between">
+                    <!-- ส่วนหัวของการ์ดสถานี -->
+                    <div class="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-base md:text-lg font-black text-slate-800">${st}</h3>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">สถานีงานผลิต</span>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full ${isDtPassed ? 'bg-emerald-500' : 'bg-rose-500'}" title="Downtime Status"></span>
+                            <span class="w-2.5 h-2.5 rounded-full ${isNcpPassed ? 'bg-emerald-500' : 'bg-rose-500'}" title="NCP Status"></span>
+                            <span class="w-2.5 h-2.5 rounded-full ${isShortagePassed ? 'bg-emerald-500' : 'bg-rose-500'}" title="Shortage Status"></span>
+                        </div>
+                    </div>
+
+                    <!-- รูปและรายชื่อผู้รับผิดชอบ -->
+                    <div class="px-5 py-3.5 border-b border-slate-100/50 bg-slate-50/20">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-2">พนักงานผู้ปฏิบัติงานที่รับผิดชอบ</span>
+                        <div class="flex items-center gap-3">
+                            <div class="flex -space-x-4 overflow-hidden p-0.5">
+                                ${thumbsHtml}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-xs font-bold text-slate-700 block truncate" title="${opNamesStr}">
+                                    ${opNamesStr}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- รายละเอียดการวิเคราะห์ 3 มิติ (Downtime, NCP, ขาดจำนวน) -->
+                    <div class="p-5 space-y-4 flex-1">
+                        
+                        <!-- 1. มิติ Downtime -->
+                        <div class="p-3.5 rounded-2xl border ${isDtPassed ? 'border-emerald-100 bg-emerald-50/10' : 'border-rose-100 bg-rose-50/10'}">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="p-1.5 rounded-lg ${isDtPassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    </span>
+                                    <span class="text-xs font-black text-slate-700">Downtime</span>
+                                </div>
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isDtPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${isDtPassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">จริง (Actual)</p>
+                                    <p class="font-extrabold text-slate-800 text-sm leading-tight">${dtDuration.toLocaleString()} น.</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">${dtStops} ครั้ง (${dtPercent.toFixed(2)}%)</span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">เป้าหมาย (Target)</p>
+                                    <p class="font-bold text-slate-600 text-sm leading-tight">${dtTarget.toFixed(2)}%</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${dtTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span>
+                                </div>
+                            </div>
+                            <div class="text-[10px] font-bold flex justify-between items-center border-t border-slate-100/70 pt-1.5 mt-1.5">
+                                <span class="text-slate-400 uppercase tracking-wider">ส่วนต่าง (Diff)</span>
+                                <span class="font-black ${isDtPassed ? 'text-emerald-600' : 'text-rose-500'}">
+                                    ${dtDiffMin > 0 ? '+' : ''}${dtDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น. (${dtDiffPercent > 0 ? '+' : ''}${dtDiffPercent.toFixed(2)}%)
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 2. มิติ NCP -->
+                        <div class="p-3.5 rounded-2xl border ${isNcpPassed ? 'border-emerald-100 bg-emerald-50/10' : 'border-rose-100 bg-rose-50/10'}">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="p-1.5 rounded-lg ${isNcpPassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </span>
+                                    <span class="text-xs font-black text-slate-700">NCP</span>
+                                </div>
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isNcpPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${isNcpPassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">จริง (Actual)</p>
+                                    <p class="font-extrabold text-slate-800 text-sm leading-tight">${weightNcp.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${ncpPercent.toFixed(2)}%)</span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">เป้าหมาย (Target)</p>
+                                    <p class="font-bold text-slate-600 text-sm leading-tight">${ncpTarget.toFixed(2)}%</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${ncpTargetWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.)</span>
+                                </div>
+                            </div>
+                            <div class="text-[10px] font-bold flex justify-between items-center border-t border-slate-100/70 pt-1.5 mt-1.5">
+                                <span class="text-slate-400 uppercase tracking-wider">ส่วนต่าง (Diff)</span>
+                                <span class="font-black ${isNcpPassed ? 'text-emerald-600' : 'text-rose-500'}">
+                                    ${ncpDiffWeight > 0 ? '+' : ''}${ncpDiffWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} กก. (${ncpDiffPercent > 0 ? '+' : ''}${ncpDiffPercent.toFixed(2)}%)
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 3. มิติ ขาดจำนวน -->
+                        <div class="p-3.5 rounded-2xl border ${isShortagePassed ? 'border-emerald-100 bg-emerald-50/10' : 'border-rose-100 bg-rose-50/10'}">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="p-1.5 rounded-lg ${isShortagePassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
+                                    </span>
+                                    <span class="text-xs font-black text-slate-700">ขาดจำนวน</span>
+                                </div>
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isShortagePassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${isShortagePassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">จริง (Actual)</p>
+                                    <p class="font-extrabold text-slate-800 text-sm leading-tight">${shortageCount} ออเดอร์</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${shortagePercent.toFixed(2)}%)</span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">เป้าหมาย (Target)</p>
+                                    <p class="font-bold text-slate-600 text-sm leading-tight">${shortageTarget.toFixed(2)}%</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">${totalStationOrders} ออเดอร์ทั้งหมด</span>
+                                </div>
+                            </div>
+                            <div class="text-[10px] font-bold flex justify-between items-center border-t border-slate-100/70 pt-1.5 mt-1.5">
+                                <span class="text-slate-400 uppercase tracking-wider">ส่วนต่าง (Diff)</span>
+                                <span class="font-black ${isShortagePassed ? 'text-emerald-600' : 'text-rose-500'}">
+                                    ${shortageDiffPercent > 0 ? '+' : ''}${shortageDiffPercent.toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>`;
             });
 
-            document.getElementById('station-analysis-table-body').innerHTML = html;
-            document.getElementById('station-analysis-table-foot').innerHTML = `<tr class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300"><td class="py-3 px-5 border-r border-slate-200 text-sm md:text-base" colspan="2"><div class="flex justify-between items-center"><span>ผลรวมทั้งหมด (Total)</span><span class="text-xs text-slate-400 font-bold italic mr-2">5 สถานี</span></div></td><td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandDtStops.toLocaleString()}</td><td class="py-3 px-5 text-center text-rose-600 text-sm md:text-base border-r border-slate-300 bg-rose-100/20">${grandDtDuration.toLocaleString()}</td><td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandShortageOrder.toLocaleString()}</td><td class="py-3 px-5 text-center text-blue-700 text-sm md:text-base border-r border-slate-300 bg-blue-100/20">${grandShortageSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td><td class="py-3 px-5 text-center text-sm md:text-base border-r border-slate-200">${grandExcessOrder.toLocaleString()}</td><td class="py-3 px-5 text-center text-amber-700 text-sm md:text-base bg-amber-100/20">${grandExcessSheets.toLocaleString(undefined, {maximumFractionDigits: 1})}</td></tr>`;
+            document.getElementById('station-analysis-cards-grid').innerHTML = cardsHtml;
         }
 
         function updateOperatorUI() { 
