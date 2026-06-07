@@ -452,16 +452,13 @@
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
         const shortageStationTargets = { "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70, "other": 0.20 };
 
-        // ฟังก์ชันช่วยพิจารณาสีเตือนภัย 3 ระดับ (เขียว, เหลือง, แดง)
+        // ฟังก์ชันช่วยพิจารณาสีเตือนภัย (เขียว / แดง เท่านั้นตามที่ลูกค้าปรับปรุง)
         function getDowntimeStatus(actual, target) {
-            if (!target || target <= 0) return { textClass: 'text-emerald-500', barColor: '#34d399' };
-            const ratio = actual / target;
-            if (ratio <= 0.9) {
-                return { textClass: 'text-emerald-600', barColor: '#34d399' }; // ปลอดภัย (เขียว)
-            } else if (ratio <= 1.05) {
-                return { textClass: 'text-amber-500', barColor: '#f59e0b' };  // เฝ้าระวัง (เหลือง)
+            if (!target || target <= 0) return { textClass: 'text-emerald-600', barColor: '#34d399' };
+            if (actual <= target) {
+                return { textClass: 'text-emerald-600', barColor: '#34d399' }; // ผ่านเกณฑ์ (เขียว)
             } else {
-                return { textClass: 'text-rose-500', barColor: '#fb7185' };   // วิกฤต (แดง)
+                return { textClass: 'text-rose-500', barColor: '#fb7185' };   // เกินเกณฑ์ (แดง)
             }
         }
 
@@ -993,10 +990,33 @@
                 const stTargetMin = totalRuntime * (stData.target / 100);
                 const stDiffMin = stData.duration - stTargetMin;
                 
-                // ใช้ฟังก์ชันพิจารณาสีเตือนภัย 3 ระดับรายสถานี
+                // ใช้ฟังก์ชันพิจารณาสีเตือนภัย 2 ระดับรายสถานี
                 const status = getDowntimeStatus(stData.percent, stData.target);
 
-                return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ') || 'ไม่มีผู้ปฏิบัติงาน'}</span></div><div class="text-right"><span class="text-[11px] font-black text-blue-600 block">${stData.duration.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${stData.stops} ค. (${stData.percent.toFixed(2)}%)</span><div class="flex flex-col items-end text-[9px]"><span class="text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}% (${stTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span><span class="font-bold ${status.textClass} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}% (${stDiffMin > 0 ? '+' : ''}${stDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span></div></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 6.25)) * 50))}%; background: ${status.barColor}"></div></div></div></div>`;
+                return `
+                <div class="flex items-center gap-5">
+                    <div class="ncp-thumb-box">${thumbsHtml}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex flex-col truncate">
+                                <span class="text-sm font-bold text-slate-850 truncate">${stData.name}</span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ') || 'ไม่มีผู้ปฏิบัติงาน'}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm md:text-base font-black text-blue-600 block leading-tight">
+                                    ${stData.duration.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${stData.stops} ค. (${stData.percent.toFixed(2)}%)
+                                </span>
+                                <div class="flex flex-col items-end text-[10px] md:text-xs mt-0.5 space-y-0.5">
+                                    <span class="text-slate-450 font-medium">Target: <span class="font-bold text-slate-600">${stData.target.toFixed(2)}% (${stTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span></span>
+                                    <span class="font-black ${status.textClass}">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}% (${stDiffMin > 0 ? '+' : ''}${stDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 6.25)) * 50))}%; background: ${status.barColor}"></div>
+                        </div>
+                    </div>
+                </div>`;
             }).join('') || '<div class="text-center p-8 text-xs text-slate-400">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</div>';
 
             const stMap = {}; f.forEach(d => { if(!stMap[d.station])stMap[d.station]={t:0,c:0}; stMap[d.station].t += d.duration; stMap[d.station].c += d.stops; });
@@ -1066,7 +1086,41 @@
 
             const stationNcpMap = {}; fForNCP.forEach(d => { if (!d.station || !isNaN(d.station)) return; if (!stationNcpMap[d.station]) stationNcpMap[d.station] = { weight: 0, ops: new Set() }; stationNcpMap[d.station].weight += d.weightNcp; if (d.ncpOpNames) d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => stationNcpMap[d.station].ops.add(name)); });
             const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stPercent - stTarget, ops: Array.from(data.ops) }; });
-            document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { const thumbsHtml = stData.ops.map((name, idx) => `<img src="${masterOpList.get(name) || ''}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${name.charAt(0)}</div>`).join(''); return `<div class="flex items-center gap-5"><div class="ncp-thumb-box">${thumbsHtml}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><div class="flex flex-col truncate"><span class="text-xs font-bold text-slate-700 truncate">${stData.name}</span><span class="text-[9px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ')}</span></div><div class="text-right"><span class="text-[11px] font-black text-indigo-600 block">${stData.weight.toLocaleString(undefined, {maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)</span><div class="flex flex-col items-end"><span class="text-[9px] text-slate-400 font-bold italic">Target: ${stData.target.toFixed(2)}%</span><span class="text-[10px] font-bold ${stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600'} italic">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%</span></div></div></div><div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex"><div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${stData.diff > 0 ? '#fb7185' : '#34d399'}"></div></div></div></div>`; }).join('');
+            
+            document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { 
+                const thumbsHtml = stData.ops.map((name, idx) => `<img src="${masterOpList.get(name) || ''}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${name.charAt(0)}</div>`).join(''); 
+                
+                // คำนวณหาน้ำหนักเป้าหมาย (กก.) และ น้ำหนักผลต่าง (กก.) รายสถานี
+                const stTargetWeight = totalConsumption * (stData.target / 100);
+                const stDiffWeight = stData.weight - stTargetWeight;
+                const isOver = stData.diff > 0;
+                const statusColorClass = isOver ? 'text-rose-500' : 'text-emerald-600';
+
+                return `
+                <div class="flex items-center gap-5">
+                    <div class="ncp-thumb-box">${thumbsHtml}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex flex-col truncate">
+                                <span class="text-sm font-bold text-slate-800 truncate">${stData.name}</span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ') || 'ไม่มีผู้ปฏิบัติงาน'}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm md:text-base font-black text-indigo-600 block leading-tight">
+                                    ${stData.weight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)
+                                </span>
+                                <div class="flex flex-col items-end text-[10px] md:text-xs mt-0.5 space-y-0.5">
+                                    <span class="text-slate-450 font-medium">Target: <span class="font-bold text-slate-600">${stData.target.toFixed(2)}% (${stTargetWeight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก.)</span></span>
+                                    <span class="font-black ${statusColorClass}">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}% (${stDiffWeight > 0 ? '+' : ''}${stDiffWeight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก.)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, (stData.percent / (stData.target || 2)) * 50))}%; background: ${isOver ? '#fb7185' : '#34d399'}"></div>
+                        </div>
+                    </div>
+                </div>`; 
+            }).join('');
 
             const trendWaste = {}; const trendConRaw = {}; fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
             const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
