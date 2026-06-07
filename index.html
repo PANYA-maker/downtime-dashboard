@@ -76,6 +76,7 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
+    <!-- URLs -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
     <input type="hidden" id="op-list-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=593156373&single=true&output=csv">
@@ -93,7 +94,6 @@
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
-            <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">จำนวนครั้ง</p><p id="main-total-count" class="text-3xl font-black text-slate-800">0</p></div>
             <div class="card-stat border-rose-500">
                 <div class="flex justify-between items-start">
                     <div>
@@ -109,6 +109,7 @@
                     </div>
                 </div>
             </div>
+            <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">จำนวนครั้ง</p><p id="main-total-count" class="text-3xl font-black text-slate-800">0</p></div>
             <div class="card-stat border-indigo-500">
                 <div class="flex justify-between items-start">
                     <div><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">%เวลาสูญเสีย</p><p id="main-total-percent" class="text-3xl font-black text-slate-800">0.00%</p></div>
@@ -123,22 +124,7 @@
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Station Waste</label><select id="main-filter-station"><option value="">ทั้งหมด</option></select></div>
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">กะ (Shift)</label><select id="main-filter-shift"><option value="">ทั้งหมด</option></select></div>
             </div>
-            <div class="grid grid-cols-3 gap-3">
-                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
-                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">สีเส้นกราฟแนวโน้ม</label>
-                    <div class="flex items-center gap-2">
-                        <input type="color" id="main-chart-color" value="#2563eb" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
-                        <div class="flex gap-1" id="main-color-presets">
-                            <button type="button" class="w-5 h-5 rounded-full bg-[#2563eb] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#2563eb')" title="สีหลัก"></button>
-                            <button type="button" class="w-5 h-5 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#ef4444')" title="สีแดง"></button>
-                            <button type="button" class="w-5 h-5 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#10b981')" title="สีเขียว"></button>
-                            <button type="button" class="w-5 h-5 rounded-full bg-[#f59e0b] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#f59e0b')" title="สีส้ม"></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div></div>
         </div>
         <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">แนวโน้มเปอร์เซ็นต์เวลาสูญเสีย (% Downtime)</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active">Daily</button><button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn">Weekly</button><button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn">Monthly</button></div></div>
@@ -186,26 +172,13 @@
             <div class="lg:col-span-3"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label><div class="flex gap-2"><input type="date" id="ncp-start-date" class="w-full"><input type="date" id="ncp-end-date" class="w-full"></div></div>
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
-            <div class="lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-3">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล (Col U)</label>
                 <div class="multi-select-container">
                     <div id="ncp-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
                     <input type="text" id="ncp-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาปัญหา..." class="w-full" onfocus="toggleNcpReasonDropdown(true)" oninput="filterNcpReasonOptions(this.value)">
                     <div id="ncp-reason-dropdown" class="multi-select-dropdown"></div>
-                </div>
-            </div>
-            <div class="lg:col-span-1">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
-                <div class="flex items-center gap-1.5">
-                    <input type="color" id="ncp-chart-color" value="#6366f1" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
-                    <div class="flex flex-col gap-1">
-                        <div class="flex gap-0.5">
-                            <button type="button" class="w-4 h-4 rounded-full bg-[#6366f1] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('ncp', '#6366f1')" title="สีเดิม"></button>
-                            <button type="button" class="w-4 h-4 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('ncp', '#ef4444')" title="สีแดง"></button>
-                            <button type="button" class="w-4 h-4 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('ncp', '#10b981')" title="สีเขียว"></button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -273,7 +246,7 @@
                     <input type="date" id="shortage-end-date" class="w-full">
                 </div>
             </div>
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label>
                 <select id="shortage-filter-mc"><option value="">ทั้งหมด</option></select>
             </div>
@@ -299,19 +272,6 @@
                     <div id="shortage-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
                     <input type="text" id="shortage-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาสาเหตุ..." class="w-full" onfocus="toggleShortageReasonDropdown(true)" oninput="filterShortageReasonOptions(this.value)">
                     <div id="shortage-reason-dropdown" class="multi-select-dropdown"></div>
-                </div>
-            </div>
-            <div class="lg:col-span-1">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
-                <div class="flex items-center gap-1.5">
-                    <input type="color" id="shortage-chart-color" value="#4f46e5" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
-                    <div class="flex flex-col gap-1">
-                        <div class="flex gap-0.5">
-                            <button type="button" class="w-4 h-4 rounded-full bg-[#4f46e5] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#4f46e5')" title="สีเดิม"></button>
-                            <button type="button" class="w-4 h-4 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#ef4444')" title="สีแดง"></button>
-                            <button type="button" class="w-4 h-4 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#10b981')" title="สีเขียว"></button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -450,7 +410,6 @@
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
-        const shortageStationTargets = { "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70, "other": 0.20 };
 
         // ฟังก์ชันช่วยพิจารณาสีเตือนภัย (เขียว / แดง เท่านั้นตามที่ลูกค้าปรับปรุง)
         function getDowntimeStatus(actual, target) {
@@ -464,19 +423,6 @@
 
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
-
-        function setPresetColor(page, hex) {
-            if (page === 'main') {
-                document.getElementById('main-chart-color').value = hex;
-                updateMainUI();
-            } else if (page === 'ncp') {
-                document.getElementById('ncp-chart-color').value = hex;
-                updateNCPUI();
-            } else if (page === 'shortage') {
-                document.getElementById('shortage-chart-color').value = hex;
-                updateShortageUI();
-            }
-        }
 
         function resolveOperatorImage(name, machine, shift, stationWaste) {
             const cleanName = cleanStr(name);
@@ -707,9 +653,6 @@
                     toggleShortageReasonDropdown(false);
                 } 
             });
-            document.getElementById('main-chart-color').addEventListener('input', updateMainUI);
-            document.getElementById('ncp-chart-color').addEventListener('input', updateNCPUI);
-            document.getElementById('shortage-chart-color').addEventListener('input', updateShortageUI);
         }
 
         function toggleNcpReasonDropdown(show) { const dropdown = document.getElementById('ncp-reason-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
@@ -790,8 +733,7 @@
                   selectedStation = document.getElementById('main-filter-station').value, 
                   sh = document.getElementById('main-filter-shift').value, 
                   fc = document.getElementById('main-filter-factor').value, 
-                  sr = document.getElementById('main-filter-search').value.toLowerCase(),
-                  chosenColor = document.getElementById('main-chart-color').value;
+                  sr = document.getElementById('main-filter-search').value.toLowerCase();
             
             const machineShiftRuntime = {};
             rawData.forEach(d => {
@@ -841,28 +783,24 @@
             document.getElementById('main-total-count').textContent = totalCount.toLocaleString(); 
             document.getElementById('main-total-percent').textContent = actualPercent.toFixed(2) + '%';
             
-            const downtimeMinStatus = getDowntimeStatus(totalDowntime, targetDowntimeMin);
-            const downtimePercentStatus = getDowntimeStatus(actualPercent, targetVal);
-
             document.getElementById('main-downtime-target-min').textContent = `Target: ${targetDowntimeMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.`;
             const diffMinEl = document.getElementById('main-downtime-diff-min');
             diffMinEl.textContent = `Diff: ${diffDowntimeMin > 0 ? '+' : ''}${diffDowntimeMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.`;
-            diffMinEl.className = `text-sm font-black ${downtimeMinStatus.textClass}`;
+            diffMinEl.className = `text-sm font-black ${diffDowntimeMin > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
 
             document.getElementById('main-target-val').textContent = `Target: ${targetVal.toFixed(2)}%`; 
             const diffEl = document.getElementById('main-diff-val'); 
             diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; 
-            diffEl.className = `text-sm font-black ${downtimePercentStatus.textClass}`;
+            diffEl.className = `text-sm font-black ${diffVal > 0 ? 'text-rose-500' : 'text-emerald-500'}`;
             
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station} | ${d.stationWaste || '-'}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             
             const trendDowntime = {}; 
-            const trendCount = {};
             const trendRuntimeRaw = {}; 
             fForRuntime.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
-                const uniqueKey = `${d.isoDate}_${d.shift}_${d.machine}`; 
+                const uniqueKey = `${k}_${d.shift}_${d.machine}`; 
                 if (!trendRuntimeRaw[uniqueKey]) trendRuntimeRaw[uniqueKey] = { label: k, value: getNetRuntime(d.isoDate, d.shift, d.machine) };
             });
             const trendRuntimeFinal = {}; 
@@ -870,67 +808,10 @@
             f.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
                 trendDowntime[k] = (trendDowntime[k] || 0) + d.duration; 
-                trendCount[k] = (trendCount[k] || 0) + d.stops;
             });
             const labs = Object.keys(trendRuntimeFinal).sort((a,b) => mainTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
             
-            drawChart('mainTrendChart', { 
-                type: 'line', 
-                data: { 
-                    labels: labs, 
-                    datasets: [ 
-                        { 
-                            label: 'Actual % Downtime', 
-                            data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), 
-                            customMinutes: labs.map(l => (trendDowntime[l] || 0)),
-                            customStops: labs.map(l => (trendCount[l] || 0)),
-                            borderColor: chosenColor, 
-                            borderWidth: 3, 
-                            fill: true, 
-                            backgroundColor: chosenColor + '1A', 
-                            tension: 0.4 
-                        }, 
-                        { 
-                            label: `Target (${targetVal.toFixed(2)}%)`, 
-                            data: labs.map(() => targetVal), 
-                            borderColor: 'rgba(100, 116, 139, 0.6)', 
-                            borderWidth: 2, 
-                            borderDash: [5, 5], 
-                            pointRadius: 0, 
-                            fill: false, 
-                            datalabels: { display: false } 
-                        } 
-                    ] 
-                }, 
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { 
-                            display: true, 
-                            position: 'top', 
-                            labels: { boxWidth: 15, font: { size: 10 } } 
-                        }, 
-                        datalabels: { 
-                            display: true, 
-                            anchor: 'end', 
-                            align: 'top', 
-                            textAlign: 'center',
-                            formatter: (v,ctx) => {
-                                if (ctx.datasetIndex === 0) {
-                                    const mins = ctx.dataset.customMinutes[ctx.dataIndex];
-                                    const stops = ctx.dataset.customStops[ctx.dataIndex];
-                                    return `${v.toFixed(2)}%\n(${mins.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)\n[${stops.toLocaleString()} ค.]`;
-                                }
-                                return '';
-                            },
-                            font: { size: 11, weight: 'bold' }, 
-                            color: '#1e293b', 
-                            offset: 8 
-                        } 
-                    }, 
-                    scales: { y: { beginAtZero: true, grace: '25%' } } 
-                } 
-            });
+            drawChart('mainTrendChart', { type: 'line', data: { labels: labs, datasets: [ { label: 'Actual % Downtime', data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 3, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)', tension: 0.4 }, { label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx) => ctx.datasetIndex === 0 ? v.toFixed(2)+'%' : '', font: { size: 10, weight: 600 }, color: '#475569', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
             
             let activeStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             if (selectedStation) {
@@ -1043,7 +924,6 @@
 
         function updateNCPUI() {
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
-            const chosenNcpColor = document.getElementById('ncp-chart-color').value;
             const hasSelectedReasons = ncpSelectedReasons.size > 0;
             const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
@@ -1123,41 +1003,6 @@
             }).join('');
 
             const trendWaste = {}; const trendConRaw = {}; fForConRaw.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); const uniqueKey = `${d.isoDate}_${d.shift}_${d.machine}`; if (!trendConRaw[uniqueKey]) trendConRaw[uniqueKey] = { label: k, value: d.consumption }; });
-            const trendConFinal = {}; Object.values(trendConRaw).forEach(obj => { trendConFinal[obj.label] = (trendConFinal[obj.label] || 0) + obj.value; });
-            fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
-            const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
-            const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: chosenNcpColor, borderWidth: 3, fill: true, backgroundColor: chosenNcpColor + '1A', tension: 0.4 }];
-            if (!hasSelectedReasons) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
-            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 11, weight: 'bold' }, color: '#1e293b', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
-        }
-
-        function updateShortageUI() {
-            const s = document.getElementById('shortage-start-date').value,
-                  e = document.getElementById('shortage-end-date').value,
-                  mc = document.getElementById('shortage-filter-mc').value,
-                  st = document.getElementById('shortage-filter-station').value,
-                  sh = document.getElementById('shortage-filter-shift').value;
-            const chosenShortageColor = document.getElementById('shortage-chart-color').value;
-            const hasSelectedCust = shortageSelectedCustomers.size > 0;
-            const hasSelectedReasons = shortageSelectedReasons.size > 0;
-
-            // 1. Base filtered data - สำหรับเป็นตัวหารคำนวณสัดส่วนของออเดอร์ผลิตทั้งหมด (ไม่ถูกกรองตาม Station และ สาเหตุ)
-            const fShortageBase = shortageData.filter(d => 
-                (!s || d.isoDate >= s) && 
-                (!e || d.isoDate <= e) && 
-                (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
-                (!sh || cleanStr(d.shift) === cleanStr(sh)) && 
-                (!hasSelectedCust || shortageSelectedCustomers.has(d.customer))
-            );
-
-            const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
-            const totalBaseOrdersCount = baseValidOrders.length; // Denominator หลักของสัดส่วนทั้งหมด
-
-            // 2. Final filtered data - ยอดออเดอร์ขาดสะสมจริงที่กรองครบเงื่อนไขทุกอย่างรวมถึง Station และ สาเหตุ
-            const shortageOrdersList = fShortageBase.filter(d => 
-                d.status === 'ขาดจำนวน' &&
-                (!st || cleanStr(d.station) === cleanStr(st)) &&
-                (!hasSelectedReasons || shortageSelectedReasons.has(d.reason))
             );
             const shortageOrdersCount = shortageOrdersList.length; // Numerator
 
@@ -1167,17 +1012,10 @@
             // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
-            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน (ปรับตามสถานี และเป้าหมายใหม่)
+            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน
             const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
             let targetVal = 18.00;
-            if (st) {
-                const cleanSt = cleanStr(st);
-                if (shortageStationTargets[cleanSt] !== undefined) {
-                    targetVal = shortageStationTargets[cleanSt];
-                } else {
-                    targetVal = shortageStationTargets["other"];
-                }
-            } else if (hasSelectedCust) {
+            if (hasSelectedCust) {
                 targetVal = 10.00; // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
             }
 
@@ -1228,10 +1066,10 @@
                 label: 'Actual % ขาดจำนวน',
                 data: actualPercents,
                 customCounts: actualCounts,
-                borderColor: chosenShortageColor,
+                borderColor: 'rgba(99, 102, 241, 1)',
                 borderWidth: 3,
                 fill: true,
-                backgroundColor: chosenShortageColor + '1A',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
                 tension: 0.4
             }];
 
@@ -1260,8 +1098,8 @@
                         datalabels: {
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
-                            font: { size: 11, weight: 'bold' },
-                            color: '#1e293b',
+                            font: { size: 9, weight: 'bold' },
+                            color: '#4f46e5',
                             offset: 8,
                             align: 'top'
                         },
@@ -1320,17 +1158,17 @@
             });
 
             // 3. สัดส่วน ขาดจำนวน ราย Station (Col BM)
-            const shortageStationMap = {};
+            const stationShortageMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.station) {
                     const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
                     const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
                     if (matchesStation && matchesReason) {
-                        shortageStationMap[d.station] = (shortageStationMap[d.station] || 0) + 1;
+                        stationShortageMap[d.station] = (stationShortageMap[d.station] || 0) + 1;
                     }
                 }
             });
-            const sortedStationShortage = Object.entries(shortageStationMap).sort((a, b) => b[1] - a[1]);
+            const sortedStationShortage = Object.entries(stationShortageMap).sort((a, b) => b[1] - a[1]);
             drawChart('shortageStationChart', {
                 type: 'bar',
                 data: {
@@ -1398,22 +1236,20 @@
             });
 
             shortageStations.forEach(stName => {
-                getFilteredOperatorsForStation(stName, mc, sh).forEach(opName => {
-                    stationShortagePerf[stName].ops.add(opName);
+                getFilteredOperatorsForStation(stName, mc, hFilter => {
+                    stationShortagePerf[stName].ops.add(hFilter);
                 });
             });
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
                 const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0;
-                const cleanStName = cleanStr(stName);
-                const individualTarget = shortageStationTargets[cleanStName] !== undefined ? shortageStationTargets[cleanStName] : targetVal;
                 return {
                     name: stName,
                     shortageCount: data.shortageCount,
                     totalCount: data.totalCount,
                     percent: stPercent,
-                    target: individualTarget,
-                    diff: stPercent - individualTarget,
+                    target: targetVal,
+                    diff: stPercent - targetVal,
                     ops: Array.from(data.ops)
                 };
             });
