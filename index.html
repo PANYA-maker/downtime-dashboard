@@ -126,7 +126,18 @@
             <div class="grid grid-cols-3 gap-3">
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ปัจจัยหลัก</label><select id="main-filter-factor"><option value="">ทั้งหมด</option></select></div>
                 <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ค้นหา</label><input type="text" id="main-filter-search" placeholder="พนักงาน, ปัญหา..."></div>
-                <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">สีเส้นกราฟแนวโน้ม</label><input type="color" id="main-chart-color" value="#2563eb" class="h-[42px] p-1 cursor-pointer"></div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">สีเส้นกราฟแนวโน้ม</label>
+                    <div class="flex items-center gap-2">
+                        <input type="color" id="main-chart-color" value="#2563eb" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
+                        <div class="flex gap-1" id="main-color-presets">
+                            <button type="button" class="w-5 h-5 rounded-full bg-[#2563eb] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#2563eb')" title="สีหลัก"></button>
+                            <button type="button" class="w-5 h-5 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#ef4444')" title="สีแดง"></button>
+                            <button type="button" class="w-5 h-5 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#10b981')" title="สีเขียว"></button>
+                            <button type="button" class="w-5 h-5 rounded-full bg-[#f59e0b] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('main', '#f59e0b')" title="สีส้ม"></button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
@@ -176,13 +187,25 @@
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
-            <div class="lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label><input type="color" id="ncp-chart-color" value="#6366f1" class="h-[42px] p-1 cursor-pointer w-full rounded-xl border border-slate-200"></div>
             <div class="lg:col-span-3">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล (Col U)</label>
                 <div class="multi-select-container">
                     <div id="ncp-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
                     <input type="text" id="ncp-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาปัญหา..." class="w-full" onfocus="toggleNcpReasonDropdown(true)" oninput="filterNcpReasonOptions(this.value)">
                     <div id="ncp-reason-dropdown" class="multi-select-dropdown"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
+                <div class="flex items-center gap-1.5">
+                    <input type="color" id="ncp-chart-color" value="#6366f1" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex gap-0.5">
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#6366f1] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('ncp', '#6366f1')" title="สีเดิม"></button>
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('ncp', '#ef4444')" title="สีแดง"></button>
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('ncp', '#10b981')" title="สีเขียว"></button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -262,10 +285,6 @@
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label>
                 <select id="shortage-filter-shift"><option value="">ทั้งหมด</option></select>
             </div>
-            <div class="lg:col-span-1">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
-                <input type="color" id="shortage-chart-color" value="#4f46e5" class="h-[42px] p-1 cursor-pointer w-full rounded-xl border border-slate-200">
-            </div>
             <div class="lg:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาลูกค้า</label>
                 <div class="multi-select-container">
@@ -280,6 +299,19 @@
                     <div id="shortage-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
                     <input type="text" id="shortage-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาสาเหตุ..." class="w-full" onfocus="toggleShortageReasonDropdown(true)" oninput="filterShortageReasonOptions(this.value)">
                     <div id="shortage-reason-dropdown" class="multi-select-dropdown"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
+                <div class="flex items-center gap-1.5">
+                    <input type="color" id="shortage-chart-color" value="#4f46e5" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex gap-0.5">
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#4f46e5] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#4f46e5')" title="สีเดิม"></button>
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#ef4444')" title="สีแดง"></button>
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#10b981')" title="สีเขียว"></button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -422,6 +454,19 @@
 
         function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
         function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
+
+        function setPresetColor(page, hex) {
+            if (page === 'main') {
+                document.getElementById('main-chart-color').value = hex;
+                updateMainUI();
+            } else if (page === 'ncp') {
+                document.getElementById('ncp-chart-color').value = hex;
+                updateNCPUI();
+            } else if (page === 'shortage') {
+                document.getElementById('shortage-chart-color').value = hex;
+                updateShortageUI();
+            }
+        }
 
         function resolveOperatorImage(name, machine, shift, stationWaste) {
             const cleanName = cleanStr(name);
@@ -800,6 +845,7 @@
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station} | ${d.stationWaste || '-'}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             
             const trendDowntime = {}; 
+            const trendCount = {};
             const trendRuntimeRaw = {}; 
             fForRuntime.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
@@ -811,6 +857,7 @@
             f.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
                 trendDowntime[k] = (trendDowntime[k] || 0) + d.duration; 
+                trendCount[k] = (trendCount[k] || 0) + d.stops;
             });
             const labs = Object.keys(trendRuntimeFinal).sort((a,b) => mainTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
             
@@ -823,6 +870,7 @@
                             label: 'Actual % Downtime', 
                             data: labs.map(l => trendRuntimeFinal[l] > 0 ? (trendDowntime[l] || 0) / trendRuntimeFinal[l] * 100 : 0), 
                             customMinutes: labs.map(l => (trendDowntime[l] || 0)),
+                            customStops: labs.map(l => (trendCount[l] || 0)),
                             borderColor: chosenColor, 
                             borderWidth: 3, 
                             fill: true, 
@@ -857,12 +905,13 @@
                             formatter: (v,ctx) => {
                                 if (ctx.datasetIndex === 0) {
                                     const mins = ctx.dataset.customMinutes[ctx.dataIndex];
-                                    return `${v.toFixed(2)}%\n(${mins.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
+                                    const stops = ctx.dataset.customStops[ctx.dataIndex];
+                                    return `${v.toFixed(2)}%\n(${mins.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)\n[${stops.toLocaleString()} ค.]`;
                                 }
                                 return '';
                             },
-                            font: { size: 9, weight: 600 }, 
-                            color: '#475569', 
+                            font: { size: 11, weight: 'bold' }, 
+                            color: '#1e293b', 
                             offset: 8 
                         } 
                     }, 
@@ -1002,7 +1051,7 @@
             const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
             const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: chosenNcpColor, borderWidth: 3, fill: true, backgroundColor: chosenNcpColor + '1A', tension: 0.4 }];
             if (!hasSelectedReasons) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
-            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 9, weight: 'bold' }, color: chosenNcpColor, offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 11, weight: 'bold' }, color: '#1e293b', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
         function updateShortageUI() {
@@ -1134,8 +1183,8 @@
                         datalabels: {
                             formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customCounts[ctx.dataIndex]})` : '',
                             textAlign: 'center',
-                            font: { size: 9, weight: 'bold' },
-                            color: chosenShortageColor,
+                            font: { size: 11, weight: 'bold' },
+                            color: '#1e293b',
                             offset: 8,
                             align: 'top'
                         },
@@ -1194,17 +1243,17 @@
             });
 
             // 3. สัดส่วน ขาดจำนวน ราย Station (Col BM)
-            const stationShortageMap = {};
+            const shortageStationMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.station) {
                     const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
                     const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
                     if (matchesStation && matchesReason) {
-                        stationShortageMap[d.station] = (stationShortageMap[d.station] || 0) + 1;
+                        shortageStationMap[d.station] = (shortageStationMap[d.station] || 0) + 1;
                     }
                 }
             });
-            const sortedStationShortage = Object.entries(stationShortageMap).sort((a, b) => b[1] - a[1]);
+            const sortedStationShortage = Object.entries(shortageStationMap).sort((a, b) => b[1] - a[1]);
             drawChart('shortageStationChart', {
                 type: 'bar',
                 data: {
