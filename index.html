@@ -686,7 +686,8 @@
                     station: c[64] ? cl(c[64]) : '',           // Col BM
                     stopStatus: c[53] ? cl(c[53]) : '',        // Col BB
                     orderPattern: c[54] ? cl(c[54]) : '',      // Col BC
-                    colM: c[12] ? cl(c[12]) : ''               // ดึงข้อมูลจาก Col M (Index 12) แทนพวก AD-AH ตัวเดิม
+                    colM: c[12] ? cl(c[12]) : '',              // Col M สำหรับใช้ในตาราง (อย่าลืมใส่คอมมา , ปิดท้ายด้วยครับ)
+                    ah: c[33] ? cl(c[33]) : ''                 // ดึง Col AH (Index 33) กลับมาเพื่อส่งให้กราฟแท่งแกรมคำนวณ
                 };
             }).filter(d => d);
         }
