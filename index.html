@@ -328,15 +328,29 @@
             <div class="chart-container"><canvas id="shortageTrendChart"></canvas></div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 ปัญหา ขาดจำนวน (ออเดอร์ / %ขาดจำนวน)</h3>
-                <div class="chart-container"><canvas id="shortageTopReasonChart"></canvas></div>
+        <!-- แถวกราฟแท่งทั้ง 4 (รวม 3 กราฟใหม่ เรียงต่อกันเป็นแถวเดียวกันเป็นระเบียบ) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">Top 5 ปัญหา ขาดจำนวน (ออเดอร์)</h3>
+                <div class="chart-container !h-[260px]"><canvas id="shortageTopReasonChart"></canvas></div>
             </div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน ขาดจำนวน ราย Station (ออเดอร์ / %ขาดจำนวน)</h3>
-                <div class="chart-container"><canvas id="shortageStationChart"></canvas></div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ลักษณะแกรม (AH - 3 ตัวท้าย)</h3>
+                <div class="chart-container !h-[260px]"><canvas id="shortageGramChart"></canvas></div>
             </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ประเภทจำนวนแผ่นงานขาดจำนวน</h3>
+                <div class="chart-container !h-[260px]"><canvas id="shortageRepairTypeChart"></canvas></div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ลักษณะเมตร (คอลัมน์ BC)</h3>
+                <div class="chart-container !h-[260px]"><canvas id="shortageMeterChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน ขาดจำนวน ราย Station (ออเดอร์ / %ขาดจำนวน)</h3>
+            <div class="chart-container"><canvas id="shortageStationChart"></canvas></div>
         </div>
 
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
@@ -352,6 +366,7 @@
                         <tr class="text-[10px] font-bold text-slate-400 uppercase">
                             <th class="p-5">วันที่/กะ</th>
                             <th class="p-5">PDR/ชื่อลูกค้า</th>
+                            <th class="p-5 bg-slate-50/50">สเปกกระดาษ (AD+AE+AF+AG+AH)</th>
                             <th class="p-5">เครื่องจักร/Station</th>
                             <th class="p-5">สาเหตุ/จำนวนแผ่น</th>
                             <th class="p-5">สถานะหยุดเครื่อง/ลักษณะออเดอร์</th>
@@ -363,9 +378,8 @@
         </div>
     </div>
 
-    <!-- PAGE 4: STATION ANALYSIS (ปรับปรุงใหม่ตามเงื่อนไขเปรียบเทียบ 3 ส่วนและมีรูปภาพ) -->
+    <!-- PAGE 4: STATION ANALYSIS -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-6 hidden">
-        <!-- ตัวกรองของหน้าวิเคราะห์สถานี -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label>
@@ -391,10 +405,7 @@
             </div>
         </div>
 
-        <!-- กล่องแสดงการ์ดวิเคราะห์รายสถานี (3 Pillars Station cards) -->
-        <div id="station-analysis-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            <!-- ดึงการ์ดประสิทธิภาพรายสถานีมาแสดงแบบไดนามิกด้วย JS -->
-        </div>
+        <div id="station-analysis-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6"></div>
     </div>
 
     <!-- PAGE 5: OPERATOR ANALYSIS -->
@@ -413,7 +424,6 @@
     <!-- MODAL FOR STATION ANALYSIS DETAILS -->
     <div id="station-detail-modal" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4" onclick="if(event.target === this) closeStationDetailModal()">
         <div class="bg-white rounded-3xl max-w-4xl w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="station-detail-modal-container">
-            <!-- Header -->
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div>
                     <h4 id="modal-title" class="text-lg font-black text-slate-800">รายละเอียดข้อมูล</h4>
@@ -421,17 +431,12 @@
                 </div>
                 <button onclick="closeStationDetailModal()" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600 focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+                </</button>
             </div>
-            <!-- Body Table -->
             <div class="overflow-y-auto p-6 flex-1 table-responsive">
                 <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-50 sticky top-0 z-10 border-b border-slate-100" id="modal-table-header">
-                        <!-- Dynamic Header -->
-                    </thead>
-                    <tbody id="modal-table-body" class="text-xs text-slate-600 divide-y divide-slate-100">
-                        <!-- Dynamic Rows -->
-                    </tbody>
+                    <thead class="bg-slate-50 sticky top-0 z-10 border-b border-slate-100" id="modal-table-header"></thead>
+                    <tbody id="modal-table-body" class="text-xs text-slate-600 divide-y divide-slate-100"></tbody>
                 </table>
                 <div id="modal-empty-state" class="hidden text-center py-12 text-slate-400 text-sm">
                     ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก
@@ -456,13 +461,12 @@
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
         const shortageStationTargets = { "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70, "other": 0.20 };
 
-        // ฟังก์ชันช่วยพิจารณาสีเตือนภัย (เขียว / แดง เท่านั้นตามที่ลูกค้าปรับปรุง)
         function getDowntimeStatus(actual, target) {
             if (!target || target <= 0) return { textClass: 'text-emerald-600', barColor: '#34d399' };
             if (actual <= target) {
-                return { textClass: 'text-emerald-600', barColor: '#34d399' }; // ผ่านเกณฑ์ (เขียว)
+                return { textClass: 'text-emerald-600', barColor: '#34d399' };
             } else {
-                return { textClass: 'text-rose-500', barColor: '#fb7185' };   // เกินเกณฑ์ (แดง)
+                return { textClass: 'text-rose-500', barColor: '#fb7185' };
             }
         }
 
@@ -673,7 +677,12 @@
                     shift: cl(c[28]),            // Col AC
                     station: c[64] ? cl(c[64]) : '',          // Col BM
                     stopStatus: c[53] ? cl(c[53]) : '',       // Col BB
-                    orderPattern: c[54] ? cl(c[54]) : ''      // Col BC
+                    orderPattern: c[54] ? cl(c[54]) : '',     // Col BC
+                    ad: c[29] ? cl(c[29]) : '',               // Col AD
+                    ae: c[30] ? cl(c[30]) : '',               // Col AE
+                    af: c[31] ? cl(c[31]) : '',               // Col AF
+                    ag: c[32] ? cl(c[32]) : '',               // Col AG
+                    ah: c[33] ? cl(c[33]) : ''                // Col AH
                 };
             }).filter(d => d);
         }
@@ -691,7 +700,6 @@
             fillSelect('station-filter-mc', getU(rawData, 'machine'));
             fillSelect('station-filter-shift', getU(rawData, 'shift'));
             
-            // Shortage Filters
             fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
             fillSelect('shortage-filter-station', getU(shortageData, 'station'));
             fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
@@ -727,7 +735,6 @@
         function toggleNcpReasonSelection(opt) { if (ncpSelectedReasons.has(opt)) ncpSelectedReasons.delete(opt); else ncpSelectedReasons.add(opt); renderNcpReasonChips(); renderNcpReasonOptions(document.getElementById('ncp-filter-reason-input').value); updateNCPUI(); }
         function renderNcpReasonChips() { const container = document.getElementById('ncp-reason-chips'); container.innerHTML = Array.from(ncpSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleNcpReasonSelection('${opt}')">×</button></span>`).join(''); }
 
-        // Shortage Customer Multi-Select Functions
         function toggleShortageCustDropdown(show) { const dropdown = document.getElementById('shortage-customer-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterShortageCustOptions(searchText) { renderShortageCustOptions(searchText); toggleShortageCustDropdown(true); }
         function renderShortageCustOptions(searchText) {
@@ -739,7 +746,6 @@
         function toggleShortageCustSelection(opt) { if (shortageSelectedCustomers.has(opt)) shortageSelectedCustomers.delete(opt); else shortageSelectedCustomers.add(opt); renderShortageCustChips(); renderShortageCustOptions(document.getElementById('shortage-filter-customer-input').value); updateShortageUI(); }
         function renderShortageCustChips() { const container = document.getElementById('shortage-customer-chips'); container.innerHTML = Array.from(shortageSelectedCustomers).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageCustSelection('${opt}')">×</button></span>`).join(''); }
 
-        // Shortage Reason Multi-Select Functions
         function toggleShortageReasonDropdown(show) { const dropdown = document.getElementById('shortage-reason-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterShortageReasonOptions(searchText) { renderShortageReasonOptions(searchText); toggleShortageReasonDropdown(true); }
         function renderShortageReasonOptions(searchText) {
@@ -990,11 +996,9 @@
                     return op.img ? `<img src="${op.img}" class="op-thumb" crossorigin="anonymous" title="${op.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${bgColor}; display: none;" title="${op.name}">${op.name.charAt(0)}</div>` : `<div class="op-thumb" style="background-color: ${bgColor}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;" title="${op.name}">${op.name.charAt(0)}</div>`;
                 }).join('') : `<div class="op-thumb" style="background-color: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px dashed #cbd5e1;">-</div>`;
                 
-                // คำนวณหาเวลาเป้าหมาย (นาที) และ เวลาผลต่าง (นาที) รายสถานี
                 const stTargetMin = totalRuntime * (stData.target / 100);
                 const stDiffMin = stData.duration - stTargetMin;
                 
-                // ใช้ฟังก์ชันพิจารณาสีเตือนภัย 2 ระดับรายสถานี
                 const status = getDowntimeStatus(stData.percent, stData.target);
 
                 return `
@@ -1094,7 +1098,6 @@
             document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { 
                 const thumbsHtml = stData.ops.map((name, idx) => `<img src="${masterOpList.get(name) || ''}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${name.charAt(0)}</div>`).join(''); 
                 
-                // คำนวณหาน้ำหนักเป้าหมาย (กก.) และ น้ำหนักผลต่าง (กก.) รายสถานี
                 const stTargetWeight = totalConsumption * (stData.target / 100);
                 const stDiffWeight = stData.weight - stTargetWeight;
                 const isOver = stData.diff > 0;
@@ -1145,7 +1148,6 @@
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
 
-            // 1. Base filtered data - สำหรับเป็นตัวหารคำนวณสัดส่วนของออเดอร์ผลิตทั้งหมด (ไม่ถูกกรองตาม Station และ สาเหตุ)
             const fShortageBase = shortageData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
@@ -1155,24 +1157,20 @@
             );
 
             const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
-            const totalBaseOrdersCount = baseValidOrders.length; // Denominator หลักของสัดส่วนทั้งหมด
+            const totalBaseOrdersCount = baseValidOrders.length; 
 
-            // 2. Final filtered data - ยอดออเดอร์ขาดสะสมจริงที่กรองครบเงื่อนไขทุกอย่างรวมถึง Station และ สาเหตุ
             const shortageOrdersList = fShortageBase.filter(d => 
                 d.status === 'ขาดจำนวน' &&
                 (!st || cleanStr(d.station) === cleanStr(st)) &&
                 (!hasSelectedReasons || shortageSelectedReasons.has(d.reason))
             );
-            const shortageOrdersCount = shortageOrdersList.length; // Numerator
+            const shortageOrdersCount = shortageOrdersList.length; 
 
-            // ออเดอร์ที่ครบจำนวนหรืออื่นๆ (คำนวณแบบหักลบเพื่อให้สถิติบนการ์ดลื่นไหลและตรงตามสัดส่วน)
             const completedOrdersCount = Math.max(0, totalBaseOrdersCount - shortageOrdersCount);
             
-            // การคำนวณเปอร์เซ็นต์ขาดจำนวนแบบไดนามิก
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
-            // กำหนดเป้าหมาย (Target) ตามตัวกรองที่มีความสำคัญต่างกัน (ปรับตามสถานี และเป้าหมายใหม่)
-            const hasTarget = !hasSelectedReasons; // หากเลือกฟิลเตอร์ค้นหาสาเหตุ จะเอาเป้าหมาย (Target) ออก
+            const hasTarget = !hasSelectedReasons; 
             let targetVal = 18.00;
             if (st) {
                 const cleanSt = cleanStr(st);
@@ -1182,7 +1180,7 @@
                     targetVal = shortageStationTargets["other"];
                 }
             } else if (hasSelectedCust) {
-                targetVal = 10.00; // หากเลือกลูกค้า จะปรับเป้าหมายเป็น 10.00%
+                targetVal = 10.00; 
             }
 
             document.getElementById('shortage-kpi-total').textContent = totalBaseOrdersCount.toLocaleString();
@@ -1202,17 +1200,14 @@
                 diffEl.className = `text-sm font-black text-slate-400`;
             }
 
-            // 1. กราฟแนวโน้มเปอร์เซ็นต์ขาดจำนวน (% Shortage Trend)
             const trendShortage = {};
             const trendTotal = {};
             
-            // สะสมยอดออเดอร์รวมต่อวัน/สัปดาห์/เดือน (ตัวหาร) - ไม่รวมผลกระทบจากฟิลเตอร์ station และ reason
             baseValidOrders.forEach(d => {
                 let k = shortageTrendMode === 'daily' ? d.isoDate : (shortageTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
                 trendTotal[k] = (trendTotal[k] || 0) + 1;
             });
             
-            // สะสมยอดออเดอร์ขาดจำนวนต่อวัน/สัปดาห์/เดือน (ตัวเศษ) - คัดกรองตามเงื่อนไข Station และ สาเหตุ ที่เลือกจริง
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน') {
                     const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
@@ -1275,7 +1270,7 @@
                 }
             });
 
-            // 2. Top 5 ปัญหา ขาดจำนวน (Exclude ครบจำนวน)
+            // 1. Top 5 ปัญหา ขาดจำนวน
             const problemMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.reason && d.reason !== 'ครบจำนวน') {
@@ -1297,7 +1292,7 @@
                         borderColor: topProblems.map((_, i) => colorPalette[i % colorPalette.length]),
                         borderWidth: 2,
                         borderRadius: 8,
-                        barThickness: 28,
+                        barThickness: 16,
                         customPercents: topProblems.map(x => totalBaseOrdersCount > 0 ? (x[1] / totalBaseOrdersCount * 100) : 0)
                     }]
                 },
@@ -1323,7 +1318,142 @@
                 }
             });
 
-            // 3. สัดส่วน ขาดจำนวน ราย Station (Col BM)
+            // 2. ลักษณะแกรม (คอลัมน์ AH - จับเฉพาะตัวเลข 3 ตัวท้าย)
+            let thinCount = 0;   // 105-140
+            let mediumCount = 0; // 141-200
+            let thickCount = 0;  // 201 ขึ้นไป
+            shortageOrdersList.forEach(d => {
+                const ahVal = String(d.ah || '').trim();
+                const last3 = ahVal.slice(-3);
+                const gram = parseInt(last3, 10);
+                if (!isNaN(gram)) {
+                    if (gram >= 105 && gram <= 140) thinCount++;
+                    else if (gram >= 141 && gram <= 200) mediumCount++;
+                    else if (gram >= 201) thickCount++;
+                }
+            });
+            drawChart('shortageGramChart', {
+                type: 'bar',
+                data: {
+                    labels: ['บาง (105-140)', 'กลาง (141-200)', 'หนา (201+)'],
+                    datasets: [{
+                        data: [thinCount, mediumCount, thickCount],
+                        backgroundColor: ['#38bdf8', '#3b82f6', '#6366f1'],
+                        borderColor: ['#0284c7', '#2563eb', '#4f46e5'],
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#475569',
+                            font: { size: 10, weight: 'bold' },
+                            formatter: (v) => v > 0 ? `${v} ออเดอร์` : '0'
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
+                        y: { beginAtZero: true, grace: '20%', ticks: { precision: 0 } }
+                    }
+                }
+            });
+
+            // 3. ลักษณะประเภทจำนวนแผ่นงานขาดจำนวน (คอลัมน์ U)
+            let hardRepair = 0; // -1 ถึง -99
+            let easyRepair = 0; // -100 ขึ้นไป
+            shortageOrdersList.forEach(d => {
+                const sheets = Number(d.sheets);
+                if (sheets <= -1 && sheets >= -99) {
+                    hardRepair++;
+                } else if (sheets <= -100) {
+                    easyRepair++;
+                } else {
+                    const absSheets = Math.abs(sheets);
+                    if (absSheets >= 1 && absSheets <= 99) {
+                        hardRepair++;
+                    } else if (absSheets >= 100) {
+                        easyRepair++;
+                    }
+                }
+            });
+            drawChart('shortageRepairTypeChart', {
+                type: 'bar',
+                data: {
+                    labels: ['ซ่อมยาก (-1 ถึง -99)', 'ซ่อมง่าย (-100+)'],
+                    datasets: [{
+                        data: [hardRepair, easyRepair],
+                        backgroundColor: ['#ef4444', '#10b981'],
+                        borderColor: ['#b91c1c', '#047857'],
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#475569',
+                            font: { size: 10, weight: 'bold' },
+                            formatter: (v) => v > 0 ? `${v} ออเดอร์` : '0'
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
+                        y: { beginAtZero: true, grace: '20%', ticks: { precision: 0 } }
+                    }
+                }
+            });
+
+            // 4. ลักษณะเมตร (คอลัมน์ BC - ลักษณะ ORDER)
+            const meterMap = {};
+            shortageOrdersList.forEach(d => {
+                const pattern = d.orderPattern || 'ไม่ระบุ';
+                meterMap[pattern] = (meterMap[pattern] || 0) + 1;
+            });
+            const sortedMeter = Object.entries(meterMap).sort((a, b) => b[1] - a[1]);
+            drawChart('shortageMeterChart', {
+                type: 'bar',
+                data: {
+                    labels: sortedMeter.map(x => x[0]),
+                    datasets: [{
+                        data: sortedMeter.map(x => x[1]),
+                        backgroundColor: '#a78bfa',
+                        borderColor: '#7c3aed',
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                        barThickness: 16
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#475569',
+                            font: { size: 10, weight: 'bold' },
+                            formatter: (v) => v > 0 ? `${v} ออเดอร์` : '0'
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
+                        y: { beginAtZero: true, grace: '20%', ticks: { precision: 0 } }
+                    }
+                }
+            });
+
+            // 5. สัดส่วน ขาดจำนวน ราย Station (Col BM)
             const shortageStationMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.station) {
@@ -1371,7 +1501,7 @@
                 }
             });
 
-            // 4. Performance by Station List
+            // 6. Performance by Station List
             const stationShortagePerf = {};
             let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             
@@ -1408,7 +1538,7 @@
             });
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
-                const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 105 : 0; // matching scaling formula
+                const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 105 : 0; 
                 const cleanStName = cleanStr(stName);
                 const individualTarget = shortageStationTargets[cleanStName] !== undefined ? shortageStationTargets[cleanStName] : targetVal;
                 return {
@@ -1460,17 +1590,30 @@
                 `;
             }).join('');
 
-            // 5. Shortage Detailed Table
+            // 7. Shortage Detailed Table (รวม AD, AE, AF, AG, AH ไว้ในคอลัมน์เดียว และอยู่ต่อจาก ชื่อลูกค้า)
             const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
                     <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td>
                     <td class="p-5 font-medium">PDR: ${d.pdr}<br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.customer}</span></td>
+                    <td class="p-5 bg-indigo-50/10">
+                        <div class="flex flex-wrap items-center gap-1 font-mono text-[11px]">
+                            <span class="px-1.5 py-0.5 bg-white text-slate-700 border border-slate-200 rounded font-bold" title="AD: เกรดกระดาษ">${d.ad || '-'}</span>
+                            <span class="text-slate-350">|</span>
+                            <span class="px-1.5 py-0.5 bg-white text-slate-700 border border-slate-200 rounded font-bold" title="AE: หน้ากว้าง">${d.ae || '-'}</span>
+                            <span class="text-slate-350">|</span>
+                            <span class="px-1.5 py-0.5 bg-white text-slate-700 border border-slate-200 rounded font-bold" title="AF: ความยาว">${d.af || '-'}</span>
+                            <span class="text-slate-350">|</span>
+                            <span class="px-1.5 py-0.5 bg-white text-slate-700 border border-slate-200 rounded font-bold" title="AG: ลอน">${d.ag || '-'}</span>
+                            <span class="text-slate-350">|</span>
+                            <span class="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-150 rounded font-bold" title="AH: แกรม (AH/M5)">${d.ah || '-'}</span>
+                        </div>
+                    </td>
                     <td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td>
                     <td class="p-5 font-medium">${d.reason || '-'}<br><span class="text-xs font-black text-rose-500">${d.sheets.toLocaleString()} แผ่น</span></td>
                     <td class="p-5 font-medium text-slate-600">${d.stopStatus || '-'}<br><span class="text-[10px] text-slate-400 font-bold uppercase">${d.orderPattern || '-'}</span></td>
                 </tr>
-            `).join('') || '<tr><td colspan="5" class="p-5 text-center text-slate-400">ไม่พบข้อมูลออเดอร์ขาดจำนวนที่ตรงเงื่อนไข</td></tr>';
+            `).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-400">ไม่พบข้อมูลออเดอร์ขาดจำนวนที่ตรงเงื่อนไข</td></tr>';
         }
 
         function updateStationAnalysisUI() {
@@ -1479,13 +1622,9 @@
                   mc = document.getElementById('station-filter-mc').value, 
                   sh = document.getElementById('station-filter-shift').value;
             
-            // 1. กรองสถิติ Downtime
             const filteredDowntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && (d.factor.toUpperCase() !== 'PM'));
-            
-            // 2. กรองสถิติ NCP
             const filteredWaste = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
 
-            // 3. คำนวณหา Runtime ประมวลผลเวลาสูญเสีย
             const machineShiftRuntime = {};
             rawData.forEach(d => {
                 const key = `${d.isoDate}_${d.shift}_${d.machine}`;
@@ -1508,12 +1647,10 @@
             });
             const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
 
-            // 4. คำนวณหา Consumption ประมวลผล NCP
             const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
             const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
 
-            // 5. คำนวณยอดออเดอร์สำหรับประมวลผลขาดจำนวน (Shortage)
             const fShortageBase = shortageData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
@@ -1529,7 +1666,6 @@
             targetStations.forEach(st => {
                 const cleanSt = cleanStr(st);
                 
-                // 5.1 ด้าน Downtime
                 const dtEntries = filteredDowntime.filter(d => cleanStr(d.stationWaste) === cleanSt);
                 const dtStops = dtEntries.reduce((sum, d) => sum + d.stops, 0);
                 const dtDuration = dtEntries.reduce((sum, d) => sum + d.duration, 0);
@@ -1540,7 +1676,6 @@
                 const dtDiffMin = dtDuration - dtTargetMin;
                 const isDtPassed = dtPercent <= dtTarget;
 
-                // 5.2 ด้าน NCP
                 const ncpEntries = filteredWaste.filter(d => cleanStr(d.station) === cleanSt);
                 const weightNcp = ncpEntries.reduce((sum, d) => sum + d.weightNcp, 0);
                 const ncpPercent = totalConsumption > 0 ? (weightNcp / totalConsumption) * 100 : 0;
@@ -1550,16 +1685,14 @@
                 const ncpDiffWeight = weightNcp - ncpTargetWeight;
                 const isNcpPassed = ncpPercent <= ncpTarget;
 
-                // 5.3 ด้าน ขาดจำนวน (Shortage)
                 const stationShortageList = baseValidOrders.filter(d => cleanStr(d.station) === cleanSt);
                 const totalStationOrders = stationShortageList.length;
                 const shortageCount = stationShortageList.filter(d => d.status === 'ขาดจำนวน').length;
-                const shortagePercent = totalBaseOrdersCount > 0 ? (shortageCount / totalBaseOrdersCount) * 105 : 0; // matching scaling factor
+                const shortagePercent = totalBaseOrdersCount > 0 ? (shortageCount / totalBaseOrdersCount) * 105 : 0; 
                 const shortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 18.00;
                 const shortageDiffPercent = shortagePercent - shortageTarget;
                 const isShortagePassed = shortagePercent <= shortageTarget;
 
-                // 5.4 ค้นหารายชื่อพนักงานและรูปภาพผู้รับผิดชอบ
                 const ops = new Set(); 
                 const opDetails = [];
                 dtEntries.forEach(d => {
@@ -1594,7 +1727,6 @@
                     resolvedOps.push({ name, img: detail ? resolveOperatorImage(detail.name, detail.machine, detail.shift, detail.stationWaste) : resolveOperatorImage(name, mc, sh, st) });
                 });
 
-                // การ์ดผู้รับผิดชอบ (Operator Avatars)
                 const thumbsHtml = resolvedOps.length > 0 ? resolvedOps.map((op, idx) => {
                     const bgColor = colorPalette[idx % colorPalette.length];
                     return op.img ? `
@@ -1607,10 +1739,8 @@
 
                 const opNamesStr = resolvedOps.map(o => o.name).join(', ') || 'ไม่มีรายชื่อพนักงานคุม';
 
-                // โครงสร้างการ์ด Station Card
                 cardsHtml += `
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col justify-between">
-                    <!-- ส่วนหัวของการ์ดสถานี -->
                     <div class="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                         <div>
                             <h3 class="text-base md:text-lg font-black text-slate-800">${st}</h3>
@@ -1623,7 +1753,6 @@
                         </div>
                     </div>
 
-                    <!-- รูปและรายชื่อผู้รับผิดชอบ -->
                     <div class="px-5 py-3.5 border-b border-slate-100/50 bg-slate-50/20">
                         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-2">พนักงานผู้ปฏิบัติงานที่รับผิดชอบ</span>
                         <div class="flex items-center gap-3">
@@ -1638,7 +1767,6 @@
                         </div>
                     </div>
 
-                    <!-- รายละเอียดการวิเคราะห์ 3 มิติ (Downtime, NCP, ขาดจำนวน) -->
                     <div class="p-5 space-y-4 flex-1">
                         
                         <!-- 1. มิติ Downtime -->
@@ -1876,7 +2004,6 @@
                 headerEl.parentElement.classList.add('hidden');
             }
 
-            // Show modal with transition
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
@@ -1896,7 +2023,6 @@
             }, 300);
         }
 
-        // Add Escape Key handler to close modal easily
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeStationDetailModal();
