@@ -266,7 +266,7 @@
         </div>
         
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
-            <div class="lg:col-span-3">
+            <div class="lg:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label>
                 <div class="flex gap-2">
                     <input type="date" id="shortage-start-date" class="w-full">
@@ -277,13 +277,17 @@
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label>
                 <select id="shortage-filter-mc"><option value="">ทั้งหมด</option></select>
             </div>
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label>
                 <select id="shortage-filter-station"><option value="">ทั้งหมด</option></select>
             </div>
             <div class="lg:col-span-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label>
                 <select id="shortage-filter-shift"><option value="">ทั้งหมด</option></select>
+            </div>
+            <div class="lg:col-span-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สถานะ Repair Work</label>
+                <select id="shortage-filter-repair"><option value="">ทั้งหมด</option></select>
             </div>
             <div class="lg:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาลูกค้า</label>
@@ -328,14 +332,22 @@
             <div class="chart-container"><canvas id="shortageTrendChart"></canvas></div>
         </div>
 
-        <!-- แถวกราฟแท่งทั้ง 4 (รวม 3 กราฟใหม่ เรียงต่อกันเป็นแถวเดียวกันเป็นระเบียบ) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">Top 5 ปัญหา ขาดจำนวน (ออเดอร์)</h3>
-                <div class="chart-container !h-[260px]"><canvas id="shortageTopReasonChart"></canvas></div>
+        <!-- แถวกราฟแท่งชุดบน (Top 5 ปัญหา และ สัดส่วนราย Station) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 ปัญหา ขาดจำนวน</h3>
+                <div class="chart-container"><canvas id="shortageTopReasonChart"></canvas></div>
             </div>
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน ขาดจำนวน ราย Station</h3>
+                <div class="chart-container"><canvas id="shortageStationChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- แถวกราฟแท่งชุดล่าง 3 กราฟใหม่ (เรียงกันสวยงามเป็นระเบียบ) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ลักษณะแกรม (AH - 3 ตัวท้าย)</h3>
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ลักษณะแกรม</h3>
                 <div class="chart-container !h-[260px]"><canvas id="shortageGramChart"></canvas></div>
             </div>
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
@@ -343,14 +355,9 @@
                 <div class="chart-container !h-[260px]"><canvas id="shortageRepairTypeChart"></canvas></div>
             </div>
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ลักษณะเมตร (คอลัมน์ BC)</h3>
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ลักษณะเมตร</h3>
                 <div class="chart-container !h-[260px]"><canvas id="shortageMeterChart"></canvas></div>
             </div>
-        </div>
-
-        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน ขาดจำนวน ราย Station (ออเดอร์ / %ขาดจำนวน)</h3>
-            <div class="chart-container"><canvas id="shortageStationChart"></canvas></div>
         </div>
 
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
@@ -369,7 +376,7 @@
                             <th class="p-5 bg-slate-50/50">สเปกกระดาษ (AD+AE+AF+AG+AH)</th>
                             <th class="p-5">เครื่องจักร/Station</th>
                             <th class="p-5">สาเหตุ/จำนวนแผ่น</th>
-                            <th class="p-5">สถานะหยุดเครื่อง/ลักษณะออเดอร์</th>
+                            <th class="p-5">สถานะหยุดเครื่อง/ลักษณะออเดอร์/Repair Work</th>
                         </tr>
                     </thead>
                     <tbody id="shortage-table-body" class="text-xs text-slate-600"></tbody>
@@ -431,7 +438,7 @@
                 </div>
                 <button onclick="closeStationDetailModal()" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600 focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </</button>
+                </button>
             </div>
             <div class="overflow-y-auto p-6 flex-1 table-responsive">
                 <table class="w-full text-left border-collapse">
@@ -669,12 +676,13 @@
                     month: dObj.getMonth() + 1,
                     weekNum: getSunWeek(dObj),
                     machine: c[65] ? cl(c[65]) : '',          // Col BN (Index 65)
-                    pdr: cl(c[9]),               // Col J
-                    customer: cl(c[11]),         // Col L
-                    status: cl(c[19]),           // Col T
-                    sheets: parseNum(cl(c[20])), // Col U
-                    reason: cl(c[25]),           // Col Z
-                    shift: cl(c[28]),            // Col AC
+                    pdr: cl(c[9]),                               // Col J
+                    customer: cl(c[11]),                         // Col L
+                    status: cl(c[19]),                           // Col T
+                    sheets: parseNum(cl(c[20])),                 // Col U
+                    reason: cl(c[25]),                           // Col Z
+                    repairWork: c[27] ? cl(c[27]) : '',         // Col AB (Index 27) - เพิ่มสถานะ Repair Work
+                    shift: cl(c[28]),                            // Col AC
                     station: c[64] ? cl(c[64]) : '',          // Col BM
                     stopStatus: c[53] ? cl(c[53]) : '',       // Col BB
                     orderPattern: c[54] ? cl(c[54]) : '',     // Col BC
@@ -703,6 +711,7 @@
             fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
             fillSelect('shortage-filter-station', getU(shortageData, 'station'));
             fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
+            fillSelect('shortage-filter-repair', getU(shortageData, 'repairWork')); // เพิ่มดึงตัวกรอง Repair Work
             
             shortageAllCustomerOptions = getU(shortageData, 'customer');
             renderShortageCustOptions("");
@@ -1143,7 +1152,8 @@
                   e = document.getElementById('shortage-end-date').value,
                   mc = document.getElementById('shortage-filter-mc').value,
                   st = document.getElementById('shortage-filter-station').value,
-                  sh = document.getElementById('shortage-filter-shift').value;
+                  sh = document.getElementById('shortage-filter-shift').value,
+                  repairVal = document.getElementById('shortage-filter-repair').value; // ตัวแปรตัวกรอง Repair Work ใหม่
             const chosenShortageColor = document.getElementById('shortage-chart-color').value;
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
@@ -1153,6 +1163,7 @@
                 (!e || d.isoDate <= e) && 
                 (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
                 (!sh || cleanStr(d.shift) === cleanStr(sh)) && 
+                (!repairVal || cleanStr(d.repairWork) === cleanStr(repairVal)) && // ประยุกต์ใช้ตัวกรอง Repair Work
                 (!hasSelectedCust || shortageSelectedCustomers.has(d.customer))
             );
 
@@ -1305,9 +1316,9 @@
                             anchor: 'end',
                             align: 'right',
                             textAlign: 'center',
-                            color: '#334155',
+                            color: '#1e293b',
                             font: { size: 10, weight: 'bold' },
-                            formatter: (v, ctx) => `${v.toLocaleString()}\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`,
+                            formatter: (v, ctx) => `${v.toLocaleString()} (${ctx.dataset.customPercents[ctx.dataIndex].toFixed(1)}%)`,
                             padding: 4
                         }
                     },
@@ -1342,7 +1353,7 @@
                         borderColor: ['#0284c7', '#2563eb', '#4f46e5'],
                         borderWidth: 1.5,
                         borderRadius: 6,
-                        barThickness: 20
+                        barThickness: 24
                     }]
                 },
                 options: {
@@ -1352,14 +1363,20 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
-                            color: '#475569',
-                            font: { size: 10, weight: 'bold' },
-                            formatter: (v) => v > 0 ? `${v} ออเดอร์` : '0'
+                            color: '#1e293b',
+                            font: { size: 11, weight: 'bold' },
+                            formatter: (v) => {
+                                if (v > 0) {
+                                    const pct = shortageOrdersCount > 0 ? (v / shortageOrdersCount * 100).toFixed(1) : '0.0';
+                                    return `${v.toLocaleString()} (${pct}%)`;
+                                }
+                                return '0';
+                            }
                         }
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
-                        y: { beginAtZero: true, grace: '20%', ticks: { precision: 0 } }
+                        y: { beginAtZero: true, grace: '25%', ticks: { precision: 0 } }
                     }
                 }
             });
@@ -1388,11 +1405,11 @@
                     labels: ['ซ่อมยาก (-1 ถึง -99)', 'ซ่อมง่าย (-100+)'],
                     datasets: [{
                         data: [hardRepair, easyRepair],
-                        backgroundColor: ['#ef4444', '#10b981'],
-                        borderColor: ['#b91c1c', '#047857'],
+                        backgroundColor: ['#f43f5e', '#10b981'],
+                        borderColor: ['#be123c', '#047857'],
                         borderWidth: 1.5,
                         borderRadius: 6,
-                        barThickness: 20
+                        barThickness: 24
                     }]
                 },
                 options: {
@@ -1402,19 +1419,25 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
-                            color: '#475569',
-                            font: { size: 10, weight: 'bold' },
-                            formatter: (v) => v > 0 ? `${v} ออเดอร์` : '0'
+                            color: '#1e293b',
+                            font: { size: 11, weight: 'bold' },
+                            formatter: (v) => {
+                                if (v > 0) {
+                                    const pct = shortageOrdersCount > 0 ? (v / shortageOrdersCount * 100).toFixed(1) : '0.0';
+                                    return `${v.toLocaleString()} (${pct}%)`;
+                                }
+                                return '0';
+                            }
                         }
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
-                        y: { beginAtZero: true, grace: '20%', ticks: { precision: 0 } }
+                        y: { beginAtZero: true, grace: '25%', ticks: { precision: 0 } }
                     }
                 }
             });
 
-            // 4. ลักษณะเมตร (คอลัมน์ BC - ลักษณะ ORDER)
+            // 4. ลักษณะเมตร (BC)
             const meterMap = {};
             shortageOrdersList.forEach(d => {
                 const pattern = d.orderPattern || 'ไม่ระบุ';
@@ -1427,11 +1450,11 @@
                     labels: sortedMeter.map(x => x[0]),
                     datasets: [{
                         data: sortedMeter.map(x => x[1]),
-                        backgroundColor: '#a78bfa',
-                        borderColor: '#7c3aed',
+                        backgroundColor: sortedMeter.map((_, idx) => colorPalette[(idx + 4) % colorPalette.length] + 'CC'),
+                        borderColor: sortedMeter.map((_, idx) => colorPalette[(idx + 4) % colorPalette.length]),
                         borderWidth: 1.5,
                         borderRadius: 6,
-                        barThickness: 16
+                        barThickness: 20
                     }]
                 },
                 options: {
@@ -1441,14 +1464,20 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
-                            color: '#475569',
-                            font: { size: 10, weight: 'bold' },
-                            formatter: (v) => v > 0 ? `${v} ออเดอร์` : '0'
+                            color: '#1e293b',
+                            font: { size: 11, weight: 'bold' },
+                            formatter: (v) => {
+                                if (v > 0) {
+                                    const pct = shortageOrdersCount > 0 ? (v / shortageOrdersCount * 100).toFixed(1) : '0.0';
+                                    return `${v.toLocaleString()} (${pct}%)`;
+                                }
+                                return '0';
+                            }
                         }
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
-                        y: { beginAtZero: true, grace: '20%', ticks: { precision: 0 } }
+                        y: { beginAtZero: true, grace: '25%', ticks: { precision: 0 } }
                     }
                 }
             });
@@ -1488,9 +1517,9 @@
                             anchor: 'end',
                             align: 'right',
                             textAlign: 'center',
-                            color: '#334155',
+                            color: '#1e293b',
                             font: { size: 10, weight: 'bold' },
-                            formatter: (v, ctx) => `${v.toLocaleString()}\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`,
+                            formatter: (v, ctx) => `${v.toLocaleString()} (${ctx.dataset.customPercents[ctx.dataIndex].toFixed(1)}%)`,
                             padding: 4
                         }
                     },
@@ -1590,7 +1619,7 @@
                 `;
             }).join('');
 
-            // 7. Shortage Detailed Table (รวม AD, AE, AF, AG, AH ไว้ในคอลัมน์เดียว และอยู่ต่อจาก ชื่อลูกค้า)
+            // 7. Shortage Detailed Table (รวม AD, AE, AF, AG, AH ไว้ในคอลัมน์เดียว และอยู่ต่อจาก ชื่อลูกค้า + เพิ่มข้อมูล Repair Work)
             const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
@@ -1611,7 +1640,11 @@
                     </td>
                     <td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td>
                     <td class="p-5 font-medium">${d.reason || '-'}<br><span class="text-xs font-black text-rose-500">${d.sheets.toLocaleString()} แผ่น</span></td>
-                    <td class="p-5 font-medium text-slate-600">${d.stopStatus || '-'}<br><span class="text-[10px] text-slate-400 font-bold uppercase">${d.orderPattern || '-'}</span></td>
+                    <td class="p-5 font-medium text-slate-600">
+                        ${d.stopStatus || '-'}<br>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase block">${d.orderPattern || '-'}</span>
+                        <span class="inline-block mt-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold uppercase">Repair Work: ${d.repairWork || '-'}</span>
+                    </td>
                 </tr>
             `).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-400">ไม่พบข้อมูลออเดอร์ขาดจำนวนที่ตรงเงื่อนไข</td></tr>';
         }
