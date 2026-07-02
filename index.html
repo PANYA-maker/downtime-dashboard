@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .chart-container { position: relative; height: 340px; width: 100%; }
+        .chart-container { position: relative; height: 400px; width: 100%; }
         .table-responsive { overflow-x: auto; max-height: 500px; }
         input, select { border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 0.875rem; width: 100%; transition: all 0.2s; background-color: white; }
         input:focus, select:focus { outline: none; border-color: #3b82f6; ring: 2px; ring-color: #3b82f633; }
@@ -337,6 +337,10 @@
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                 <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 ปัญหา ขาดจำนวน</h3>
                 <div class="chart-container"><canvas id="shortageTopReasonChart"></canvas></div>
+            </div>
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 ลูกค้าที่ขาดจำนวนมากที่สุด</h3>
+                <div class="chart-container"><canvas id="shortageTopCustomerChart"></canvas></div>
             </div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                 <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน ขาดจำนวน ราย Station</h3>
@@ -1325,7 +1329,53 @@
                     }
                 }
             });
-
+            // [เพิ่มใหม่] 1.2 Top 5 ลูกค้าที่ขาดจำนวนมากที่สุด (คอลัมน์ L)
+            const customerShortageMap = {};
+            fShortageBase.forEach(d => {
+                if (d.status === 'ขาดจำนวน' && d.customer) {
+                    const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
+                    const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
+                    if (matchesStation && matchesReason) {
+                        customerShortageMap[d.customer] = (customerShortageMap[d.customer] || 0) + 1;
+                    }
+                }
+            });
+            const topCustomers = Object.entries(customerShortageMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            drawChart('shortageTopCustomerChart', {
+                type: 'bar',
+                data: {
+                    labels: topCustomers.map(x => x[0]),
+                    datasets: [{
+                        data: topCustomers.map(x => x[1]),
+                        backgroundColor: topCustomers.map((_, i) => colorPalette[(i + 1) % colorPalette.length] + 'CC'),
+                        borderColor: topCustomers.map((_, i) => colorPalette[(i + 1) % colorPalette.length]),
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        barThickness: 28,
+                        customPercents: topCustomers.map(x => totalBaseOrdersCount > 0 ? (x[1] / totalBaseOrdersCount * 100) : 0)
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'right',
+                            textAlign: 'center',
+                            color: '#1e293b',
+                            font: { size: 10, weight: 'bold' },
+                            formatter: (v, ctx) => `${v.toLocaleString()} ออเดอร์\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(1)}%)`,
+                            padding: 4
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, grace: '50%', grid: { display: false }, ticks: { display: false } },
+                        y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#475569' } }
+                    }
+                }
+            });
             // 2. ลักษณะแกรม (คอลัมน์ AH - จับเฉพาะตัวเลข 3 ตัวท้าย)
             let thinCount = 0;   // 105-140
             let mediumCount = 0; // 141-200
