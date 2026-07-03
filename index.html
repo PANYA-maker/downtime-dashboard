@@ -89,6 +89,7 @@
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
     </div>
 
+    <!-- PAGE 1: DOWNTIME -->
     <div id="page-main" class="max-w-7xl mx-auto space-y-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
@@ -159,6 +160,7 @@
         </div>
     </div>
 
+    <!-- PAGE 2: NCP OVERVIEW -->
     <div id="page-ncp" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card-stat border-indigo-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">CONSUMPTION (กก.)</p><p id="ncp-kpi-weight-mc" class="text-3xl font-black text-slate-800">0.00</p></div>
@@ -231,6 +233,7 @@
         </div>
     </div>
 
+    <!-- PAGE 3: SHORTAGE OVERVIEW -->
     <div id="page-shortage" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500">
@@ -262,68 +265,56 @@
             </div>
         </div>
         
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-4">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label>
-                    <div class="flex gap-2">
-                        <input type="date" id="shortage-start-date" class="w-full">
-                        <input type="date" id="shortage-end-date" class="w-full">
-                    </div>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label>
-                    <select id="shortage-filter-mc"><option value="">ทั้งหมด</option></select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station</label>
-                    <select id="shortage-filter-station"><option value="">ทั้งหมด</option></select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label>
-                    <select id="shortage-filter-shift"><option value="">ทั้งหมด</option></select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
-                    <div class="flex items-center gap-1.5">
-                        <input type="color" id="shortage-chart-color" value="#4f46e5" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
-                        <div class="flex flex-col gap-1">
-                            <div class="flex gap-0.5">
-                                <button type="button" class="w-4 h-4 rounded-full bg-[#4f46e5] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#4f46e5')" title="สีเดิม"></button>
-                                <button type="button" class="w-4 h-4 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#ef4444')" title="สีแดง"></button>
-                                <button type="button" class="w-4 h-4 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#10b981')" title="สีเขียว"></button>
-                            </div>
-                        </div>
-                    </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-3">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label>
+                <div class="flex gap-2">
+                    <input type="date" id="shortage-start-date" class="w-full">
+                    <input type="date" id="shortage-end-date" class="w-full">
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สถานะงานซ่อม</label>
-                    <select id="shortage-filter-repair"><option value="">ทั้งหมด</option></select>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label>
+                <select id="shortage-filter-mc"><option value="">ทั้งหมด</option></select>
+            </div>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station</label>
+                <select id="shortage-filter-station"><option value="">ทั้งหมด</option></select>
+            </div>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label>
+                <select id="shortage-filter-shift"><option value="">ทั้งหมด</option></select>
+            </div>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สถานะงานซ่อม</label>
+                <select id="shortage-filter-repair"><option value="">ทั้งหมด</option></select>
+            </div>
+            <div class="lg:col-span-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาลูกค้า</label>
+                <div class="multi-select-container">
+                    <div id="shortage-customer-chips" class="flex flex-wrap gap-1 mb-1"></div>
+                    <input type="text" id="shortage-filter-customer-input" placeholder="พิมพ์เพื่อค้นหาลูกค้า..." class="w-full" onfocus="toggleShortageCustDropdown(true)" oninput="filterShortageCustOptions(this.value)">
+                    <div id="shortage-customer-dropdown" class="multi-select-dropdown"></div>
                 </div>
-                <div class="md:col-span-3">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Group ขาดจำนวน (Col AA)</label>
-                    <div class="multi-select-container">
-                        <div id="shortage-group-chips" class="flex flex-wrap gap-1 mb-1"></div>
-                        <input type="text" id="shortage-filter-group-input" placeholder="เลือก Group ขาดจำนวน..." class="w-full" onfocus="toggleShortageGroupDropdown(true)" oninput="filterShortageGroupOptions(this.value)">
-                        <div id="shortage-group-dropdown" class="multi-select-dropdown"></div>
-                    </div>
+            </div>
+            <div class="lg:col-span-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาสาเหตุ</label>
+                <div class="multi-select-container">
+                    <div id="shortage-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
+                    <input type="text" id="shortage-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาสาเหตุ..." class="w-full" onfocus="toggleShortageReasonDropdown(true)" oninput="filterShortageReasonOptions(this.value)">
+                    <div id="shortage-reason-dropdown" class="multi-select-dropdown"></div>
                 </div>
-                <div class="md:col-span-3">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาลูกค้า</label>
-                    <div class="multi-select-container">
-                        <div id="shortage-customer-chips" class="flex flex-wrap gap-1 mb-1"></div>
-                        <input type="text" id="shortage-filter-customer-input" placeholder="พิมพ์เพื่อค้นหาลูกค้า..." class="w-full" onfocus="toggleShortageCustDropdown(true)" oninput="filterShortageCustOptions(this.value)">
-                        <div id="shortage-customer-dropdown" class="multi-select-dropdown"></div>
-                    </div>
-                </div>
-                <div class="md:col-span-4">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาสาเหตุ</label>
-                    <div class="multi-select-container">
-                        <div id="shortage-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
-                        <input type="text" id="shortage-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาสาเหตุ..." class="w-full" onfocus="toggleShortageReasonDropdown(true)" oninput="filterShortageReasonOptions(this.value)">
-                        <div id="shortage-reason-dropdown" class="multi-select-dropdown"></div>
+            </div>
+            <div class="lg:col-span-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
+                <div class="flex items-center gap-1.5">
+                    <input type="color" id="shortage-chart-color" value="#4f46e5" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex gap-0.5">
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#4f46e5] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#4f46e5')" title="สีเดิม"></button>
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#ef4444] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#ef4444')" title="สีแดง"></button>
+                            <button type="button" class="w-4 h-4 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('shortage', '#10b981')" title="สีเขียว"></button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -341,28 +332,23 @@
             <div class="chart-container"><canvas id="shortageTrendChart"></canvas></div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- แถวกราฟแท่งชุดบน (Top 5 ปัญหา และ สัดส่วนราย Station) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                 <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 ปัญหา ขาดจำนวน</h3>
                 <div class="chart-container"><canvas id="shortageTopReasonChart"></canvas></div>
             </div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Group ขาดจำนวน (คอลัมน์ AA)</h3>
-                <div class="chart-container"><canvas id="shortageGroupDonutChart"></canvas></div>
-            </div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                 <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 5 ลูกค้าที่ขาดจำนวนมากที่สุด</h3>
                 <div class="chart-container"><canvas id="shortageTopCustomerChart"></canvas></div>
             </div>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                 <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน ขาดจำนวน ราย Station</h3>
                 <div class="chart-container"><canvas id="shortageStationChart"></canvas></div>
             </div>
         </div>
 
+        <!-- แถวกราฟแท่งชุดล่าง 3 กราฟใหม่ (เรียงกันสวยงามเป็นระเบียบ) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
                 <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-[0.1em]">ลักษณะแกรม</h3>
@@ -403,6 +389,7 @@
         </div>
     </div>
 
+    <!-- PAGE 4: STATION ANALYSIS -->
     <div id="page-station-analysis" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="space-y-1">
@@ -432,10 +419,11 @@
         <div id="station-analysis-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6"></div>
     </div>
 
+    <!-- PAGE 5: OPERATOR ANALYSIS -->
     <div id="page-operator" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
-                <div class="flex justify-center flex-shrink-0"><div class="profile-container"><div id="op-img-placeholder" class="w-full h-full flex items-center justify-center"><svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div></div><img id="op-profile-img" src="" alt="Profile" class="profile-img-el hidden" crossorigin="anonymous"></div>
+                <div class="flex justify-center flex-shrink-0"><div class="profile-container"><div id="op-img-placeholder" class="w-full h-full flex items-center justify-center"><svg class="w-20 h-20 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><img id="op-profile-img" src="" alt="Profile" class="profile-img-el hidden" crossorigin="anonymous"></div></div>
                 <div class="flex-1 w-full space-y-8"><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operator Name</label><select id="op-select" class="text-xl font-bold text-blue-600 border-none bg-blue-50/50 p-4"><option value="">-- เลือกพนักงาน --</option></select></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เลือกช่วงเวลาวิเคราะห์</label><div class="grid grid-cols-2 gap-2"><input type="date" id="op-start-date"><input type="date" id="op-end-date"></div></div></div><div class="grid grid-cols-3 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100"><div><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-1">เครื่องจักรหลัก</p><p id="op-info-mc" class="text-sm font-bold text-slate-700">-</p></div><div><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-1">สถานีหลัก</p><p id="op-info-station" class="text-sm font-bold text-slate-700">-</p></div><div><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-1">กะล่าสุด</p><p id="op-info-shift" class="text-sm font-bold text-slate-700">-</p></div></div></div>
             </div>
             <div class="grid grid-cols-2 gap-6 mt-12 pt-12 border-t border-slate-100"><div class="bg-blue-50/50 p-8 rounded-3xl text-center"><p class="text-[10px] text-blue-400 uppercase font-bold tracking-widest mb-1">เวลาสูญเสีย (นาที)</p><p id="op-kpi-time" class="text-4xl font-black text-blue-700">0</p></div><div class="bg-rose-50/50 p-8 rounded-3xl text-center"><p class="text-[10px] text-rose-400 uppercase font-bold tracking-widest mb-1">จำนวนครั้ง</p><p id="op-kpi-count" class="text-4xl font-black text-rose-700">0</p></div></div>
@@ -444,6 +432,7 @@
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-12"><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">วิเคราะห์แนวโน้มรายบุคคล</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setOpTrendMode('daily')" id="btn-op-trend-daily" class="view-btn active">Daily</button><button onclick="setOpTrendMode('weekly')" id="btn-op-trend-weekly" class="view-btn">Weekly</button><button onclick="setOpTrendMode('monthly')" id="btn-op-trend-monthly" class="view-btn">Monthly</button></div></div><div class="chart-container"><canvas id="opTrendChart"></canvas></div></div>
     </div>
 
+    <!-- MODAL FOR STATION ANALYSIS DETAILS -->
     <div id="station-detail-modal" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4" onclick="if(event.target === this) closeStationDetailModal()">
         <div class="bg-white rounded-3xl max-w-4xl w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="station-detail-modal-container">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
@@ -476,10 +465,6 @@
         let shortageAllCustomerOptions = [];
         let shortageSelectedReasons = new Set();
         let shortageAllReasonOptions = [];
-        // เพิ่มตัวแปรเก็บสถานะการเลือกของตัวกรอง Group ขาดจำนวน
-        let shortageSelectedGroups = new Set();
-        let shortageAllGroupOptions = [];
-
         const colorPalette = ['#2563eb', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
         
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
@@ -700,14 +685,13 @@
                     status: cl(c[19]),                           // Col T
                     sheets: parseNum(cl(c[20])),                 // Col U
                     reason: cl(c[25]),                           // Col Z
-                    repairWork: c[44] ? cl(c[44]) : '',         // Col AS (Index 44)
+                    repairWork: c[44] ? cl(c[44]) : '',         // เปลี่ยนเป็น Col AS (Index 44)
                     shift: cl(c[28]),                            // Col AC
                     station: c[64] ? cl(c[64]) : '',           // Col BM
                     stopStatus: c[53] ? cl(c[53]) : '',        // Col BB
                     orderPattern: c[54] ? cl(c[54]) : '',      // Col BC
-                    colM: c[12] ? cl(c[12]) : '',              // Col M
-                    ah: c[33] ? cl(c[33]) : '',                 // Col AH
-                    colAA: c[26] ? cl(c[26]) : ''               // ดึงข้อมูลคอลัมน์ AA (Index 26 คือคอลัมน์ AA) เพื่อจัดทำ Group
+                    colM: c[12] ? cl(c[12]) : '',              // Col M สำหรับใช้ในตาราง (อย่าลืมใส่คอมมา , ปิดท้ายด้วยครับ)
+                    ah: c[33] ? cl(c[33]) : ''                 // ดึง Col AH (Index 33) กลับมาเพื่อส่งให้กราฟแท่งแกรมคำนวณ
                 };
             }).filter(d => d);
         }
@@ -728,7 +712,7 @@
             fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
             fillSelect('shortage-filter-station', getU(shortageData, 'station'));
             fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
-            fillSelect('shortage-filter-repair', getU(shortageData, 'repairWork')); 
+            fillSelect('shortage-filter-repair', getU(shortageData, 'repairWork')); // เพิ่มดึงตัวกรอง Repair Work
             
             shortageAllCustomerOptions = getU(shortageData, 'customer');
             renderShortageCustOptions("");
@@ -736,21 +720,13 @@
             shortageAllReasonOptions = getU(shortageData, 'reason').filter(x => x && x !== 'ครบจำนวน');
             renderShortageReasonOptions("");
 
-            // ดึงข้อมูลตัวกรองของ Group ขาดจำนวน (คอลัมน์ AA)
-            shortageAllGroupOptions = getU(shortageData, 'colAA');
-            renderShortageGroupOptions("");
-
             ncpAllReasonOptions = getU(ncpData, 'reasonDesc'); renderNcpReasonOptions("");
-            
-            // ยกเว้นอินพุตฟิลเตอร์ตัวใหม่ไม่ให้รีเฟรชหน้าแบบตัดตอน
-            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#shortage-filter-customer-input):not(#shortage-filter-reason-input):not(#shortage-filter-group-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
-            
+            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#shortage-filter-customer-input):not(#shortage-filter-reason-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
             document.addEventListener('click', (e) => { 
                 if (!e.target.closest('.multi-select-container')) {
                     toggleNcpReasonDropdown(false); 
                     toggleShortageCustDropdown(false);
                     toggleShortageReasonDropdown(false);
-                    toggleShortageGroupDropdown(false); // ปิดดรอปดาวน์ Group
                 } 
             });
             document.getElementById('main-chart-color').addEventListener('input', updateMainUI);
@@ -790,18 +766,6 @@
         }
         function toggleShortageReasonSelection(opt) { if (shortageSelectedReasons.has(opt)) shortageSelectedReasons.delete(opt); else shortageSelectedReasons.add(opt); renderShortageReasonChips(); renderShortageReasonOptions(document.getElementById('shortage-filter-reason-input').value); updateShortageUI(); }
         function renderShortageReasonChips() { const container = document.getElementById('shortage-reason-chips'); container.innerHTML = Array.from(shortageSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageReasonSelection('${opt}')">×</button></span>`).join(''); }
-
-        // ฟังก์ชันจัดการอีเวนต์สำหรับตัวกรอง Group ขาดจำนวน (คอลัมน์ AA)
-        function toggleShortageGroupDropdown(show) { const dropdown = document.getElementById('shortage-group-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
-        function filterShortageGroupOptions(searchText) { renderShortageGroupOptions(searchText); toggleShortageGroupDropdown(true); }
-        function renderShortageGroupOptions(searchText) {
-            const dropdown = document.getElementById('shortage-group-dropdown');
-            const cleanSearch = searchText.toLowerCase();
-            const filtered = shortageAllGroupOptions.filter(opt => opt.toLowerCase().includes(cleanSearch));
-            dropdown.innerHTML = filtered.map(opt => `<div class="multi-select-option" onclick="toggleShortageGroupSelection('${opt}')"><input type="checkbox" ${shortageSelectedGroups.has(opt) ? 'checked' : ''} class="mr-2"><span class="${shortageSelectedGroups.has(opt) ? 'font-bold text-blue-600' : ''}">${opt}</span></div>`).join('') || '<div class="p-4 text-xs text-slate-400">ไม่พบข้อมูล...</div>';
-        }
-        function toggleShortageGroupSelection(opt) { if (shortageSelectedGroups.has(opt)) shortageSelectedGroups.delete(opt); else shortageSelectedGroups.add(opt); renderShortageGroupChips(); renderShortageGroupOptions(document.getElementById('shortage-filter-group-input').value); updateShortageUI(); }
-        function renderShortageGroupChips() { const container = document.getElementById('shortage-group-chips'); container.innerHTML = Array.from(shortageSelectedGroups).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageGroupSelection('${opt}')">×</button></span>`).join(''); }
 
         function updateCurrentPage() { 
             const activeBtn = document.querySelector('.nav-btn.active').id; 
@@ -1181,7 +1145,7 @@
             const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
             const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: chosenNcpColor, borderWidth: 3, fill: true, backgroundColor: chosenNcpColor + '1A', tension: 0.4 }];
             if (!hasSelectedReasons) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
-            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 11, weight: 'bold' }, color: '#1e293b', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
+            drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 11, weight: 'bold' }, color: '#1e293b', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
         function updateShortageUI() {
@@ -1190,20 +1154,18 @@
                   mc = document.getElementById('shortage-filter-mc').value,
                   st = document.getElementById('shortage-filter-station').value,
                   sh = document.getElementById('shortage-filter-shift').value,
-                  repairVal = document.getElementById('shortage-filter-repair').value;
+                  repairVal = document.getElementById('shortage-filter-repair').value; // ตัวแปรตัวกรอง Repair Work ใหม่
             const chosenShortageColor = document.getElementById('shortage-chart-color').value;
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
-            const hasSelectedGroups = shortageSelectedGroups.size > 0; // เช็คสถานะการเลือก Group
 
             const fShortageBase = shortageData.filter(d => 
                 (!s || d.isoDate >= s) && 
                 (!e || d.isoDate <= e) && 
                 (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
                 (!sh || cleanStr(d.shift) === cleanStr(sh)) && 
-                (!repairVal || cleanStr(d.repairWork) === cleanStr(repairVal)) && 
-                (!hasSelectedCust || shortageSelectedCustomers.has(d.customer)) &&
-                (!hasSelectedGroups || shortageSelectedGroups.has(d.colAA)) // ประยุกต์ใช้ตัวกรอง Group (คอลัมน์ AA)
+                (!repairVal || cleanStr(d.repairWork) === cleanStr(repairVal)) && // ประยุกต์ใช้ตัวกรอง Repair Work
+                (!hasSelectedCust || shortageSelectedCustomers.has(d.customer))
             );
 
             const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
@@ -1367,51 +1329,7 @@
                     }
                 }
             });
-
-            // [เพิ่มใหม่] คำนวณและพล็อตกราฟโดนัท Group ขาดจำนวน (คอลัมน์ AA)
-            const groupShortageMap = {};
-            fShortageBase.forEach(d => {
-                if (d.status === 'ขาดจำนวน' && d.colAA) {
-                    const matchesStation = !st || cleanStr(d.station) === cleanStr(st);
-                    const matchesReason = !hasSelectedReasons || shortageSelectedReasons.has(d.reason);
-                    if (matchesStation && matchesReason) {
-                        groupShortageMap[d.colAA] = (groupShortageMap[d.colAA] || 0) + 1;
-                    }
-                }
-            });
-            const donutLabels = Object.keys(groupShortageMap);
-            const donutData = Object.values(groupShortageMap);
-            const donutTotal = donutData.reduce((a, b) => a + b, 0);
-
-            drawChart('shortageGroupDonutChart', {
-                type: 'doughnut',
-                data: {
-                    labels: donutLabels,
-                    datasets: [{
-                        data: donutData,
-                        backgroundColor: colorPalette.map(c => c + 'CC'),
-                        borderColor: colorPalette,
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
-                        datalabels: {
-                            formatter: (v) => {
-                                const pct = donutTotal > 0 ? (v / donutTotal * 100).toFixed(1) : '0.0';
-                                return `${v} ออเดอร์\n(${pct}%)`;
-                            },
-                            color: '#1e293b',
-                            font: { size: 10, weight: 'bold' },
-                            textAlign: 'center'
-                        }
-                    }
-                }
-            });
-
-            // 1.2 Top 5 ลูกค้าที่ขาดจำนวนมากที่สุด (คอลัมน์ L)
+            // [เพิ่มใหม่] 1.2 Top 5 ลูกค้าที่ขาดจำนวนมากที่สุด (คอลัมน์ L)
             const customerShortageMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.customer) {
@@ -1458,7 +1376,6 @@
                     }
                 }
             });
-
             // 2. ลักษณะแกรม (คอลัมน์ AH - จับเฉพาะตัวเลข 3 ตัวท้าย)
             let thinCount = 0;   // 105-140
             let mediumCount = 0; // 141-200
@@ -1749,7 +1666,7 @@
                 `;
             }).join('');
 
-            // 7. Shortage Detailed Table
+            // 7. Shortage Detailed Table (รวม AD, AE, AF, AG, AH ไว้ในคอลัมน์เดียว และอยู่ต่อจาก ชื่อลูกค้า + เพิ่มข้อมูล Repair Work)
             const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => `
                 <tr class="border-b hover:bg-indigo-50/30 transition-colors">
@@ -1835,7 +1752,7 @@
                 const ncpTargetWeight = totalConsumption * (ncpTarget / 100);
                 const ncpDiffPercent = ncpPercent - ncpTarget;
                 const ncpDiffWeight = weightNcp - ncpTargetWeight;
-                const ncpPassed = ncpPercent <= ncpTarget;
+                const isNcpPassed = ncpPercent <= ncpTarget;
 
                 const stationShortageList = baseValidOrders.filter(d => cleanStr(d.station) === cleanSt);
                 const totalStationOrders = stationShortageList.length;
@@ -1879,6 +1796,16 @@
                     resolvedOps.push({ name, img: detail ? resolveOperatorImage(detail.name, detail.machine, detail.shift, detail.stationWaste) : resolveOperatorImage(name, mc, sh, st) });
                 });
 
+                const thumbsHtml = resolvedOps.length > 0 ? resolvedOps.map((op, idx) => {
+                    const bgColor = colorPalette[idx % colorPalette.length];
+                    return op.img ? `
+                        <div class="relative flex-shrink-0" title="${op.name}">
+                            <img src="${op.img}" class="station-avatar-img" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="station-avatar-fallback" style="background-color: ${bgColor}; display: none;">${op.name.charAt(0)}</div>
+                        </div>` : `
+                        <div class="station-avatar-fallback" style="background-color: ${bgColor};" title="${op.name}">${op.name.charAt(0)}</div>`;
+                }).join('') : `<div class="station-avatar-fallback !border-dashed !bg-slate-100 !text-slate-400 !border-slate-300">-</div>`;
+
                 const opNamesStr = resolvedOps.map(o => o.name).join(', ') || 'ไม่มีรายชื่อพนักงานคุม';
 
                 cardsHtml += `
@@ -1890,7 +1817,7 @@
                         </div>
                         <div class="flex gap-1.5">
                             <span class="w-2.5 h-2.5 rounded-full ${isDtPassed ? 'bg-emerald-500' : 'bg-rose-500'}" title="Downtime Status"></span>
-                            <span class="w-2.5 h-2.5 rounded-full ${ncpPassed ? 'bg-emerald-500' : 'bg-rose-500'}" title="NCP Status"></span>
+                            <span class="w-2.5 h-2.5 rounded-full ${isNcpPassed ? 'bg-emerald-500' : 'bg-rose-500'}" title="NCP Status"></span>
                             <span class="w-2.5 h-2.5 rounded-full ${isShortagePassed ? 'bg-emerald-500' : 'bg-rose-500'}" title="Shortage Status"></span>
                         </div>
                     </div>
@@ -1911,6 +1838,7 @@
 
                     <div class="p-5 space-y-4 flex-1">
                         
+                        <!-- 1. มิติ Downtime -->
                         <div onclick="showStationDetail('${st}', 'downtime')" class="p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-sm ${isDtPassed ? 'border-emerald-100 bg-emerald-50/10 hover:border-emerald-300' : 'border-rose-100 bg-rose-50/10 hover:border-rose-300'}">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-center gap-2">
@@ -1943,16 +1871,17 @@
                             </div>
                         </div>
 
-                        <div onclick="showStationDetail('${st}', 'ncp')" class="p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-sm ${ncpPassed ? 'border-emerald-100 bg-emerald-50/10 hover:border-emerald-300' : 'border-rose-100 bg-rose-50/10 hover:border-rose-300'}">
+                        <!-- 2. มิติ NCP -->
+                        <div onclick="showStationDetail('${st}', 'ncp')" class="p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-sm ${isNcpPassed ? 'border-emerald-100 bg-emerald-50/10 hover:border-emerald-300' : 'border-rose-100 bg-rose-50/10 hover:border-rose-300'}">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-center gap-2">
-                                    <span class="p-1.5 rounded-lg ${ncpPassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                    <span class="p-1.5 rounded-lg ${isNcpPassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </span>
                                     <span class="text-xs font-black text-slate-700">NCP</span>
                                 </div>
-                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${ncpPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-                                    ${ncpPassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isNcpPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${isNcpPassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
                                 </span>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-xs pt-1">
@@ -1969,12 +1898,13 @@
                             </div>
                             <div class="text-[10px] font-bold flex justify-between items-center border-t border-slate-100/70 pt-1.5 mt-1.5">
                                 <span class="text-slate-400 uppercase tracking-wider">ส่วนต่าง (Diff)</span>
-                                <span class="font-black ${ncpPassed ? 'text-emerald-600' : 'text-rose-500'}">
+                                <span class="font-black ${isNcpPassed ? 'text-emerald-600' : 'text-rose-500'}">
                                     ${ncpDiffWeight > 0 ? '+' : ''}${ncpDiffWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} กก. (${ncpDiffPercent > 0 ? '+' : ''}${ncpDiffPercent.toFixed(2)}%)
                                 </span>
                             </div>
                         </div>
 
+                        <!-- 3. มิติ ขาดจำนวน -->
                         <div onclick="showStationDetail('${st}', 'shortage')" class="p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-sm ${isShortagePassed ? 'border-emerald-100 bg-emerald-50/10 hover:border-emerald-300' : 'border-rose-100 bg-rose-50/10 hover:border-rose-300'}">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-center gap-2">
@@ -2161,8 +2091,6 @@
                 modal.classList.remove('flex');
             }, 300);
         }
-
-        window.closeStationDetailModal = closeStationDetailModal;
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
