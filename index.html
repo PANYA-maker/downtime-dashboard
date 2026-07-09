@@ -383,7 +383,24 @@
         </div>
 
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
-            <div class="p-5 bg-slate-50 border-b"><h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล ขาดจำนวน</h3></div>
+            <div class="p-5 bg-slate-50 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล ขาดจำนวน</h3>
+                </div>
+                
+                <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+                    <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-teal-500 flex-1 sm:flex-initial min-w-[140px]">
+                        <p class="text-[9px] text-teal-600 font-bold uppercase tracking-wider">แผ่นเกินซ่อม (ปกติ)</p>
+                        <p id="shortage-kpi-excess-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
+                        <p id="shortage-kpi-excess-value" class="text-[10px] font-bold text-teal-600">0.00 บาท</p>
+                    </div>
+                    <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-amber-500 flex-1 sm:flex-initial min-w-[140px]">
+                        <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">แผ่นตัดจบซ่อม</p>
+                        <p id="shortage-kpi-close-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
+                        <p id="shortage-kpi-close-value" class="text-[10px] font-bold text-amber-600">0.00 บาท</p>
+                    </div>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="w-full text-left">
                     <thead class="bg-white border-b sticky top-0">
