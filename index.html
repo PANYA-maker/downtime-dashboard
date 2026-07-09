@@ -1753,8 +1753,19 @@
             // 7. Shortage Detailed Table
             const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => {
-                // คำนวณมูลค่าบาท: Col AZ (excessSheets) * -1 * Col AR (repairRate)
-                const valueBaht = d.excessSheets * -1 * d.repairRate;
+                // คำนวณมูลค่าบาทตามเงื่อนไข Repair Work
+let valueBaht = 0;
+
+// ปรับข้อความตัวแปรเพื่อให้เช็คคำว่า "ตัดจบ" ได้แม่นยำ (ตัดช่องว่างออก)
+const currentRepairWork = d.repairWork ? d.repairWork.trim() : '';
+
+if (currentRepairWork === 'ตัดจบ') {
+    // กรณี "ตัดจบ": เอาจำนวนที่ขาด (d.sheets) * -1 * เรท (d.repairRate)
+    valueBaht = d.sheets * -1 * d.repairRate;
+} else {
+    // กรณีอื่นๆ (เช่น ซ่อมเกินมา): เอาจำนวนแผ่นเกิน (d.excessSheets) * -1 * เรท (d.repairRate)
+    valueBaht = d.excessSheets * -1 * d.repairRate;
+}
 
                 return `
                     <tr class="border-b hover:bg-indigo-50/30 transition-colors">
