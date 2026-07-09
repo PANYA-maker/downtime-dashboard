@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downtime & NCP Analysis PRO</title>
+    <title>Smart Production Monitor System (SPMS)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -712,9 +712,9 @@
                     sheets: parseNum(cl(c[20])),                 // Col U
                     reason: cl(c[25]),                           // Col Z
                     shortageGroup: c[26] ? cl(c[26]) : '',      // ประมวลผลจาก Col AA (Index 26)
-                    colAB: c[27] ? cl(c[27]) : '',              // เพิ่มดึงค่า Col AB (Index 27) เพื่อเช็คสถานะตัดจบซ่อม
-                    repairRate: c[43] ? parseNum(cl(c[43])) : 0, // ดึงค่า Col AR (Index 43) เป็นตัวเลขไว้คำนวณมูลค่า
-                    excessSheets: c[51] ? parseNum(cl(c[51])) : 0, // ดึงค่า Col AZ (Index 51) เป็นตัวเลขแผ่นเกินจากงานซ่อม
+                    colAB: c[27] ? cl(c[27]) : '',              // ดึงค่า Col AB (Index 27) ปกติเพราะเป็นข้อความ
+                    repairRate: c[43] ? parseNum(c[43]) : 0,    // แก้ไข: ส่งเข้า parseNum ตรงๆ เพื่อแปลงเป็นตัวเลขที่ถูกต้อง
+                    excessSheets: c[51] ? parseNum(c[51]) : 0,  // แก้ไข: ส่งเข้า parseNum ตรงๆ เพื่อแปลงเป็นตัวเลขที่ถูกต้อง
                     repairWork: c[44] ? cl(c[44]) : '',          // เปลี่ยนเป็น Col AS (Index 44)
                     shift: cl(c[28]),                            // Col AC
                     station: c[64] ? cl(c[64]) : '',           // Col BM
