@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Production Monitor System (SPMS)</title>
+    <title>Downtime & NCP Analysis PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -712,9 +712,8 @@
                     sheets: parseNum(cl(c[20])),                 // Col U
                     reason: cl(c[25]),                           // Col Z
                     shortageGroup: c[26] ? cl(c[26]) : '',      // ประมวลผลจาก Col AA (Index 26)
-                    colAB: c[27] ? cl(c[27]) : '',              // ดึงค่า Col AB (Index 27) ปกติเพราะเป็นข้อความ
-                    repairRate: c[43] ? parseNum(c[43]) : 0,    // แก้ไข: ส่งเข้า parseNum ตรงๆ เพื่อแปลงเป็นตัวเลขที่ถูกต้อง
-                    excessSheets: c[51] ? parseNum(c[51]) : 0,  // แก้ไข: ส่งเข้า parseNum ตรงๆ เพื่อแปลงเป็นตัวเลขที่ถูกต้อง
+                    repairRate: c[43] ? parseNum(cl(c[43])) : 0, // ดึงค่า Col AR (Index 43) เป็นตัวเลขไว้คำนวณมูลค่า
+                    excessSheets: c[51] ? parseNum(cl(c[51])) : 0, // ดึงค่า Col AZ (Index 51) เป็นตัวเลขแผ่นเกินจากงานซ่อม
                     repairWork: c[44] ? cl(c[44]) : '',          // เปลี่ยนเป็น Col AS (Index 44)
                     shift: cl(c[28]),                            // Col AC
                     station: c[64] ? cl(c[64]) : '',           // Col BM
@@ -1754,27 +1753,8 @@
             // 7. Shortage Detailed Table
             const fShortageTable = shortageOrdersList;
             document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => {
-                
-                // 1. ดึงเรทราคาจากคอลัมน์ AR 
-                const rate = d.repairRate || 0;
-                
-                // 2. เช็คคำว่า "ตัดจบซ่อม" จากคอลัมน์ AB (d.colAB) และลบช่องว่างออกเพื่อความแม่นยำ
-                const statusAB = d.colAB ? d.colAB.trim() : '';
-                
-                let valueBaht = 0;
-
-                if (statusAB === 'ตัดจบซ่อม') {
-                    // ถ้าคอลัมน์ AB เป็น "ตัดจบซ่อม": เอาจำนวนแผ่นที่ขาด (d.sheets) * -1 * เรทราคา (rate)
-                    valueBaht = d.sheets * -1 * rate;
-                } else {
-                    // กรณีอื่นๆ: เอาจำนวนแผ่นเกิน (d.excessSheets) * -1 * เรทราคา (rate)
-                    valueBaht = d.excessSheets * -1 * rate;
-                }
-
-                // ดักกรณีคำนวณได้ลบศูนย์ (-0) ให้กลายเป็น 0 ปกติเพื่อความสวยงามในระบบ
-                if (Object.is(valueBaht, -0)) {
-                    valueBaht = 0;
-                }
+                // คำนวณมูลค่าบาท: Col AZ (excessSheets) * -1 * Col AR (repairRate)
+                const valueBaht = d.excessSheets * -1 * d.repairRate;
 
                 return `
                     <tr class="border-b hover:bg-indigo-50/30 transition-colors">
@@ -1786,18 +1766,14 @@
                             <span class="block text-slate-700">${d.reason || '-'}</span>
                             <span class="text-xs font-bold text-rose-500 block">ขาด: ${d.sheets.toLocaleString()} แผ่น</span>
                             <span class="text-xs font-bold text-emerald-600 block">เกินซ่อม: ${d.excessSheets.toLocaleString()} แผ่น</span>
-                            <span class="text-xs font-black text-indigo-600 block mt-0.5 bg-indigo-50 px-1.5 py-0.5 rounded w-max">
-                                มูลค่า: ${valueBaht.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท
-                            </span>
+                            <span class="text-xs font-black text-indigo-600 block mt-0.5 bg-indigo-50 px-1.5 py-0.5 rounded w-max">มูลค่า: ${valueBaht.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</span>
                         </td>
                         <td class="p-5 font-medium text-slate-600">
                             ${d.stopStatus || '-'}<br>
                             <span class="text-[10px] text-slate-400 font-bold uppercase block">${d.orderPattern || '-'}</span>
-                            <span class="inline-block mt-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold uppercase">
-                                AB Status: ${d.colAB || '-'}
-                            </span>
+                            <span class="inline-block mt-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold uppercase">Repair Work: ${d.repairWork || '-'}</span>
                         </td>
-                    </tr>
+                        </tr>
                 `;
             }).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-400">ไม่พบข้อมูลออเดอร์ขาดจำนวนที่ตรงเงื่อนไข</td></tr>';
         }
