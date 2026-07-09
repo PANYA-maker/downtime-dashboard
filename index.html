@@ -1677,7 +1677,46 @@
                     }
                 }
             });
+            
+    // =========================================================================
+    // [เริ่มจุดที่เพิ่มใหม่]: คำนวณสรุปยอดแผ่นและมูลค่าเงินบาทพ่นลงการ์ดใหม่บนหัวตาราง
+    // =========================================================================
+    let totalExcessSheets = 0;
+    let totalExcessValue = 0;
+    let totalCloseSheets = 0;
+    let totalCloseValue = 0;
 
+    // วนลูปคัดแยกกลุ่มจากรายการออเดอร์ขาดจำนวน (shortageOrdersList)
+    shortageOrdersList.forEach(d => {
+        const rate = d.repairRate || 0;
+        const currentRepairWork = d.repairWork ? d.repairWork.trim() : '';
+
+        if (currentRepairWork === 'ตัดจบซ่อม') {
+            // กลุ่มตัดจบซ่อม: จำนวนแผ่นขาด (sheets) * -1 เพื่อปัดเป็นค่าบวก แล้วคูณเรทราคา AR
+            const sheetsAmt = d.sheets * -1;
+            totalCloseSheets += sheetsAmt;
+            totalCloseValue += (sheetsAmt * rate);
+        } else {
+            // กลุ่มงานซ่อมปกติ: จำนวนแผ่นเกินซ่อม (excessSheets) * -1 เพื่อปัดเป็นค่าบวก แล้วคูณเรทราคา AR
+            const excessAmt = d.excessSheets * -1;
+            totalExcessSheets += excessAmt;
+            totalExcessValue += (excessAmt * rate);
+        }
+    });
+
+    // ปรับแก้กรณีคำนวณเลขลบศูนย์ (-0) ให้เป็นเลข 0 สวยงามปกติ
+    if (Object.is(totalExcessValue, -0)) totalExcessValue = 0;
+    if (Object.is(totalCloseValue, -0)) totalCloseValue = 0;
+
+    // สั่งพ่นค่าตัวเลขลงใน ID การ์ดใหม่ทั้ง 2 ใบที่ขยับไปอยู่บนหัวตารางรายละเอียด
+    document.getElementById('shortage-kpi-excess-sheets').textContent = totalExcessSheets.toLocaleString() + ' แผ่น';
+    document.getElementById('shortage-kpi-excess-value').textContent = 'มูลค่า: ' + totalExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+    
+    document.getElementById('shortage-kpi-close-sheets').textContent = totalCloseSheets.toLocaleString() + ' แผ่น';
+    document.getElementById('shortage-kpi-close-value').textContent = 'มูลค่า: ' + totalCloseValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+    // =========================================================================
+    // [สิ้นสุดจุดที่เพิ่มใหม่]
+    // =========================================================================
             // 6. Performance by Station List
             const stationShortagePerf = {};
             let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
