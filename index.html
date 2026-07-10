@@ -383,17 +383,28 @@
         </div>
 
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
+            <!-- ส่วนหัวตารางที่มีการ์ด KPI ฝังอยู่ข้างใน -->
             <div class="p-5 bg-slate-50 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล ขาดจำนวน</h3>
                 </div>
                 
                 <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+                    <!-- 1. การ์ดใบใหม่: แผ่นเกินงานปกติ (วางไว้หน้าสุด) -->
+                    <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-indigo-600 flex-1 sm:flex-initial min-w-[140px]">
+                        <p class="text-[9px] text-indigo-600 font-bold uppercase tracking-wider">จำนวนแผ่นเกินงานปกติ</p>
+                        <p id="shortage-kpi-normal-excess-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
+                        <p id="shortage-kpi-normal-excess-value" class="text-[10px] font-bold text-indigo-600">0.00 บาท</p>
+                    </div>
+
+                    <!-- 2. การ์ดเดิม: แผ่นเกินซ่อม (ปกติ) -->
                     <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-teal-500 flex-1 sm:flex-initial min-w-[140px]">
-                        <p class="text-[9px] text-teal-600 font-bold uppercase tracking-wider">จำนวนแผ่นเกินจากงานซ่อม</p>
+                        <p class="text-[9px] text-teal-600 font-bold uppercase tracking-wider">จำนวนแผ่นเกินงานซ่อม (ปกติ)</p>
                         <p id="shortage-kpi-excess-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
                         <p id="shortage-kpi-excess-value" class="text-[10px] font-bold text-teal-600">0.00 บาท</p>
                     </div>
+                    
+                    <!-- 3. การ์ดเดิม: แผ่นตัดจบซ่อม -->
                     <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-amber-500 flex-1 sm:flex-initial min-w-[140px]">
                         <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">จำนวนแผ่นตัดจบ</p>
                         <p id="shortage-kpi-close-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
@@ -729,6 +740,7 @@
                     sheets: parseNum(cl(c[20])),                 // Col U
                     reason: cl(c[25]),                           // Col Z
                     shortageGroup: c[26] ? cl(c[26]) : '',      // ประมวลผลจาก Col AA (Index 26)
+                    normalExcessSheets: c[42] ? parseNum(cl(c[42])) : 0, // <-- เพิ่มบรรทัดนี้เพื่อดึง Col AQ
                     repairRate: c[43] ? parseNum(cl(c[43])) : 0, // ดึงค่า Col AR (Index 43) เป็นตัวเลขไว้คำนวณมูลค่า
                     excessSheets: c[51] ? parseNum(cl(c[51])) : 0, // ดึงค่า Col AZ (Index 51) เป็นตัวเลขแผ่นเกินจากงานซ่อม
                     repairWork: c[44] ? cl(c[44]) : '',          // เปลี่ยนเป็น Col AS (Index 44)
@@ -1679,8 +1691,10 @@
             });
             
     // =========================================================================
-    // [เริ่มจุดที่เพิ่มใหม่]: คำนวณสรุปยอดแผ่นและมูลค่าเงินบาทพ่นลงการ์ดใหม่บนหัวตาราง
+    // [เริ่มจุดที่แก้ไขใหม่]: คำนวณสรุปยอดแผ่นงานปกติ งานซ่อม งานตัดจบ พ่นลงการ์ด 3 ใบ
     // =========================================================================
+    let totalNormalExcessSheets = 0;
+    let totalNormalExcessValue = 0;
     let totalExcessSheets = 0;
     let totalExcessValue = 0;
     let totalCloseSheets = 0;
@@ -1691,31 +1705,41 @@
         const rate = d.repairRate || 0;
         const currentRepairWork = d.repairWork ? d.repairWork.trim() : '';
 
+        // 1. คำนวณส่วนของ "แผ่นเกินจากงานปกติ" (ดึงมาจากคอลัมน์ AQ คูณ -1 คูณ AR)
+        const normalExcessAmt = d.normalExcessSheets * -1;
+        totalNormalExcessSheets += normalExcessAmt;
+        totalNormalExcessValue += (normalExcessAmt * rate);
+
+        // 2. แยกคำนวณระหว่างงานตัดจบซ่อม กับ งานซ่อมปกติ
         if (currentRepairWork === 'ตัดจบซ่อม') {
-            // กลุ่มตัดจบซ่อม: จำนวนแผ่นขาด (sheets) * -1 เพื่อปัดเป็นค่าบวก แล้วคูณเรทราคา AR
             const sheetsAmt = d.sheets * -1;
             totalCloseSheets += sheetsAmt;
             totalCloseValue += (sheetsAmt * rate);
         } else {
-            // กลุ่มงานซ่อมปกติ: จำนวนแผ่นเกินซ่อม (excessSheets) * -1 เพื่อปัดเป็นค่าบวก แล้วคูณเรทราคา AR
             const excessAmt = d.excessSheets * -1;
             totalExcessSheets += excessAmt;
             totalExcessValue += (excessAmt * rate);
         }
     });
 
-    // ปรับแก้กรณีคำนวณเลขลบศูนย์ (-0) ให้เป็นเลข 0 สวยงามปกติ
+    // ปรับแก้กรณีคำนวณเลขลบศูนย์ (-0) ให้เป็นเลข 0
+    if (Object.is(totalNormalExcessValue, -0)) totalNormalExcessValue = 0;
     if (Object.is(totalExcessValue, -0)) totalExcessValue = 0;
     if (Object.is(totalCloseValue, -0)) totalCloseValue = 0;
 
-    // สั่งพ่นค่าตัวเลขลงใน ID การ์ดใหม่ทั้ง 2 ใบที่ขยับไปอยู่บนหัวตารางรายละเอียด
+    // สั่งพ่นค่าตัวเลขลงการ์ดใบใหม่ (แผ่นเกินงานปกติ)
+    document.getElementById('shortage-kpi-normal-excess-sheets').textContent = totalNormalExcessSheets.toLocaleString() + ' แผ่น';
+    document.getElementById('shortage-kpi-normal-excess-value').textContent = 'มูลค่า: ' + totalNormalExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+
+    // สั่งพ่นค่าตัวเลขลงการ์ดใบเดิม (แผ่นเกินงานซ่อมปกติ)
     document.getElementById('shortage-kpi-excess-sheets').textContent = totalExcessSheets.toLocaleString() + ' แผ่น';
     document.getElementById('shortage-kpi-excess-value').textContent = 'มูลค่า: ' + totalExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
     
+    // สั่งพ่นค่าตัวเลขลงการ์ดใบเดิม (แผ่นตัดจบซ่อม)
     document.getElementById('shortage-kpi-close-sheets').textContent = totalCloseSheets.toLocaleString() + ' แผ่น';
     document.getElementById('shortage-kpi-close-value').textContent = 'มูลค่า: ' + totalCloseValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
     // =========================================================================
-    // [สิ้นสุดจุดที่เพิ่มใหม่]
+    // [สิ้นสุดจุดที่แก้ไขใหม่]
     // =========================================================================
             // 6. Performance by Station List
             const stationShortagePerf = {};
