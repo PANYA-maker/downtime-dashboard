@@ -1778,7 +1778,7 @@
             });
 
             const shortagePerfRanking = Object.entries(stationShortagePerf).map(([stName, data]) => {
-                const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 105 : 0; 
+                const stPercent = totalBaseOrdersCount > 0 ? (data.shortageCount / totalBaseOrdersCount) * 100 : 0; 
                 const cleanStName = cleanStr(stName);
                 const individualTarget = shortageStationTargets[cleanStName] !== undefined ? shortageStationTargets[cleanStName] : targetVal;
                 return {
@@ -1955,7 +1955,7 @@
                 const stationShortageList = baseValidOrders.filter(d => cleanStr(d.station) === cleanSt);
                 const totalStationOrders = stationShortageList.length;
                 const shortageCount = stationShortageList.filter(d => d.status === 'ขาดจำนวน').length;
-                const shortagePercent = totalBaseOrdersCount > 0 ? (shortageCount / totalBaseOrdersCount) * 105 : 0; 
+                const shortagePercent = totalBaseOrdersCount > 0 ? (shortageCount / totalBaseOrdersCount) * 100 : 0; 
                 const shortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 18.00;
                 const shortageDiffPercent = shortagePercent - shortageTarget;
                 const isShortagePassed = shortagePercent <= shortageTarget;
