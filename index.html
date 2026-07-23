@@ -125,7 +125,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <!-- 1. MAN/METHOD -->
-                <div onclick="openFactorModal('man/method')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 space-y-3">
+                <div id="card-factor-man/method" onclick="openFactorModal('man/method')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 space-y-3">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">MAN / METHOD</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 1</span>
@@ -148,7 +148,7 @@
                 </div>
 
                 <!-- 2. MACHINE -->
-                <div onclick="openFactorModal('machine')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 space-y-3">
+                <div id="card-factor-machine" onclick="openFactorModal('machine')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 space-y-3">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">MACHINE</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 2</span>
@@ -171,7 +171,7 @@
                 </div>
 
                 <!-- 3. MATERIAL -->
-                <div onclick="openFactorModal('material')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-emerald-500 space-y-3">
+                <div id="card-factor-material" onclick="openFactorModal('material')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-emerald-500 space-y-3">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">MATERIAL</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 3</span>
@@ -194,7 +194,7 @@
                 </div>
 
                 <!-- 4. OTHER -->
-                <div onclick="openFactorModal('other')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 space-y-3">
+                <div id="card-factor-other" onclick="openFactorModal('other')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 space-y-3">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">OTHER</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 4</span>
@@ -1124,6 +1124,23 @@
             const diffElFactor = document.getElementById(`factor-${fItem.key}-diff`);
             diffElFactor.textContent = `Diff: ${fDiffPercent > 0 ? '+' : ''}${fDiffPercent.toFixed(2)}% (${fDiffMin > 0 ? '+' : ''}${fDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
             diffElFactor.className = `text-xs font-black ${fMinStatus.textClass}`;
+            // =========================================================
+        // 🟢🔴 เพิ่มโค้ดส่วนนี้: เปลี่ยนสีพื้นหลังการ์ดตาม Target
+        // =========================================================
+        const cardEl = document.getElementById(`card-factor-${fItem.key}`);
+        if (cardEl) {
+            // 1. ล้างคลาสสีพื้นหลังและสีขอบเดิมออกก่อน เพื่อไม่ให้สีตีกัน
+            cardEl.classList.remove('bg-white', 'bg-emerald-50/60', 'bg-rose-50/60', 'border-emerald-200', 'border-rose-200');
+            
+            // 2. เช็คเงื่อนไข Downtime เทียบกับ Target
+            if (fDowntime <= fTargetMin) {
+                // ต่ำกว่าหรือเท่ากับเป้าหมาย = ผ่านเกณฑ์ -> เปลี่ยนเป็นสีเขียวอ่อน
+                cardEl.classList.add('bg-emerald-50/60', 'border-emerald-200');
+            } else {
+                // สูงกว่าเป้าหมาย = เกินเกณฑ์ -> เปลี่ยนเป็นสีแดงอ่อน
+                cardEl.classList.add('bg-rose-50/60', 'border-rose-200');
+            }
+        }
         });
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station} | ${d.stationWaste || '-'}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
