@@ -116,108 +116,108 @@
             </div>
         </div>
         <!-- ================= การ์ดแยกตาม 4 ปัจจัยหลัก ================= -->
-<div class="mt-4 space-y-4">
-    <div class="flex items-center justify-between border-b pb-2 border-slate-200">
-        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest border-l-4 border-indigo-500 pl-2">ภาพรวม Downtime แยกตามปัจจัย (Factor Breakdown)</h3>
-    </div>
+        <div class="mt-4 space-y-4">
+            <div class="flex items-center justify-between border-b pb-2 border-slate-200">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest border-l-4 border-indigo-500 pl-2">ภาพรวม Downtime แยกตามปัจจัย (Factor Breakdown)</h3>
+            </div>
 
-    <!-- ลูปสร้าง 4 การ์ดปัจจัยหลัก -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- 1. MAN/METHOD -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 space-y-3">
-            <div class="flex justify-between items-center border-b pb-2 border-slate-50">
-                <span class="font-black text-slate-800 text-sm">MAN / METHOD</span>
-                <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 1</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-man-runtime" class="font-bold text-slate-700">0</p></div>
-                <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-man-count" class="font-bold text-amber-600">0</p></div>
-            </div>
-            <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
-                <div>
-                    <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
-                    <p id="factor-man-downtime" class="text-base font-black text-rose-500">0 น.</p>
-                    <p id="factor-man-percent" class="text-xs font-black text-indigo-600">0.00%</p>
+            <!-- ลูปสร้าง 4 การ์ดปัจจัยหลัก -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- 1. MAN/METHOD -->
+                <div onclick="openFactorModal('man')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2 border-slate-50">
+                        <span class="font-black text-slate-800 text-sm">MAN / METHOD</span>
+                        <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 1</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-man-runtime" class="font-bold text-slate-700">0</p></div>
+                        <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-man-count" class="font-bold text-amber-600">0</p></div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
+                        <div>
+                            <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
+                            <p id="factor-man-downtime" class="text-base font-black text-rose-500">0 น.</p>
+                            <p id="factor-man-percent" class="text-xs font-black text-indigo-600">0.00%</p>
+                        </div>
+                        <div class="text-right">
+                            <p id="factor-man-target" class="text-[10px] font-bold text-slate-400 italic">Target: 1.60% (0 น.)</p>
+                            <p id="factor-man-diff" class="text-xs font-black">Diff: 0.00%</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-right">
-                    <p id="factor-man-target" class="text-[10px] font-bold text-slate-400 italic">Target: 1.60% (0 น.)</p>
-                    <p id="factor-man-diff" class="text-xs font-black">Diff: 0.00%</p>
+
+                <!-- 2. MACHINE -->
+                <div onclick="openFactorModal('machine')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2 border-slate-50">
+                        <span class="font-black text-slate-800 text-sm">MACHINE</span>
+                        <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 2</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-machine-runtime" class="font-bold text-slate-700">0</p></div>
+                        <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-machine-count" class="font-bold text-amber-600">0</p></div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
+                        <div>
+                            <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
+                            <p id="factor-machine-downtime" class="text-base font-black text-rose-500">0 น.</p>
+                            <p id="factor-machine-percent" class="text-xs font-black text-indigo-600">0.00%</p>
+                        </div>
+                        <div class="text-right">
+                            <p id="factor-machine-target" class="text-[10px] font-bold text-slate-400 italic">Target: 2.50% (0 น.)</p>
+                            <p id="factor-machine-diff" class="text-xs font-black">Diff: 0.00%</p>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- 3. MATERIAL -->
+                <div onclick="openFactorModal('material')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-emerald-500 space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2 border-slate-50">
+                        <span class="font-black text-slate-800 text-sm">MATERIAL</span>
+                        <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 3</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-material-runtime" class="font-bold text-slate-700">0</p></div>
+                        <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-material-count" class="font-bold text-amber-600">0</p></div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
+                        <div>
+                            <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
+                            <p id="factor-material-downtime" class="text-base font-black text-rose-500">0 น.</p>
+                            <p id="factor-material-percent" class="text-xs font-black text-indigo-600">0.00%</p>
+                        </div>
+                        <div class="text-right">
+                            <p id="factor-material-target" class="text-[10px] font-bold text-slate-400 italic">Target: 0.90% (0 น.)</p>
+                            <p id="factor-material-diff" class="text-xs font-black">Diff: 0.00%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. OTHER -->
+                <div onclick="openFactorModal('other')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2 border-slate-50">
+                        <span class="font-black text-slate-800 text-sm">OTHER</span>
+                        <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 4</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-other-runtime" class="font-bold text-slate-700">0</p></div>
+                        <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-other-count" class="font-bold text-amber-600">0</p></div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
+                        <div>
+                            <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
+                            <p id="factor-other-downtime" class="text-base font-black text-rose-500">0 น.</p>
+                            <p id="factor-other-percent" class="text-xs font-black text-indigo-600">0.00%</p>
+                        </div>
+                        <div class="text-right">
+                            <p id="factor-other-target" class="text-[10px] font-bold text-slate-400 italic">Target: 1.25% (0 น.)</p>
+                            <p id="factor-other-diff" class="text-xs font-black">Diff: 0.00%</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-
-        <!-- 2. MACHINE -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 space-y-3">
-            <div class="flex justify-between items-center border-b pb-2 border-slate-50">
-                <span class="font-black text-slate-800 text-sm">MACHINE</span>
-                <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 2</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-machine-runtime" class="font-bold text-slate-700">0</p></div>
-                <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-machine-count" class="font-bold text-amber-600">0</p></div>
-            </div>
-            <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
-                <div>
-                    <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
-                    <p id="factor-machine-downtime" class="text-base font-black text-rose-500">0 น.</p>
-                    <p id="factor-machine-percent" class="text-xs font-black text-indigo-600">0.00%</p>
-                </div>
-                <div class="text-right">
-                    <p id="factor-machine-target" class="text-[10px] font-bold text-slate-400 italic">Target: 2.50% (0 น.)</p>
-                    <p id="factor-machine-diff" class="text-xs font-black">Diff: 0.00%</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. MATERIAL -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-emerald-500 space-y-3">
-            <div class="flex justify-between items-center border-b pb-2 border-slate-50">
-                <span class="font-black text-slate-800 text-sm">MATERIAL</span>
-                <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 3</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-material-runtime" class="font-bold text-slate-700">0</p></div>
-                <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-material-count" class="font-bold text-amber-600">0</p></div>
-            </div>
-            <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
-                <div>
-                    <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
-                    <p id="factor-material-downtime" class="text-base font-black text-rose-500">0 น.</p>
-                    <p id="factor-material-percent" class="text-xs font-black text-indigo-600">0.00%</p>
-                </div>
-                <div class="text-right">
-                    <p id="factor-material-target" class="text-[10px] font-bold text-slate-400 italic">Target: 0.90% (0 น.)</p>
-                    <p id="factor-material-diff" class="text-xs font-black">Diff: 0.00%</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. OTHER -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 space-y-3">
-            <div class="flex justify-between items-center border-b pb-2 border-slate-50">
-                <span class="font-black text-slate-800 text-sm">OTHER</span>
-                <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 4</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <div><p class="text-[9px] text-slate-400 font-bold">เวลาเดินงาน</p><p id="factor-other-runtime" class="font-bold text-slate-700">0</p></div>
-                <div><p class="text-[9px] text-slate-400 font-bold">จำนวนครั้ง</p><p id="factor-other-count" class="font-bold text-amber-600">0</p></div>
-            </div>
-            <div class="pt-2 border-t border-slate-50 flex justify-between items-end">
-                <div>
-                    <p class="text-[9px] text-slate-400 font-bold">เวลาสูญเสีย / %</p>
-                    <p id="factor-other-downtime" class="text-base font-black text-rose-500">0 น.</p>
-                    <p id="factor-other-percent" class="text-xs font-black text-indigo-600">0.00%</p>
-                </div>
-                <div class="text-right">
-                    <p id="factor-other-target" class="text-[10px] font-bold text-slate-400 italic">Target: 1.25% (0 น.)</p>
-                    <p id="factor-other-diff" class="text-xs font-black">Diff: 0.00%</p>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label><div class="grid grid-cols-2 gap-2"><input type="date" id="main-start-date"><input type="date" id="main-end-date"></div></div>
             <div class="grid grid-cols-3 gap-2">
@@ -596,7 +596,52 @@
             </div>
         </div>
     </div>
+    <div id="factor-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all" onclick="if(event.target === this) closeFactorModal()">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            
+            <!-- Header ของ Modal -->
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                    <h3 id="modal-factor-title" class="text-lg font-black text-slate-800">รายละเอียด Downtime</h3>
+                    <p id="modal-factor-subtitle" class="text-xs font-bold text-slate-400">รายการประวัติการหยุดเครื่องทั้งหมดของปัจจัยนี้</p>
+                </div>
+                <button onclick="closeFactorModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 transition-colors font-bold text-xl">
+                    ✕
+                </button>
+            </div>
 
+            <!-- Body / ตารางแสดงรายการ -->
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider">
+                                <th class="py-2.5 px-3">วันที่ / เวลา</th>
+                                <th class="py-2.5 px-3">เครื่องจักร</th>
+                                <th class="py-2.5 px-3">สถานี (Station)</th>
+                                <th class="py-2.5 px-3">ปัญหา / สาเหตุ</th>
+                                <th class="py-2.5 px-3 text-center">หยุด (ครั้ง)</th>
+                                <th class="py-2.5 px-3 text-right">เวลาเสีย (นาที)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-factor-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                            <!-- รายการจะถูกสร้างผ่าน JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer ของ Modal -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center text-xs">
+                <span id="modal-factor-summary" class="font-bold text-slate-500">รวม 0 รายการ | เสียเวลารวม 0 นาที</span>
+                <button onclick="closeFactorModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-colors">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+
+        </div>
+    </div>
+    
     <script>
         Chart.register(ChartDataLabels);
         let rawData = [], ncpData = [], shortageData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily';
@@ -2455,6 +2500,112 @@
         function setShortageTrendMode(m) { shortageTrendMode = m; document.querySelectorAll('#btn-shortage-trend-daily, #btn-shortage-trend-weekly, #btn-shortage-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-shortage-trend-${m}`)); updateShortageUI(); }
         
         window.onload = () => { setDefaultDates(); syncData(); };
+
+        // ==========================================
+        // 📌 ฟังก์ชันควบคุม Factor Modal
+        // ==========================================
+
+        /**
+         * ฟังก์ชันเปิด Modal และดึงรายการ Downtime แยกตามปัจจัย
+         */
+        function openFactorModal(factorKey) {
+            const factorMap = {
+                'man': 'MAN / METHOD',
+                'machine': 'MACHINE',
+                'material': 'MATERIAL',
+                'other': 'OTHER'
+            };
+
+            const factorName = factorMap[factorKey] || factorKey.toUpperCase();
+
+            // ดึงค่าการกรองปัจจุบันจากหน้า Dashboard
+            const s = document.getElementById('main-start-date').value;
+            const e = document.getElementById('main-end-date').value;
+            const mc = document.getElementById('main-filter-mc').value;
+            const selectedStation = document.getElementById('main-filter-station').value;
+            const sh = document.getElementById('main-filter-shift').value;
+            const sr = document.getElementById('main-filter-search').value.toLowerCase();
+
+            // กรองข้อมูลรายการเฉพาะปัจจัยที่เลือก
+            const filteredData = rawData.filter(d => 
+                (!s || d.isoDate >= s) && 
+                (!e || d.isoDate <= e) && 
+                (!mc || d.machine === mc) && 
+                (!selectedStation || cleanStr(d.stationWaste) === cleanStr(selectedStation)) &&
+                (!sh || d.shift === sh) && 
+                (d.factor.toUpperCase() !== 'PM') && 
+                cleanStr(d.factor) === cleanStr(factorName) &&
+                (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr) || d.stationWaste.toLowerCase().includes(sr))
+            );
+
+            // อัปเดต Title ใน Modal
+            document.getElementById('modal-factor-title').textContent = `รายละเอียด Downtime: ${factorName}`;
+            document.getElementById('modal-factor-subtitle').textContent = `รายการเหตุการณ์หยุดเครื่องทั้งหมดในช่วงเวลาที่เลือก`;
+
+            // สร้าง ตารางรายการ
+            const tableBody = document.getElementById('modal-factor-table-body');
+            let totalMins = 0;
+            let totalStops = 0;
+
+            if (filteredData.length > 0) {
+                tableBody.innerHTML = filteredData.map(d => {
+                    totalMins += d.duration;
+                    totalStops += d.stops;
+                    return `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-2.5 px-3">
+                                <span class="font-bold text-slate-800">${d.date}</span>
+                                <span class="text-[10px] text-slate-400 block">กะ ${d.shift} (${d.time || '-'})</span>
+                            </td>
+                            <td class="py-2.5 px-3 font-semibold text-blue-600">${d.machine || '-'}</td>
+                            <td class="py-2.5 px-3">
+                                <span class="font-bold text-slate-700 block">${d.station || '-'}</span>
+                                <span class="text-[10px] text-slate-400 block">${d.stationWaste || '-'}</span>
+                            </td>
+                            <td class="py-2.5 px-3">
+                                <span class="text-slate-800 block">${d.problem || '-'}</span>
+                                <span class="text-[10px] text-slate-400 block">ผู้แจ้ง/คุม: ${d.operator || '-'}</span>
+                            </td>
+                            <td class="py-2.5 px-3 text-center font-bold text-slate-600">${d.stops}</td>
+                            <td class="py-2.5 px-3 text-right font-black text-rose-500">${d.duration.toLocaleString()} น.</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 italic">
+                            ไม่พบรายการหยุดเครื่องสำหรับปัจจัยนี้ในช่วงเวลาที่เลือก
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // แสดงสรุปผลท้ายตาราง
+            document.getElementById('modal-factor-summary').textContent = 
+                `รวม ${filteredData.length.toLocaleString()} รายการ (${totalStops.toLocaleString()} ครั้ง) | เสียเวลารวม ${totalMins.toLocaleString()} นาที`;
+
+            // แสดง Modal
+            const modal = document.getElementById('factor-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        /**
+         * ฟังก์ชันปิด Factor Modal
+         */
+        function closeFactorModal() {
+            const modal = document.getElementById('factor-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // เพิ่ม Event Listener ปิด Modal เมื่อกดปุ่ม ESC
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFactorModal();
+            }
+        });
     </script>
 </body>
 </html>
