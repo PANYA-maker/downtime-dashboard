@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
         .chart-container { position: relative; height: 400px; width: 100%; }
@@ -26,14 +25,16 @@
         .profile-img-el { width: 100%; height: 100%; object-fit: cover; object-position: center 10%; display: block; }
         .op-thumb { width: 52px; height: 52px; min-width: 52px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-transform: uppercase; font-size: 14px; overflow: hidden; }
         
+        /* สไตล์พิเศษสำหรับภาพพนักงานใน TOP 5 OPERATORS เพื่อไม่ให้ศีรษะเลยหรือหลุดขอบบน */
         .operator-avatar-img { width: 48px; height: 48px; min-width: 48px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         
+        /* สไตล์พิเศษสำหรับหน้าวิเคราะห์สถานีแยกคอลัมน์และขยายขนาด */
         .station-avatar-img { 
             width: 56px; 
             height: 56px; 
             min-width: 56px; 
             object-fit: cover; 
-            object-position: center 10% !important; 
+            object-position: center 10% !important; /* ปรับดึงรูปพนักงานในกรอบลงมาพอดีให้เห็นศีรษะและใบหน้าสวยงาม */
             border-radius: 50%; 
             border: 2px solid white; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
@@ -75,23 +76,15 @@
         <p class="text-blue-600 font-bold text-sm mt-4 uppercase tracking-widest">Processing Data...</p>
     </div>
 
-    <div id="data-error-notice" class="hidden max-w-7xl mx-auto mb-4 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs font-bold flex items-center justify-between">
-        <span>⚠️ ไม่สามารถโหลดข้อมูลจาก Google Sheets ได้ กรุณาตรวจสอบว่าคอมพิวเตอร์เชื่อมต่ออินเทอร์เน็ตอยู่ หรือบล็อกเกอร์ (AdBlock) ปิดการใช้งานอยู่หรือไม่</span>
-        <button onclick="syncData()" class="px-3 py-1 bg-rose-600 text-white rounded-lg hover:bg-rose-700 font-semibold transition-colors">ลองอีกครั้ง</button>
-    </div>
-
-    <!-- Data Sheet Endpoint Inputs -->
     <input type="hidden" id="sheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQh-PnkXFBgiD7guMfQBlkIDfdWQS4-t1WLPER2VUAruc3vxtZa_sWeMBorjGxqEqWr4t8saS8nC_u6/pub?gid=41935087&single=true&output=csv">
     <input type="hidden" id="ncp-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=101711611&single=true&output=csv">
     <input type="hidden" id="op-list-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEWJBexIrRVqcUdPv1aaItK01j26da9wZRyT0ikwsY3gZL0avHTpTXP2l6aJevORqIS3Ma-JWgFAow/pub?gid=593156373&single=true&output=csv">
     <input type="hidden" id="shortage-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSy97LEb-PH8UXCAWaiPdDv3BE970CEy9Mr-nismfgc_Up7vpudvzgP12dQvOzDcomB6X9cAKCTSVgb/pub?gid=1799697899&single=true&output=csv">
-    <input type="hidden" id="speed-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRpcfsLHJyxdCjLpBauiSomTDqTIRPbmW75bSVEsYpWjw5ObdlTBQg3B3zDbpmk-Ohu4XrrnyYnLtmC/pub?gid=243648935&single=true&output=csv">
 
     <div class="max-w-7xl mx-auto mb-8 flex flex-wrap bg-white p-2 rounded-2xl shadow-sm gap-2">
         <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม DOWNTIME</button>
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('shortage')" id="btn-shortage" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวมขาดจำนวน</button>
-        <button onclick="switchPage('speed')" id="btn-speed" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม SPEED</button>
         <button onclick="switchPage('station-analysis')" id="btn-station-analysis" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์สถานี</button>
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
     </div>
@@ -122,16 +115,17 @@
                 </div>
             </div>
         </div>
-
-        <!-- Factor Breakdown Section -->
+        <!-- ================= การ์ดแยกตาม 4 ปัจจัยหลัก ================= -->
         <div class="mt-4 space-y-4">
             <div class="flex items-center justify-between border-b pb-2 border-slate-200">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest border-l-4 border-indigo-500 pl-2">ภาพรวม Downtime แยกตามปัจจัย (Factor Breakdown)</h3>
             </div>
 
+            <!-- ลูปสร้าง 4 การ์ดปัจจัยหลัก -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                
                 <!-- 1. MAN/METHOD -->
-                <div id="card-factor-man" onclick="openFactorModal('man/method')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 space-y-3 cursor-pointer hover:shadow-md transition-all">
+                <div id="card-factor-man" onclick="openFactorModal('man/method')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 space-y-3 cursor-pointer">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">MAN / METHOD</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 1</span>
@@ -154,7 +148,7 @@
                 </div>
 
                 <!-- 2. MACHINE -->
-                <div id="card-factor-machine" onclick="openFactorModal('machine')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 space-y-3 cursor-pointer hover:shadow-md transition-all">
+                <div id="card-factor-machine" onclick="openFactorModal('machine')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 space-y-3 cursor-pointer">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">MACHINE</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 2</span>
@@ -177,7 +171,7 @@
                 </div>
 
                 <!-- 3. MATERIAL -->
-                <div id="card-factor-material" onclick="openFactorModal('material')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-emerald-500 space-y-3 cursor-pointer hover:shadow-md transition-all">
+                <div id="card-factor-material" onclick="openFactorModal('material')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-emerald-500 space-y-3 cursor-pointer">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">MATERIAL</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 3</span>
@@ -200,7 +194,7 @@
                 </div>
 
                 <!-- 4. OTHER -->
-                <div id="card-factor-other" onclick="openFactorModal('other')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 space-y-3 cursor-pointer hover:shadow-md transition-all">
+                <div id="card-factor-other" onclick="openFactorModal('other')" class="p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 space-y-3 cursor-pointer">
                     <div class="flex justify-between items-center border-b pb-2 border-slate-50">
                         <span class="font-black text-slate-800 text-sm">OTHER</span>
                         <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">ปัจจัยที่ 4</span>
@@ -221,9 +215,9 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
-
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่เลือก</label><div class="grid grid-cols-2 gap-2"><input type="date" id="main-start-date"><input type="date" id="main-end-date"></div></div>
             <div class="grid grid-cols-3 gap-2">
@@ -248,7 +242,6 @@
                 </div>
             </div>
         </div>
-
         <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-blue-500 pl-3">แนวโน้มเปอร์เซ็นต์เวลาสูญเสีย (% Downtime)</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setMainTrendMode('daily')" id="btn-main-trend-daily" class="view-btn active">Daily</button><button onclick="setMainTrendMode('weekly')" id="btn-main-trend-weekly" class="view-btn">Weekly</button><button onclick="setMainTrendMode('monthly')" id="btn-main-trend-monthly" class="view-btn">Monthly</button></div></div>
             <div class="chart-container"><canvas id="mainTrendChart"></canvas></div>
@@ -263,7 +256,6 @@
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 10 Stations (นาที/ครั้ง)</h3><div class="chart-container !h-[450px]"><canvas id="mainChartStation"></canvas></div></div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">TOP 5 OPERATORS (นาที/ครั้ง)</h3><div id="top-operators-list" class="space-y-4"></div></div>
         </div>
-
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
             <div class="p-5 bg-slate-50/50 border-b flex justify-between items-center"><h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">ประวัติรายการหยุดเครื่อง</h3><span id="main-badge-count" class="text-[10px] bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full font-bold">0 รายการ</span></div>
             <div class="table-responsive"><table class="w-full text-left"><thead class="bg-white border-b sticky top-0"><tr class="text-[10px] font-bold text-slate-400 uppercase"><th class="p-5">วันที่/กะ</th><th class="p-5">MC/Station</th><th class="p-5">ปัญหา</th><th class="p-5 text-center">นาที</th><th class="p-5">พนักงาน</th></tr></thead><tbody id="main-table-body" class="text-xs text-slate-600"></tbody></table></div>
@@ -297,7 +289,7 @@
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-3">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล (Col U)</label>
                 <div class="multi-select-container">
                     <div id="ncp-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
                     <input type="text" id="ncp-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาปัญหา..." class="w-full" onfocus="toggleNcpReasonDropdown(true)" oninput="filterNcpReasonOptions(this.value)">
@@ -320,7 +312,7 @@
         </div>
 
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3">แนวโน้มเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setNcpTrendMode('daily')" id="btn-ncp-trend-daily" class="view-btn active">Daily</button><button onclick="setNcpTrendMode('weekly')" id="btn-ncp-trend-weekly" class="view-btn">Weekly</button><button onclick="setNcpTrendMode('monthly')" id="btn-ncp-trend-monthly" class="view-btn">Monthly</button></div></div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"><h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-indigo-500 pl-3">แนวโน็นเปอร์เซ็นต์ของเสีย (% NCP)</h3><div class="flex bg-slate-100 p-1 rounded-xl"><button onclick="setNcpTrendMode('daily')" id="btn-ncp-trend-daily" class="view-btn active">Daily</button><button onclick="setNcpTrendMode('weekly')" id="btn-ncp-trend-weekly" class="view-btn">Weekly</button><button onclick="setNcpTrendMode('monthly')" id="btn-ncp-trend-monthly" class="view-btn">Monthly</button></div></div>
             <div class="chart-container"><canvas id="ncpTrendChart"></canvas></div>
         </div>
 
@@ -461,7 +453,7 @@
                 <div class="chart-container"><canvas id="shortageStationChart"></canvas></div>
             </div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน Group ขาดจำนวน</h3>
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน Group ขาดจำนวน (Col AA)</h3>
                 <div class="chart-container"><canvas id="shortageGroupDonutChart"></canvas></div>
             </div>
         </div>
@@ -494,24 +486,28 @@
         </div>
 
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
+            <!-- ส่วนหัวตารางที่มีการ์ด KPI ฝังอยู่ข้างใน -->
             <div class="p-5 bg-slate-50 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล ขาดจำนวน</h3>
                 </div>
                 
                 <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+                    <!-- 1. การ์ดใบใหม่: แผ่นเกินงานปกติ (วางไว้หน้าสุด) -->
                     <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-indigo-600 flex-1 sm:flex-initial min-w-[140px]">
                         <p class="text-[9px] text-indigo-600 font-bold uppercase tracking-wider">จำนวนแผ่นเกินงานปกติ</p>
                         <p id="shortage-kpi-normal-excess-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
                         <p id="shortage-kpi-normal-excess-value" class="text-[10px] font-bold text-indigo-600">0.00 บาท</p>
                     </div>
 
+                    <!-- 2. การ์ดเดิม: แผ่นเกินซ่อม (ปกติ) -->
                     <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-teal-500 flex-1 sm:flex-initial min-w-[140px]">
                         <p class="text-[9px] text-teal-600 font-bold uppercase tracking-wider">จำนวนแผ่นเกินงานซ่อม</p>
                         <p id="shortage-kpi-excess-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
                         <p id="shortage-kpi-excess-value" class="text-[10px] font-bold text-teal-600">0.00 บาท</p>
                     </div>
                     
+                    <!-- 3. การ์ดเดิม: แผ่นตัดจบซ่อม -->
                     <div class="bg-white px-4 py-2 rounded-xl shadow-sm border-l-4 border-amber-500 flex-1 sm:flex-initial min-w-[140px]">
                         <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">จำนวนแผ่นตัดจบ</p>
                         <p id="shortage-kpi-close-sheets" class="text-sm font-black text-slate-800">0 แผ่น</p>
@@ -532,185 +528,6 @@
                         </tr>
                     </thead>
                     <tbody id="shortage-table-body" class="text-xs text-slate-600"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="page-speed" class="max-w-7xl mx-auto space-y-6 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="card-stat border-indigo-500 bg-white relative overflow-hidden">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
-                    <span class="text-xs font-black text-indigo-700 tracking-wider uppercase">1. การ์ด วางแผน (Plan)</span>
-                    <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">แผนการผลิต</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3 text-xs mb-3">
-                    <div class="bg-slate-50 p-2.5 rounded-xl">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">จำนวนออเดอร์</p>
-                        <p id="speed-plan-orders" class="text-xl font-black text-slate-800">0</p>
-                    </div>
-                    <div class="bg-slate-50 p-2.5 rounded-xl">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">จำนวนเมตร</p>
-                        <p id="speed-plan-meters" class="text-xl font-black text-slate-800">0</p>
-                    </div>
-                </div>
-                <div class="pt-2 border-t border-slate-100 flex justify-between items-end">
-                    <div>
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">เวลาเดินงานวางแผน</p>
-                        <p id="speed-plan-time" class="text-lg font-black text-slate-700">0 นาที</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] text-indigo-600 font-bold uppercase">Speed วางแผน</p>
-                        <p id="speed-plan-val" class="text-2xl font-black text-indigo-600">0 <span class="text-xs font-normal">ม./นาที</span></p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-stat border-emerald-500 bg-white relative overflow-hidden">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
-                    <span class="text-xs font-black text-emerald-700 tracking-wider uppercase">2. การ์ด ผลิต (Actual Production)</span>
-                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">ผลงานจริง</span>
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-xs mb-3">
-                    <div class="bg-emerald-50/40 p-2 rounded-xl">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">จำนวนออเดอร์</p>
-                        <p id="speed-act-orders" class="text-lg font-black text-slate-800">0</p>
-                        <p id="speed-act-orders-unplan" class="text-[9px] text-amber-600 font-bold">นอกแผน: 0</p>
-                        <p id="speed-diff-orders" class="text-[10px] font-black mt-1">Diff: 0</p>
-                    </div>
-                    <div class="bg-emerald-50/40 p-2 rounded-xl">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">จำนวนเมตร</p>
-                        <p id="speed-act-meters" class="text-lg font-black text-slate-800">0</p>
-                        <p id="speed-act-meters-unplan" class="text-[9px] text-amber-600 font-bold">นอกแผน: 0</p>
-                        <p id="speed-diff-meters" class="text-[10px] font-black mt-1">Diff: 0</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-xs mb-3">
-                    <div class="bg-slate-50 p-2 rounded-xl">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">เวลาเดินงาน / นอกแผน</p>
-                        <p id="speed-act-runtime" class="text-sm font-black text-slate-700">0 นาที</p>
-                        <p id="speed-act-runtime-unplan" class="text-[9px] text-amber-600 font-bold">นอกแผน: 0 น.</p>
-                        <p id="speed-diff-runtime" class="text-[10px] font-black mt-1">Diff: 0 น.</p>
-                    </div>
-                    <div class="bg-rose-50/40 p-2 rounded-xl">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">เวลาสูญเสีย / นอกแผน</p>
-                        <p id="speed-act-lost" class="text-sm font-black text-rose-600">0 นาที</p>
-                        <p id="speed-act-lost-unplan" class="text-[9px] text-amber-600 font-bold">นอกแผน: 0 น.</p>
-                    </div>
-                </div>
-                <div class="pt-2 border-t border-slate-100 flex justify-between items-end">
-                    <div>
-                        <p class="text-[9px] text-slate-400 font-bold uppercase">เวลาสุทธิ (เดินงาน - เสีย)</p>
-                        <p id="speed-act-nettime" class="text-xs font-black text-slate-700">0 นาที</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] text-emerald-600 font-bold uppercase">Speed ผลิตจริง</p>
-                        <p id="speed-act-val" class="text-2xl font-black text-emerald-600">0 <span class="text-xs font-normal">ม./นาที</span></p>
-                        <p id="speed-diff-speed" class="text-xs font-black mt-0.5">Diff: 0 ม./นาที</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-stat border-amber-500 bg-white relative overflow-hidden">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
-                    <span class="text-xs font-black text-amber-700 tracking-wider uppercase">3. การ์ด งานค้างแผน (Backlog)</span>
-                    <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">ค้างสะสม</span>
-                </div>
-                <div class="space-y-3 my-2">
-                    <div class="bg-amber-50/50 p-3 rounded-2xl flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-600">จำนวนออเดอร์งานค้าง</span>
-                        <span id="speed-pending-orders" class="text-2xl font-black text-amber-600">0</span>
-                    </div>
-                    <div class="bg-amber-50/50 p-3 rounded-2xl flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-600">จำนวนเมตรงานค้าง</span>
-                        <span id="speed-pending-meters" class="text-2xl font-black text-amber-600">0</span>
-                    </div>
-                    <div class="bg-amber-50/50 p-3 rounded-2xl flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-600">เวลางานค้าง</span>
-                        <div class="text-right">
-                            <span id="speed-pending-time" class="text-lg font-black text-amber-600 block">0 ชม. 0 นาที</span>
-                            <span id="speed-pending-time-sub" class="text-[10px] font-bold text-slate-400 block">(0 นาที)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่เลือก</label>
-                <div class="flex gap-1.5"><input type="date" id="speed-start-date" class="text-xs p-2"><input type="date" id="speed-end-date" class="text-xs p-2"></div>
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label>
-                <select id="speed-filter-mc"><option value="">ทั้งหมด</option></select>
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label>
-                <select id="speed-filter-shift"><option value="">ทั้งหมด</option></select>
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สถานะ</label>
-                <select id="speed-filter-status"><option value="">ทั้งหมด</option></select>
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ลักษณะ Order</label>
-                <select id="speed-filter-pattern"><option value="">ทั้งหมด</option></select>
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟแนวโน้ม</label>
-                <div class="flex items-center gap-2">
-                    <input type="color" id="speed-chart-color" value="#10b981" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
-                    <div class="flex gap-1">
-                        <button type="button" class="w-5 h-5 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('speed', '#10b981')" title="เขียว"></button>
-                        <button type="button" class="w-5 h-5 rounded-full bg-[#2563eb] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('speed', '#2563eb')" title="น้ำเงิน"></button>
-                        <button type="button" class="w-5 h-5 rounded-full bg-[#f59e0b] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('speed', '#f59e0b')" title="ส้ม"></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest border-l-4 border-emerald-500 pl-3">แนวโน้ม Speed วางแผน เทียบ Speed ผลิตจริง (เมตร/นาที)</h3>
-                <div class="flex bg-slate-100 p-1 rounded-xl">
-                    <button onclick="setSpeedTrendMode('daily')" id="btn-speed-trend-daily" class="view-btn active">Daily</button>
-                    <button onclick="setSpeedTrendMode('weekly')" id="btn-speed-trend-weekly" class="view-btn">Weekly</button>
-                    <button onclick="setSpeedTrendMode('monthly')" id="btn-speed-trend-monthly" class="view-btn">Monthly</button>
-                </div>
-            </div>
-            <div class="chart-container"><canvas id="speedTrendChart"></canvas></div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วนลักษณะ Order</h3>
-                <div class="chart-container !h-[320px]"><canvas id="speedPatternDonutChart"></canvas></div>
-            </div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน ลอน</h3>
-                <div class="chart-container !h-[320px]"><canvas id="speedFluteDonutChart"></canvas></div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
-            <div class="p-5 bg-slate-50 border-b flex justify-between items-center">
-                <h3 class="font-bold text-slate-600 uppercase text-[10px] tracking-widest">รายละเอียดข้อมูล SPEED รายการผลิต</h3>
-                <span id="speed-table-count" class="text-[10px] bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">0 รายการ</span>
-            </div>
-            <div class="table-responsive">
-                <table class="w-full text-left">
-                    <thead class="bg-white border-b sticky top-0">
-                        <tr class="text-[10px] font-bold text-slate-400 uppercase">
-                            <th class="p-5">วันที่ / กะ</th>
-                            <th class="p-5">เครื่องจักร / สถานะ</th>
-                            <th class="p-5">ลักษณะ Order / ลอน</th>
-                            <th class="p-5 text-center">เมตร (แผน/จริง)</th>
-                            <th class="p-5 text-center">เวลาเดินงาน (แผน/จริง/เสีย)</th>
-                            <th class="p-5 text-right">Speed (แผน / จริง)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="speed-table-body" class="text-xs text-slate-600"></tbody>
                 </table>
             </div>
         </div>
@@ -779,9 +596,10 @@
             </div>
         </div>
     </div>
-
     <div id="factor-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all" onclick="if(event.target === this) closeFactorModal()">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            
+            <!-- Header ของ Modal -->
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div>
                     <h3 id="modal-factor-title" class="text-lg font-black text-slate-800">รายละเอียด Downtime</h3>
@@ -792,42 +610,48 @@
                 </button>
             </div>
 
-            <div class="p-5 overflow-y-auto flex-1 table-responsive">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider">
-                            <th class="py-2.5 px-3">วันที่ / เวลา</th>
-                            <th class="py-2.5 px-3">เครื่องจักร</th>
-                            <th class="py-2.5 px-3">สถานี (Station)</th>
-                            <th class="py-2.5 px-3">ปัญหา / สาเหตุ</th>
-                            <th class="py-2.5 px-3 text-center">หยุด (ครั้ง)</th>
-                            <th class="py-2.5 px-3 text-right">เวลาเสีย (นาที)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modal-factor-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
-                    </tbody>
-                </table>
+            <!-- Body / ตารางแสดงรายการ -->
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider">
+                                <th class="py-2.5 px-3">วันที่ / เวลา</th>
+                                <th class="py-2.5 px-3">เครื่องจักร</th>
+                                <th class="py-2.5 px-3">สถานี (Station)</th>
+                                <th class="py-2.5 px-3">ปัญหา / สาเหตุ</th>
+                                <th class="py-2.5 px-3 text-center">หยุด (ครั้ง)</th>
+                                <th class="py-2.5 px-3 text-right">เวลาเสีย (นาที)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-factor-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                            <!-- รายการจะถูกสร้างผ่าน JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
+            <!-- Footer ของ Modal -->
             <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center text-xs">
                 <span id="modal-factor-summary" class="font-bold text-slate-500">รวม 0 รายการ | เสียเวลารวม 0 นาที</span>
                 <button onclick="closeFactorModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-colors">
                     ปิดหน้าต่าง
                 </button>
             </div>
+
         </div>
     </div>
     
     <script>
         Chart.register(ChartDataLabels);
-        let rawData = [], ncpData = [], shortageData = [], speedData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily', speedTrendMode = 'daily';
-        
+        let rawData = [], ncpData = [], shortageData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily';
         let ncpSelectedReasons = new Set();
         let ncpAllReasonOptions = [];
         let shortageSelectedCustomers = new Set();
         let shortageAllCustomerOptions = [];
         let shortageSelectedReasons = new Set();
         let shortageAllReasonOptions = [];
+        // เพิ่มตัวแปรเก็บสถานะของกลุ่ม Group ขาดจำนวน (คอลัมน์ AA)
         let shortageSelectedGroups = new Set();
         let shortageAllGroupOptions = [];
         
@@ -838,6 +662,7 @@
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
         const shortageStationTargets = { "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70, "other": 0.20 };
 
+        // ฟังก์ชันระบบ Dropdown สำหรับ Group ขาดจำนวน (Col AA)
         function toggleShortageGroupDropdown(show) { const dropdown = document.getElementById('shortage-group-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterShortageGroupOptions(searchText) { renderShortageGroupOptions(searchText); toggleShortageGroupDropdown(true); }
         function renderShortageGroupOptions(searchText) {
@@ -848,6 +673,277 @@
         }
         function toggleShortageGroupSelection(opt) { if (shortageSelectedGroups.has(opt)) shortageSelectedGroups.delete(opt); else shortageSelectedGroups.add(opt); renderShortageGroupChips(); renderShortageGroupOptions(document.getElementById('shortage-filter-group-input').value); updateShortageUI(); }
         function renderShortageGroupChips() { const container = document.getElementById('shortage-group-chips'); container.innerHTML = Array.from(shortageSelectedGroups).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageGroupSelection('${opt}')">×</button></span>`).join(''); }
+
+        function getDowntimeStatus(actual, target) {
+            if (!target || target <= 0) return { textClass: 'text-emerald-600', barColor: '#34d399' };
+            if (actual <= target) {
+                return { textClass: 'text-emerald-600', barColor: '#34d399' };
+            } else {
+                return { textClass: 'text-rose-500', barColor: '#fb7185' };
+            }
+        }
+
+        function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
+        function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
+
+        function setPresetColor(page, hex) {
+            if (page === 'main') {
+                document.getElementById('main-chart-color').value = hex;
+                updateMainUI();
+            } else if (page === 'ncp') {
+                document.getElementById('ncp-chart-color').value = hex;
+                updateNCPUI();
+            } else if (page === 'shortage') {
+                document.getElementById('shortage-chart-color').value = hex;
+                updateShortageUI();
+            }
+        }
+
+        function resolveOperatorImage(name, machine, shift, stationWaste) {
+            const cleanName = cleanStr(name);
+            const cleanMc = cleanStr(machine);
+            const cleanShift = cleanStr(shift);
+            const cleanSW = cleanStr(stationWaste);
+
+            const exactMatch = masterOperators.find(op => 
+                cleanStr(op.name) === cleanName &&
+                cleanStr(op.machine) === cleanMc &&
+                cleanStr(op.shift) === cleanShift &&
+                cleanStr(op.stationWaste) === cleanSW
+            );
+            if (exactMatch && exactMatch.img) return exactMatch.img;
+
+            const partialMatch = masterOperators.find(op => 
+                cleanStr(op.name) === cleanName &&
+                cleanStr(op.machine) === cleanMc &&
+                cleanStr(op.shift) === cleanShift
+            );
+            if (partialMatch && partialMatch.img) return partialMatch.img;
+
+            const stationMatch = masterOperators.find(op => 
+                cleanStr(op.name) === cleanName &&
+                cleanStr(op.stationWaste) === cleanSW
+            );
+            if (stationMatch && stationMatch.img) return stationMatch.img;
+
+            const nameMatch = masterOperators.find(op => cleanStr(op.name) === cleanName);
+            if (nameMatch && nameMatch.img) return nameMatch.img;
+            if (masterOpList.has(name)) return masterOpList.get(name);
+            return '';
+        }
+
+        function getFilteredOperatorsForStation(stationWasteName, mcFilter, hFilter) {
+            const cleanSWName = cleanStr(stationWasteName);
+            const cleanMcFilter = cleanStr(mcFilter);
+            const cleanShFilter = cleanStr(hFilter);
+            const matches = masterOperators.filter(op => {
+                const matchSW = cleanStr(op.stationWaste) === cleanSWName;
+                const matchMc = !cleanMcFilter || cleanStr(op.machine) === cleanMcFilter;
+                const matchSh = !cleanShFilter || cleanStr(op.shift) === cleanShFilter;
+                return matchSW && matchMc && matchSh;
+            });
+            return [...new Set(matches.map(op => op.name))];
+        }
+
+        function getStationDowntimeTarget(stationName) {
+            const name = cleanStr(stationName);
+            if (!name) return null;
+            if (downtimeStationTargets[name] !== undefined) return downtimeStationTargets[name];
+            if (stationTargetsFromSheet.has(name)) return stationTargetsFromSheet.get(name);
+            if (name === 'm-1' || name === 'sf-c' || name === 'm-2' || name === 'm-5' || 
+                name === 'df' || name === 'webtrol-c' || name === 'webtrol-b' || name === 'webtrol-e') return 0.21;
+            if (name === 'm-3' || name === 'm-4' || name === 'sf-b' || 
+                name === 'slitter m1' || name === 'slitter m2' || name === 'nc-cutter') return 0.14;
+            if (name === 'rotary shear' || name === 'stacker') return 0.07;
+            return null;
+        }
+
+        function getSunWeek(date) { let d = new Date(date); d.setHours(0, 0, 0, 0); let start = new Date(d.getFullYear(), 0, 1); let days = Math.floor((d - start) / 86400000); return Math.ceil((days + start.getDay() + 1) / 7); }
+        function transformGDriveLink(url) { if (!url) return ""; let cleanUrl = url.toString().trim(); if (!cleanUrl.includes("drive.google.com")) return cleanUrl; let fileId = cleanUrl.includes("/file/d/") ? cleanUrl.split("/file/d/")[1].split("/")[0] : (cleanUrl.includes("id=") ? cleanUrl.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : cleanUrl; }
+        function fixYear(year) { let y = parseInt(year); if (isNaN(y)) return year; if (y > 2400) return (y - 543).toString(); if (y < 100) return (y + 2000).toString(); return y.toString(); }
+        function parseUnifiedDate(dateStr) { if (!dateStr || !dateStr.includes('/')) return ''; const p = dateStr.split('/'); if (p.length < 3) return ''; const y = fixYear(p[2]); return `${y}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
+        function formatToISO(d) { return parseUnifiedDate(d); }
+
+        async function syncData() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const [resD, resN, resOp, resS] = await Promise.all([ 
+                    fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`), 
+                    fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`), 
+                    fetch(`${document.getElementById('op-list-url').value}&t=${Date.now()}`),
+                    fetch(`${document.getElementById('shortage-url').value}&t=${Date.now()}`)
+                ]);
+                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok) throw new Error("Sync failed");
+                const [textD, textN, textOp, textS] = await Promise.all([resD.text(), resN.text(), resOp.text(), resS.text()]);
+                parseMasterOpList(textOp);
+                parseDowntime(textD);
+                parseNCP(textN);
+                parseShortage(textS);
+                initFilters(); 
+                updateCurrentPage();
+            } catch (err) { console.error(err); alert('Sync Error: ' + err.message); }
+            finally { document.getElementById('loading').style.display = 'none'; }
+        }
+
+        function parseMasterOpList(text) { 
+            masterOpList.clear(); 
+            stationTargetsFromSheet.clear();
+            stationOperatorsMap.clear();
+            masterOperators = [];
+
+            text.split(/\r?\n/).slice(1).forEach(line => { 
+                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+                if (c.length < 5) return; 
+                const name = c[0] ? c[0].trim().replace(/"/g, '') : ''; 
+                const mc = c[1] ? c[1].trim().replace(/"/g, '') : '';
+                const station = c[2] ? c[2].trim().replace(/"/g, '') : '';
+                const shift = c[3] ? c[3].trim().replace(/"/g, '') : '';
+                const img = c[4] ? transformGDriveLink(c[4].trim().replace(/"/g, '')) : '';
+                const stationWaste = c[5] ? c[5].trim().replace(/"/g, '') : '';
+                
+                if (name) {
+                    masterOpList.set(name, img);
+                    masterOperators.push({ name, machine: mc, station, shift, img, stationWaste });
+                    const cleanSt = cleanStr(stationWaste || station);
+                    if (cleanSt) {
+                        if (!stationOperatorsMap.has(cleanSt)) stationOperatorsMap.set(cleanSt, new Set());
+                        stationOperatorsMap.get(cleanSt).add(name);
+                    }
+                }
+                if (c.length >= 7) {
+                    const rawStation = c[2] ? c[2].trim().replace(/"/g, '') : '';
+                    const rawTarget = c[6] ? c[6].trim().replace(/"/g, '') : '';
+                    if (rawStation && rawTarget) {
+                        const targetVal = parseNum(rawTarget);
+                        stationTargetsFromSheet.set(cleanStr(rawStation), targetVal);
+                        rawStation.split(',').map(s => cleanStr(s.trim())).forEach(st => {
+                            if (st) stationTargetsFromSheet.set(st, targetVal);
+                        });
+                    }
+                }
+            }); 
+        }
+        
+        function parseDowntime(text) { 
+            rawData = text.split(/\r?\n/).slice(1).map(line => { 
+                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+                if (c.length < 14) return null; 
+                const cl = (v) => v ? v.trim().replace(/"/g, '') : ''; 
+                const iso = formatToISO(cl(c[0])); 
+                if (!iso) return null; 
+                const dObj = new Date(iso); 
+                return { 
+                    date: cl(c[0]), isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj), 
+                    machine: cl(c[2]), station: cl(c[3]), 
+                    stops: Math.round(parseNum(cl(c[4]))), 
+                    duration: parseNum(cl(c[5])), 
+                    problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), 
+                    pmTarget: parseNum(cl(c[12])), 
+                    runtime: parseNum(cl(c[13])), 
+                    imgUrl: transformGDriveLink(cl(c[16])),
+                    stationWaste: cl(c[17])
+                }; 
+            }).filter(d => d); 
+        }
+
+        function parseNCP(text) { 
+            ncpData = text.split(/\r?\n/).slice(1).map(line => { 
+                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+                if (c.length < 28) return null; 
+                const cl = (v) => v ? v.trim().replace(/"/g, '') : ''; 
+                const iso = parseUnifiedDate(cl(c[27])); 
+                if (!iso) return null; 
+                const dObj = new Date(iso); 
+                const valAL = c[37] ? parseNum(cl(c[37])) : 0;
+                const valAN = c[39] ? parseNum(cl(c[39])) : 0;
+                return { 
+                    shift: cl(c[1]), pdr: cl(c[2]), machine: cl(c[6]), station: cl(c[33]), description: cl(c[4]), problem: cl(c[32]), 
+                    weightNcp: c[24] ? parseNum(cl(c[24])) : 0, consumption: c[35] ? parseNum(cl(c[35])) : 0, 
+                    ncpOpNames: c[34] ? cl(c[34]) : '', isoDate: iso, date: cl(c[27]), reasonDesc: c[20] ? cl(c[20]) : '', 
+                    year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj),
+                    shortageVal: valAL, excessVal: valAN, hasShortage: valAL !== 0, hasExcess: valAN !== 0
+                }; 
+            }).filter(d => d); 
+        }
+
+        function parseShortage(text) {
+            shortageData = text.split(/\r?\n/).slice(1).map(line => {
+                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (c.length < 30) return null;
+                const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
+                const rawDate = cl(c[0]);
+                const iso = parseUnifiedDate(rawDate);
+                if (!iso) return null;
+                const dObj = new Date(iso);
+                return {
+                    date: rawDate,
+                    isoDate: iso,
+                    year: dObj.getFullYear(),
+                    month: dObj.getMonth() + 1,
+                    weekNum: getSunWeek(dObj),
+                    machine: c[65] ? cl(c[65]) : '',          // Col BN (Index 65)
+                    pdr: cl(c[9]),                               // Col J
+                    customer: cl(c[11]),                         // Col L
+                    status: cl(c[19]),                           // Col T
+                    sheets: parseNum(cl(c[20])),                 // Col U
+                    reason: cl(c[25]),                           // Col Z
+                    shortageGroup: c[26] ? cl(c[26]) : '',      // ประมวลผลจาก Col AA (Index 26)
+                    normalExcessSheets: c[42] ? parseNum(cl(c[42])) : 0, // <-- เพิ่มบรรทัดนี้เพื่อดึง Col AQ
+                    repairRate: c[43] ? parseNum(cl(c[43])) : 0, // ดึงค่า Col AR (Index 43) เป็นตัวเลขไว้คำนวณมูลค่า
+                    excessSheets: c[51] ? parseNum(cl(c[51])) : 0, // ดึงค่า Col AZ (Index 51) เป็นตัวเลขแผ่นเกินจากงานซ่อม
+                    repairWork: c[44] ? cl(c[44]) : '',          // เปลี่ยนเป็น Col AS (Index 44)
+                    shift: cl(c[28]),                            // Col AC
+                    station: c[64] ? cl(c[64]) : '',           // Col BM
+                    stopStatus: c[53] ? cl(c[53]) : '',        // Col BB
+                    orderPattern: c[54] ? cl(c[54]) : '',      // Col BC
+                    colM: c[12] ? cl(c[12]) : '',              // Col M สำหรับใช้ในตาราง
+                    ah: c[33] ? cl(c[33]) : ''                 // ดึง Col AH (Index 33) กลับมาส่งให้กราฟแท่งแกรม
+                };
+            }).filter(d => d);
+        }
+
+        function initFilters() {
+            const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
+            fillSelect('main-filter-mc', getU(rawData, 'machine')); 
+            fillSelect('main-filter-station', getU(rawData, 'stationWaste')); 
+            fillSelect('main-filter-factor', getU(rawData, 'factor')); 
+            fillSelect('main-filter-shift', getU(rawData, 'shift'));
+            fillSelect('op-select', getU(rawData, 'operator')); 
+            fillSelect('ncp-filter-mc', getU(ncpData, 'machine')); 
+            fillSelect('ncp-filter-station', getU(ncpData, 'station').filter(x => isNaN(x))); 
+            fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
+            fillSelect('station-filter-mc', getU(rawData, 'machine'));
+            fillSelect('station-filter-shift', getU(rawData, 'shift'));
+            
+            fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
+            fillSelect('shortage-filter-station', getU(shortageData, 'station'));
+            fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
+            fillSelect('shortage-filter-repair', getU(shortageData, 'repairWork')); 
+            
+            shortageAllCustomerOptions = getU(shortageData, 'customer');
+            renderShortageCustOptions("");
+            
+            shortageAllReasonOptions = getU(shortageData, 'reason').filter(x => x && x !== 'ครบจำนวน');
+            renderShortageReasonOptions("");
+
+            // ดึงกลุ่ม Group ขาดจำนวน คอลัมน์ AA (Index 26) และตั้งค่าระบบ Dropdown
+            shortageAllGroupOptions = getU(shortageData, 'shortageGroup').filter(x => x && x !== '-');
+            renderShortageGroupOptions("");
+
+            ncpAllReasonOptions = getU(ncpData, 'reasonDesc'); renderNcpReasonOptions("");
+            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#shortage-filter-customer-input):not(#shortage-filter-reason-input):not(#shortage-filter-group-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
+            document.addEventListener('click', (e) => { 
+                if (!e.target.closest('.multi-select-container')) {
+                    toggleNcpReasonDropdown(false); 
+                    toggleShortageCustDropdown(false);
+                    toggleShortageReasonDropdown(false);
+                    toggleShortageGroupDropdown(false); // ซ่อน Dropdown ของ Group ขาดจำนวน
+                } 
+            });
+            document.getElementById('main-chart-color').addEventListener('input', updateMainUI);
+            document.getElementById('ncp-chart-color').addEventListener('input', updateNCPUI);
+            document.getElementById('shortage-chart-color').addEventListener('input', updateShortageUI);
+        }
 
         function toggleNcpReasonDropdown(show) { const dropdown = document.getElementById('ncp-reason-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterNcpReasonOptions(searchText) { renderNcpReasonOptions(searchText); toggleNcpReasonDropdown(true); }
@@ -882,331 +978,37 @@
         function toggleShortageReasonSelection(opt) { if (shortageSelectedReasons.has(opt)) shortageSelectedReasons.delete(opt); else shortageSelectedReasons.add(opt); renderShortageReasonChips(); renderShortageReasonOptions(document.getElementById('shortage-filter-reason-input').value); updateShortageUI(); }
         function renderShortageReasonChips() { const container = document.getElementById('shortage-reason-chips'); container.innerHTML = Array.from(shortageSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleShortageReasonSelection('${opt}')">×</button></span>`).join(''); }
 
-        function getDowntimeStatus(actual, target) {
-            if (!target || target <= 0) return { textClass: 'text-emerald-600', barColor: '#34d399' };
-            return actual <= target ? { textClass: 'text-emerald-600', barColor: '#34d399' } : { textClass: 'text-rose-500', barColor: '#fb7185' };
-        }
-
-        function cleanStr(s) { return s ? s.toString().trim().toLowerCase() : ''; }
-        function parseNum(v) { if (!v) return 0; let cleanV = v.toString().replace(/[",\s]/g, ''); return parseFloat(cleanV) || 0; }
-
-        function setPresetColor(page, hex) {
-            if (page === 'main') {
-                document.getElementById('main-chart-color').value = hex;
-                updateMainUI();
-            } else if (page === 'ncp') {
-                document.getElementById('ncp-chart-color').value = hex;
-                updateNCPUI();
-            } else if (page === 'shortage') {
-                document.getElementById('shortage-chart-color').value = hex;
-                updateShortageUI();
-            } else if (page === 'speed') {
-                document.getElementById('speed-chart-color').value = hex;
-                updateSpeedUI();
-            }
-        }
-
-        function resolveOperatorImage(name, machine, shift, stationWaste) {
-            const cleanName = cleanStr(name);
-            const cleanMc = cleanStr(machine);
-            const cleanShift = cleanStr(shift);
-            const cleanSW = cleanStr(stationWaste);
-
-            const exactMatch = masterOperators.find(op => 
-                cleanStr(op.name) === cleanName &&
-                cleanStr(op.machine) === cleanMc &&
-                cleanStr(op.shift) === cleanShift &&
-                cleanStr(op.stationWaste) === cleanSW
-            );
-            if (exactMatch && exactMatch.img) return exactMatch.img;
-
-            const nameMatch = masterOperators.find(op => cleanStr(op.name) === cleanName);
-            if (nameMatch && nameMatch.img) return nameMatch.img;
-            if (masterOpList.has(name)) return masterOpList.get(name);
-            return '';
-        }
-
-        function getFilteredOperatorsForStation(stationWasteName, mcFilter, hFilter) {
-            const cleanSWName = cleanStr(stationWasteName);
-            const cleanMcFilter = cleanStr(mcFilter);
-            const cleanShFilter = cleanStr(hFilter);
-            const matches = masterOperators.filter(op => {
-                const matchSW = cleanStr(op.stationWaste) === cleanSWName;
-                const matchMc = !cleanMcFilter || cleanStr(op.machine) === cleanMcFilter;
-                const matchSh = !cleanShFilter || cleanStr(op.shift) === cleanShFilter;
-                return matchSW && matchMc && matchSh;
-            });
-            return [...new Set(matches.map(op => op.name))];
-        }
-
-        function getStationDowntimeTarget(stationName) {
-            const name = cleanStr(stationName);
-            if (!name) return null;
-            if (downtimeStationTargets[name] !== undefined) return downtimeStationTargets[name];
-            if (stationTargetsFromSheet.has(name)) return stationTargetsFromSheet.get(name);
-            return null;
-        }
-
-        function getSunWeek(date) { let d = new Date(date); d.setHours(0, 0, 0, 0); let start = new Date(d.getFullYear(), 0, 1); let days = Math.floor((d - start) / 86400000); return Math.ceil((days + start.getDay() + 1) / 7); }
-        function transformGDriveLink(url) { if (!url) return ""; let cleanUrl = url.toString().trim(); if (!cleanUrl.includes("drive.google.com")) return cleanUrl; let fileId = cleanUrl.includes("/file/d/") ? cleanUrl.split("/file/d/")[1].split("/")[0] : (cleanUrl.includes("id=") ? cleanUrl.split("id=")[1].split("&")[0] : ""); return fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : cleanUrl; }
-        function fixYear(year) { let y = parseInt(year); if (isNaN(y)) return year; if (y > 2400) return (y - 543).toString(); if (y < 100) return (y + 2000).toString(); return y.toString(); }
-        function parseUnifiedDate(dateStr) { if (!dateStr || !dateStr.includes('/')) return ''; const p = dateStr.split('/'); if (p.length < 3) return ''; const y = fixYear(p[2]); return `${y}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`; }
-        function formatToISO(d) { return parseUnifiedDate(d); }
-
-        async function syncData() {
-            document.getElementById('loading').style.display = 'flex';
-            document.getElementById('data-error-notice').classList.add('hidden');
-            try {
-                const [resD, resN, resOp, resS, resSp] = await Promise.all([ 
-                    fetch(`${document.getElementById('sheet-url').value}&t=${Date.now()}`), 
-                    fetch(`${document.getElementById('ncp-url').value}&t=${Date.now()}`), 
-                    fetch(`${document.getElementById('op-list-url').value}&t=${Date.now()}`),
-                    fetch(`${document.getElementById('shortage-url').value}&t=${Date.now()}`),
-                    fetch(`${document.getElementById('speed-url').value}&t=${Date.now()}`)
-                ]);
-                if (!resD.ok || !resN.ok || !resOp.ok || !resS.ok || !resSp.ok) throw new Error("Sync failed");
-                const [textD, textN, textOp, textS, textSp] = await Promise.all([resD.text(), resN.text(), resOp.text(), resS.text(), resSp.text()]);
-                parseMasterOpList(textOp);
-                parseDowntime(textD);
-                parseNCP(textN);
-                parseShortage(textS);
-                parseSpeed(textSp);
-
-                // Auto-detect max/min dates from data so zero is not displayed when using older data!
-                autoSetDateRangeFromData();
-
-                initFilters(); 
-                updateCurrentPage();
-            } catch (err) { 
-                console.error('Sync Error:', err); 
-                document.getElementById('data-error-notice').classList.remove('hidden');
-            }
-            finally { document.getElementById('loading').style.display = 'none'; }
-        }
-
-        // Auto detect latest date in dataset to avoid displaying 0 if current date is beyond spreadsheet dates
-        function autoSetDateRangeFromData() {
-            let allDates = [];
-            if (rawData.length > 0) allDates.push(...rawData.map(d => d.isoDate));
-            if (ncpData.length > 0) allDates.push(...ncpData.map(d => d.isoDate));
-            if (shortageData.length > 0) allDates.push(...shortageData.map(d => d.isoDate));
-            if (speedData.length > 0) allDates.push(...speedData.map(d => d.isoDate));
-
-            allDates = allDates.filter(d => d && !isNaN(new Date(d).getTime())).sort();
-            if (allDates.length === 0) return;
-
-            const maxIso = allDates[allDates.length - 1];
-            const maxDate = new Date(maxIso);
-            const minDate = new Date(maxDate);
-            minDate.setDate(maxDate.getDate() - 30); // Automatically set a 30-day window around available data
-
-            const f = (d) => d.toISOString().split('T')[0];
-            const startStr = f(minDate);
-            const endStr = f(maxDate);
-
-            ['main', 'ncp', 'shortage', 'op', 'station', 'speed'].forEach(prefix => {
-                const sEl = document.getElementById(`${prefix}-start-date`);
-                const eEl = document.getElementById(`${prefix}-end-date`);
-                if (sEl && eEl) {
-                    sEl.value = startStr;
-                    eEl.value = endStr;
-                }
-            });
-        }
-
-        function parseMasterOpList(text) { 
-            masterOpList.clear(); 
-            stationTargetsFromSheet.clear();
-            stationOperatorsMap.clear();
-            masterOperators = [];
-
-            text.split(/\r?\n/).slice(1).forEach(line => { 
-                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-                if (c.length < 5) return; 
-                const name = c[0] ? c[0].trim().replace(/"/g, '') : ''; 
-                const mc = c[1] ? c[1].trim().replace(/"/g, '') : '';
-                const station = c[2] ? c[2].trim().replace(/"/g, '') : '';
-                const shift = c[3] ? c[3].trim().replace(/"/g, '') : '';
-                const img = c[4] ? transformGDriveLink(c[4].trim().replace(/"/g, '')) : '';
-                const stationWaste = c[5] ? c[5].trim().replace(/"/g, '') : '';
-                
-                if (name) {
-                    masterOpList.set(name, img);
-                    masterOperators.push({ name, machine: mc, station, shift, img, stationWaste });
-                    const cleanSt = cleanStr(stationWaste || station);
-                    if (cleanSt) {
-                        if (!stationOperatorsMap.has(cleanSt)) stationOperatorsMap.set(cleanSt, new Set());
-                        stationOperatorsMap.get(cleanSt).add(name);
-                    }
-                }
-            }); 
-        }
-        
-        function parseDowntime(text) { 
-            rawData = text.split(/\r?\n/).slice(1).map(line => { 
-                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-                if (c.length < 14) return null; 
-                const cl = (v) => v ? v.trim().replace(/"/g, '') : ''; 
-                const iso = formatToISO(cl(c[0])); 
-                if (!iso) return null; 
-                const dObj = new Date(iso); 
-                return { 
-                    date: cl(c[0]), isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj), 
-                    machine: cl(c[2]), station: cl(c[3]), 
-                    stops: Math.round(parseNum(cl(c[4]))), 
-                    duration: parseNum(cl(c[5])), 
-                    problem: cl(c[6]), operator: cl(c[7]), factor: cl(c[8]), shift: cl(c[9]), time: cl(c[1]), 
-                    pmTarget: parseNum(cl(c[12])), 
-                    runtime: parseNum(cl(c[13])), 
-                    stationWaste: cl(c[17])
-                }; 
-            }).filter(d => d); 
-        }
-
-        function parseNCP(text) { 
-            ncpData = text.split(/\r?\n/).slice(1).map(line => { 
-                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-                if (c.length < 28) return null; 
-                const cl = (v) => v ? v.trim().replace(/"/g, '') : ''; 
-                const iso = parseUnifiedDate(cl(c[27])); 
-                if (!iso) return null; 
-                const dObj = new Date(iso); 
-                return { 
-                    shift: cl(c[1]), pdr: cl(c[2]), machine: cl(c[6]), station: cl(c[33]), description: cl(c[4]), problem: cl(c[32]), 
-                    weightNcp: c[24] ? parseNum(cl(c[24])) : 0, consumption: c[35] ? parseNum(cl(c[35])) : 0, 
-                    ncpOpNames: c[34] ? cl(c[34]) : '', isoDate: iso, date: cl(c[27]), reasonDesc: c[20] ? cl(c[20]) : '', 
-                    year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj)
-                }; 
-            }).filter(d => d); 
-        }
-
-        function parseShortage(text) {
-            shortageData = text.split(/\r?\n/).slice(1).map(line => {
-                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (c.length < 30) return null;
-                const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
-                const rawDate = cl(c[0]);
-                const iso = parseUnifiedDate(rawDate);
-                if (!iso) return null;
-                const dObj = new Date(iso);
-                return {
-                    date: rawDate, isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth() + 1, weekNum: getSunWeek(dObj),
-                    machine: c[65] ? cl(c[65]) : '', pdr: cl(c[9]), customer: cl(c[11]), status: cl(c[19]),
-                    sheets: parseNum(cl(c[20])), reason: cl(c[25]), shortageGroup: c[26] ? cl(c[26]) : '',
-                    normalExcessSheets: c[42] ? parseNum(cl(c[42])) : 0, repairRate: c[43] ? parseNum(cl(c[43])) : 0,
-                    excessSheets: c[51] ? parseNum(cl(c[51])) : 0, repairWork: c[44] ? cl(c[44]) : '', shift: cl(c[28]),
-                    station: c[64] ? cl(c[64]) : '', stopStatus: c[53] ? cl(c[53]) : '', orderPattern: c[54] ? cl(c[54]) : '',
-                    colM: c[12] ? cl(c[12]) : '', ah: c[33] ? cl(c[33]) : ''
-                };
-            }).filter(d => d);
-        }
-
-        function parseSpeed(text) {
-            speedData = text.split(/\r?\n/).slice(1).map(line => {
-                const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (c.length < 24) return null;
-                const cl = (v) => v ? v.trim().replace(/"/g, '') : '';
-                const rawDate = cl(c[23]);
-                const iso = parseUnifiedDate(rawDate);
-                if (!iso) return null;
-                const dObj = new Date(iso);
-                return {
-                    date: rawDate, isoDate: iso, year: dObj.getFullYear(), month: dObj.getMonth() + 1, weekNum: getSunWeek(dObj),
-                    flute: cl(c[2]), planMeters: parseNum(cl(c[11])), actMeters: parseNum(cl(c[12])),
-                    orderPattern: cl(c[13]), planDuration: parseNum(cl(c[16])), actDuration: parseNum(cl(c[17])),
-                    lostDuration: parseNum(cl(c[19])), status: cl(c[20]), shift: cl(c[21]), machine: cl(c[22])
-                };
-            }).filter(d => d);
-        }
-
-        function initFilters() {
-            const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
-            fillSelect('main-filter-mc', getU(rawData, 'machine')); 
-            fillSelect('main-filter-station', getU(rawData, 'stationWaste')); 
-            fillSelect('main-filter-factor', getU(rawData, 'factor')); 
-            fillSelect('main-filter-shift', getU(rawData, 'shift'));
-            
-            fillSelect('ncp-filter-mc', getU(ncpData, 'machine'));
-            fillSelect('ncp-filter-station', getU(ncpData, 'station').filter(x => isNaN(x)));
-            fillSelect('ncp-filter-shift', getU(ncpData, 'shift'));
-
-            fillSelect('shortage-filter-mc', getU(shortageData, 'machine'));
-            fillSelect('shortage-filter-station', getU(shortageData, 'station'));
-            fillSelect('shortage-filter-shift', getU(shortageData, 'shift'));
-            fillSelect('shortage-filter-repair', getU(shortageData, 'repairWork'));
-
-            fillSelect('op-select', getU(rawData, 'operator')); 
-            fillSelect('station-filter-mc', getU(rawData, 'machine'));
-            fillSelect('station-filter-shift', getU(rawData, 'shift'));
-            
-            fillSelect('speed-filter-mc', getU(speedData, 'machine'));
-            fillSelect('speed-filter-shift', getU(speedData, 'shift'));
-            fillSelect('speed-filter-status', getU(speedData, 'status'));
-            fillSelect('speed-filter-pattern', getU(speedData, 'orderPattern'));
-
-            shortageAllCustomerOptions = getU(shortageData, 'customer');
-            renderShortageCustOptions("");
-
-            shortageAllReasonOptions = getU(shortageData, 'reason').filter(x => x && x !== 'ครบจำนวน');
-            renderShortageReasonOptions("");
-
-            shortageAllGroupOptions = getU(shortageData, 'shortageGroup').filter(x => x && x !== '-');
-            renderShortageGroupOptions("");
-
-            ncpAllReasonOptions = getU(ncpData, 'reasonDesc');
-            renderNcpReasonOptions("");
-
-            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#shortage-filter-customer-input):not(#shortage-filter-reason-input):not(#shortage-filter-group-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
-            
-            document.addEventListener('click', (e) => { 
-                if (!e.target.closest('.multi-select-container')) {
-                    toggleNcpReasonDropdown(false); 
-                    toggleShortageCustDropdown(false);
-                    toggleShortageReasonDropdown(false);
-                    toggleShortageGroupDropdown(false);
-                } 
-            });
-
-            document.getElementById('main-chart-color').addEventListener('input', updateMainUI);
-            document.getElementById('ncp-chart-color').addEventListener('input', updateNCPUI);
-            document.getElementById('shortage-chart-color').addEventListener('input', updateShortageUI);
-            document.getElementById('speed-chart-color').addEventListener('input', updateSpeedUI);
-        }
-
         function updateCurrentPage() { 
-            const activeBtnEl = document.querySelector('.nav-btn.active'); 
-            const activeBtn = activeBtnEl ? activeBtnEl.id : 'btn-main'; 
+            const activeBtn = document.querySelector('.nav-btn.active').id; 
             if (activeBtn === 'btn-main') updateMainUI(); 
             else if (activeBtn === 'btn-ncp') updateNCPUI(); 
             else if (activeBtn === 'btn-shortage') updateShortageUI(); 
-            else if (activeBtn === 'btn-speed') updateSpeedUI(); 
             else if (activeBtn === 'btn-operator') updateOperatorUI(); 
             else if (activeBtn === 'btn-station-analysis') updateStationAnalysisUI(); 
         }
         
-        function fillSelect(id, items) { const s = document.getElementById(id); if (!s) return; const v = s.value; s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>'; items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); }); s.value = v; }
+        function fillSelect(id, items) { const s = document.getElementById(id); const v = s.value; s.innerHTML = id === 'op-select' ? '<option value="">-- เลือกพนักงาน --</option>' : '<option value="">ทั้งหมด</option>'; items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; s.appendChild(o); }); s.value = v; }
         
         function setDefaultDates() { 
             const now = new Date(); const last7 = new Date(); last7.setDate(now.getDate()-7); const f = (d) => d.toISOString().split('T')[0]; 
             document.getElementById('main-start-date').value = f(last7); document.getElementById('main-end-date').value = f(now); 
-            document.getElementById('ncp-start-date').value = f(last7); document.getElementById('ncp-end-date').value = f(now); 
-            document.getElementById('shortage-start-date').value = f(last7); document.getElementById('shortage-end-date').value = f(now); 
             document.getElementById('op-start-date').value = f(last7); document.getElementById('op-end-date').value = f(now); 
+            document.getElementById('ncp-start-date').value = f(last7); document.getElementById('ncp-end-date').value = f(now); 
             document.getElementById('station-start-date').value = f(last7); document.getElementById('station-end-date').value = f(now);
-            document.getElementById('speed-start-date').value = f(last7); document.getElementById('speed-end-date').value = f(now);
+            document.getElementById('shortage-start-date').value = f(last7); document.getElementById('shortage-end-date').value = f(now);
         }
         
         function switchPage(p) { 
-            ['main', 'ncp', 'shortage', 'speed', 'operator', 'station-analysis'].forEach(page => {
-                const pageEl = document.getElementById(`page-${page}`);
-                if (pageEl) pageEl.classList.toggle('hidden', p !== page);
-            });
-
-            ['main', 'ncp', 'shortage', 'speed', 'station-analysis', 'operator'].forEach(nav => {
-                const btnEl = document.getElementById(`btn-${nav}`);
-                if (btnEl) btnEl.classList.toggle('active', p === nav);
-            });
-
+            document.getElementById('page-main').classList.toggle('hidden', p !== 'main'); 
+            document.getElementById('page-ncp').classList.toggle('hidden', p !== 'ncp'); 
+            document.getElementById('page-shortage').classList.toggle('hidden', p !== 'shortage'); 
+            document.getElementById('page-operator').classList.toggle('hidden', p !== 'operator'); 
+            document.getElementById('page-station-analysis').classList.toggle('hidden', p !== 'station-analysis'); 
+            document.getElementById('btn-main').classList.toggle('active', p === 'main'); 
+            document.getElementById('btn-ncp').classList.toggle('active', p === 'ncp'); 
+            document.getElementById('btn-shortage').classList.toggle('active', p === 'shortage'); 
+            document.getElementById('btn-operator').classList.toggle('active', p === 'operator'); 
+            document.getElementById('btn-station-analysis').classList.toggle('active', p === 'station-analysis'); 
             updateCurrentPage(); 
         }
         
@@ -1261,6 +1063,7 @@
                 if (stationTarget !== null) targetVal = stationTarget;
             }
             const diffVal = actualPercent - targetVal;
+
             const targetDowntimeMin = totalRuntime * (targetVal / 100);
             const diffDowntimeMin = totalDowntime - targetDowntimeMin;
 
@@ -1281,59 +1084,70 @@
             const diffEl = document.getElementById('main-diff-val'); 
             diffEl.textContent = `Diff: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(2)}%`; 
             diffEl.className = `text-sm font-black ${downtimePercentStatus.textClass}`;
-
-            // Calculate metrics for 4 Factor Breakdown Cards
             const factorList = [
-                { key: 'man', name: 'MAN/METHOD' },
-                { key: 'machine', name: 'MACHINE' },
-                { key: 'material', name: 'MATERIAL' },
-                { key: 'other', name: 'OTHER' }
-            ];
+            { key: 'man', name: 'MAN/METHOD' },
+            { key: 'machine', name: 'MACHINE' },
+            { key: 'material', name: 'MATERIAL' },
+            { key: 'other', name: 'OTHER' }
+        ];
 
-            factorList.forEach(fItem => {
-                const fData = rawData.filter(d => 
-                    (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && 
-                    (!selectedStation || cleanStr(d.stationWaste) === cleanStr(selectedStation)) &&
-                    (!sh || d.shift === sh) && (d.factor.toUpperCase() !== 'PM') && 
-                    cleanStr(d.factor) === cleanStr(fItem.name) &&
-                    (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr) || d.stationWaste.toLowerCase().includes(sr))
-                );
+        factorList.forEach(fItem => {
+            // กรองข้อมูลเฉพาะของปัจจัยนั้นๆ
+            const fData = rawData.filter(d => 
+                (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && 
+                (!selectedStation || cleanStr(d.stationWaste) === cleanStr(selectedStation)) &&
+                (!sh || d.shift === sh) && (d.factor.toUpperCase() !== 'PM') && 
+                cleanStr(d.factor) === cleanStr(fItem.name) &&
+                (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr) || d.stationWaste.toLowerCase().includes(sr))
+            );
 
-                const fDowntime = fData.reduce((a, b) => a + b.duration, 0);
-                const fCount = fData.reduce((a, b) => a + b.stops, 0);
-                const fPercent = totalRuntime > 0 ? (fDowntime / totalRuntime) * 100 : 0;
+            // คำนวณค่า KPI แยกปัจจัย
+            const fDowntime = fData.reduce((a, b) => a + b.duration, 0);
+            const fCount = fData.reduce((a, b) => a + b.stops, 0);
+            const fPercent = totalRuntime > 0 ? (fDowntime / totalRuntime) * 100 : 0;
 
-                const fTargetVal = downtimeTargets[cleanStr(fItem.name)] || 0;
-                const fTargetMin = totalRuntime * (fTargetVal / 100);
-                const fDiffPercent = fPercent - fTargetVal;
-                const fDiffMin = fDowntime - fTargetMin;
-                const fMinStatus = getDowntimeStatus(fDowntime, fTargetMin);
+            const fTargetVal = downtimeTargets[cleanStr(fItem.name)] || 0;
+            const fTargetMin = totalRuntime * (fTargetVal / 100);
+            const fDiffPercent = fPercent - fTargetVal;
+            const fDiffMin = fDowntime - fTargetMin;
 
-                document.getElementById(`factor-${fItem.key}-runtime`).textContent = totalRuntime.toLocaleString();
-                document.getElementById(`factor-${fItem.key}-count`).textContent = fCount.toLocaleString();
-                document.getElementById(`factor-${fItem.key}-downtime`).textContent = `${fDowntime.toLocaleString()} น.`;
-                document.getElementById(`factor-${fItem.key}-percent`).textContent = `${fPercent.toFixed(2)}%`;
-                document.getElementById(`factor-${fItem.key}-target`).textContent = `Target: ${fTargetVal.toFixed(2)}% (${fTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
-                
-                const diffElFactor = document.getElementById(`factor-${fItem.key}-diff`);
-                diffElFactor.textContent = `Diff: ${fDiffPercent > 0 ? '+' : ''}${fDiffPercent.toFixed(2)}% (${fDiffMin > 0 ? '+' : ''}${fDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
-                diffElFactor.className = `text-xs font-black ${fMinStatus.textClass}`;
+            const fMinStatus = getDowntimeStatus(fDowntime, fTargetMin);
 
-                const cardEl = document.getElementById(`card-factor-${fItem.key}`);
-                if (cardEl) {
-                    cardEl.classList.remove('bg-white', 'bg-emerald-50/60', 'bg-rose-50/60', 'border-emerald-200', 'border-rose-200');
-                    if (fDowntime <= fTargetMin) {
-                        cardEl.classList.add('bg-emerald-50/60', 'border-emerald-200');
-                    } else {
-                        cardEl.classList.add('bg-rose-50/60', 'border-rose-200');
-                    }
-                }
-            });
-
+            // พ่นค่าลงการ์ดของแต่ละปัจจัย
+            document.getElementById(`factor-${fItem.key}-runtime`).textContent = totalRuntime.toLocaleString();
+            document.getElementById(`factor-${fItem.key}-count`).textContent = fCount.toLocaleString();
+            document.getElementById(`factor-${fItem.key}-downtime`).textContent = `${fDowntime.toLocaleString()} น.`;
+            document.getElementById(`factor-${fItem.key}-percent`).textContent = `${fPercent.toFixed(2)}%`;
+            
+            document.getElementById(`factor-${fItem.key}-target`).textContent = `Target: ${fTargetVal.toFixed(2)}% (${fTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
+            
+            const diffElFactor = document.getElementById(`factor-${fItem.key}-diff`);
+            diffElFactor.textContent = `Diff: ${fDiffPercent > 0 ? '+' : ''}${fDiffPercent.toFixed(2)}% (${fDiffMin > 0 ? '+' : ''}${fDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
+            diffElFactor.className = `text-xs font-black ${fMinStatus.textClass}`;
+            // =========================================================
+        // 🟢🔴 เพิ่มโค้ดส่วนนี้: เปลี่ยนสีพื้นหลังการ์ดตาม Target
+        // =========================================================
+        const cardEl = document.getElementById(`card-factor-${fItem.key}`);
+        if (cardEl) {
+            // 1. ล้างคลาสสีพื้นหลังและสีขอบเดิมออกก่อน เพื่อไม่ให้สีตีกัน
+            cardEl.classList.remove('bg-white', 'bg-emerald-50/60', 'bg-rose-50/60', 'border-emerald-200', 'border-rose-200');
+            
+            // 2. เช็คเงื่อนไข Downtime เทียบกับ Target
+            if (fDowntime <= fTargetMin) {
+                // ต่ำกว่าหรือเท่ากับเป้าหมาย = ผ่านเกณฑ์ -> เปลี่ยนเป็นสีเขียวอ่อน
+                cardEl.classList.add('bg-emerald-50/60', 'border-emerald-200');
+            } else {
+                // สูงกว่าเป้าหมาย = เกินเกณฑ์ -> เปลี่ยนเป็นสีแดงอ่อน
+                cardEl.classList.add('bg-rose-50/60', 'border-rose-200');
+            }
+        }
+        });
             document.getElementById('main-badge-count').textContent = `${f.length} รายการ`; 
             document.getElementById('main-table-body').innerHTML = f.slice(0, 100).map(d => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift} ${d.time}</span></td><td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station} | ${d.stationWaste || '-'}</span></td><td class="p-5 text-slate-600 leading-snug">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5 text-[9px] text-slate-400 font-bold uppercase">${d.operator}</td></tr>`).join('');
             
-            const trendDowntime = {}; const trendCount = {}; const trendRuntimeRaw = {}; 
+            const trendDowntime = {}; 
+            const trendCount = {};
+            const trendRuntimeRaw = {}; 
             fForRuntime.forEach(d => { 
                 let k = mainTrendMode === 'daily' ? d.date : (mainTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); 
                 const uniqueKey = `${d.isoDate}_${d.shift}_${d.machine}`; 
@@ -1379,17 +1193,33 @@
                 options: { 
                     maintainAspectRatio: false, 
                     plugins: { 
-                        legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }, 
+                        legend: { 
+                            display: true, 
+                            position: 'top', 
+                            labels: { boxWidth: 15, font: { size: 10 } } 
+                        }, 
                         datalabels: { 
-                            display: true, anchor: 'end', align: 'top', textAlign: 'center',
-                            formatter: (v,ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n(${ctx.dataset.customMinutes[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits: 1})} น.)\n[${ctx.dataset.customStops[ctx.dataIndex].toLocaleString()} ค.]` : '',
-                            font: { size: 11, weight: 'bold' }, color: '#1e293b', offset: 8 
+                            display: true, 
+                            anchor: 'end', 
+                            align: 'top', 
+                            textAlign: 'center',
+                            formatter: (v,ctx) => {
+                                if (ctx.datasetIndex === 0) {
+                                    const mins = ctx.dataset.customMinutes[ctx.dataIndex];
+                                    const stops = ctx.dataset.customStops[ctx.dataIndex];
+                                    return `${v.toFixed(2)}%\n(${mins.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)\n[${stops.toLocaleString()} ค.]`;
+                                }
+                                return '';
+                            },
+                            font: { size: 11, weight: 'bold' }, 
+                            color: '#1e293b', 
+                            offset: 8 
                         } 
                     }, 
                     scales: { y: { beginAtZero: true, grace: '25%' } } 
                 } 
             });
-
+            
             let activeStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             if (selectedStation) {
                 const matched = activeStations.find(s => cleanStr(s) === cleanStr(selectedStation));
@@ -1431,7 +1261,7 @@
 
             const sortedRanking = downtimeStationRanking.sort((a, b) => (isNaN(a.diff) ? 0 : a.diff) - (isNaN(b.diff) ? 0 : b.diff));
 
-            document.getElementById('downtime-station-list').innerHTML = sortedRanking.map((stData) => {
+            document.getElementById('downtime-station-list').innerHTML = sortedRanking.map((stData, i) => {
                 const resolvedOps = []; const seenOps = new Set();
                 stData.ops.forEach(name => {
                     const cleanName = cleanStr(name); if (seenOps.has(cleanName)) return; seenOps.add(cleanName);
@@ -1446,6 +1276,7 @@
                 
                 const stTargetMin = totalRuntime * (stData.target / 100);
                 const stDiffMin = stData.duration - stTargetMin;
+                
                 const status = getDowntimeStatus(stData.percent, stData.target);
 
                 return `
@@ -1454,7 +1285,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-start mb-1">
                             <div class="flex flex-col truncate">
-                                <span class="text-sm font-bold text-slate-800 truncate">${stData.name}</span>
+                                <span class="text-sm font-bold text-slate-850 truncate">${stData.name}</span>
                                 <span class="text-[10px] text-slate-400 font-bold uppercase truncate">${stData.ops.join(', ') || 'ไม่มีผู้ปฏิบัติงาน'}</span>
                             </div>
                             <div class="text-right">
@@ -1462,7 +1293,7 @@
                                     ${stData.duration.toLocaleString(undefined, {maximumFractionDigits: 1})} น. / ${stData.stops} ค. (${stData.percent.toFixed(2)}%)
                                 </span>
                                 <div class="flex flex-col items-end text-[10px] md:text-xs mt-0.5 space-y-0.5">
-                                    <span class="text-slate-400 font-medium">Target: <span class="font-bold text-slate-600">${stData.target.toFixed(2)}% (${stTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span></span>
+                                    <span class="text-slate-450 font-medium">Target: <span class="font-bold text-slate-600">${stData.target.toFixed(2)}% (${stTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span></span>
                                     <span class="font-black ${status.textClass}">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}% (${stDiffMin > 0 ? '+' : ''}${stDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span>
                                 </div>
                             </div>
@@ -1542,7 +1373,7 @@
             const stationNcpMap = {}; fForNCP.forEach(d => { if (!d.station || !isNaN(d.station)) return; if (!stationNcpMap[d.station]) stationNcpMap[d.station] = { weight: 0, ops: new Set() }; stationNcpMap[d.station].weight += d.weightNcp; if (d.ncpOpNames) d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => stationNcpMap[d.station].ops.add(name)); });
             const rankingData = Object.entries(stationNcpMap).map(([stName, data]) => { const stPercent = totalConsumption > 0 ? (data.weight / totalConsumption) * 100 : 0; const stTarget = ncpTargets[cleanStr(stName)] || 0; return { name: stName, weight: data.weight, percent: stPercent, target: stTarget, diff: stPercent - stTarget, ops: Array.from(data.ops) }; });
             
-            document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData) => { 
+            document.getElementById('ncp-station-list').innerHTML = rankingData.sort((a, b) => a.diff - b.diff).map((stData, i) => { 
                 const thumbsHtml = stData.ops.map((name, idx) => `<img src="${masterOpList.get(name) || ''}" class="op-thumb" crossorigin="anonymous" title="${name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="op-thumb" style="background-color: ${colorPalette[idx % colorPalette.length]}; display: none;">${name.charAt(0)}</div>`).join(''); 
                 
                 const stTargetWeight = totalConsumption * (stData.target / 100);
@@ -1564,7 +1395,7 @@
                                     ${stData.weight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก. (${stData.percent.toFixed(2)}%)
                                 </span>
                                 <div class="flex flex-col items-end text-[10px] md:text-xs mt-0.5 space-y-0.5">
-                                    <span class="text-slate-400 font-medium">Target: <span class="font-bold text-slate-600">${stData.target.toFixed(2)}% (${stTargetWeight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก.)</span></span>
+                                    <span class="text-slate-450 font-medium">Target: <span class="font-bold text-slate-600">${stData.target.toFixed(2)}% (${stTargetWeight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก.)</span></span>
                                     <span class="font-black ${statusColorClass}">Diff: ${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}% (${stDiffWeight > 0 ? '+' : ''}${stDiffWeight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก.)</span>
                                 </div>
                             </div>
@@ -1595,6 +1426,7 @@
             const chosenShortageColor = document.getElementById('shortage-chart-color').value;
             const hasSelectedCust = shortageSelectedCustomers.size > 0;
             const hasSelectedReasons = shortageSelectedReasons.size > 0;
+            // เพิ่มการคำนวณ Multi-select ของ Group ขาดจำนวน
             const hasSelectedGroups = shortageSelectedGroups.size > 0;
 
             const fShortageBase = shortageData.filter(d => 
@@ -1604,7 +1436,7 @@
                 (!sh || cleanStr(d.shift) === cleanStr(sh)) && 
                 (!repairVal || cleanStr(d.repairWork) === cleanStr(repairVal)) && 
                 (!hasSelectedCust || shortageSelectedCustomers.has(d.customer)) &&
-                (!hasSelectedGroups || shortageSelectedGroups.has(d.shortageGroup))
+                (!hasSelectedGroups || shortageSelectedGroups.has(d.shortageGroup)) // กรองคอลัมน์ AA ตามที่เลือก
             );
 
             const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
@@ -1618,6 +1450,7 @@
             const shortageOrdersCount = shortageOrdersList.length; 
 
             const completedOrdersCount = Math.max(0, totalBaseOrdersCount - shortageOrdersCount);
+            
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
             const hasTarget = !hasSelectedReasons; 
@@ -1720,7 +1553,7 @@
                 }
             });
 
-            // Top 5 ปัญหา ขาดจำนวน
+            // 1. Top 5 ปัญหา ขาดจำนวน
             const problemMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.reason && d.reason !== 'ครบจำนวน') {
@@ -1768,7 +1601,7 @@
                 }
             });
 
-            // Top 5 ลูกค้าที่ขาดจำนวนมากที่สุด
+            // 1.2 Top 5 ลูกค้าที่ขาดจำนวนมากที่สุด
             const customerShortageMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.customer) {
@@ -1816,10 +1649,10 @@
                 }
             });
 
-            // Gram Breakdown
+            // 2. ลักษณะแกรม
             let thinCount = 0;   // 105-140
             let mediumCount = 0; // 141-200
-            let thickCount = 0;  // 201+
+            let thickCount = 0;  // 201 ขึ้นไป
             shortageOrdersList.forEach(d => {
                 const ahVal = String(d.ah || '').trim();
                 const last3 = ahVal.slice(-3);
@@ -1868,9 +1701,9 @@
                 }
             });
 
-            // Repair difficulty classification
-            let hardRepair = 0; // -1 to -99
-            let easyRepair = 0; // -100 or higher
+            // 3. ลักษณะประเภทจำนวนแผ่นงานขาดจำนวน
+            let hardRepair = 0; // -1 ถึง -99
+            let easyRepair = 0; // -100 ขึ้นไป
             shortageOrdersList.forEach(d => {
                 const sheets = Number(d.sheets);
                 if (sheets <= -1 && sheets >= -99) {
@@ -1924,7 +1757,7 @@
                 }
             });
 
-            // Meters / Order Pattern Breakdown
+            // 4. ลักษณะเมตร
             const meterMap = {};
             shortageOrdersList.forEach(d => {
                 const pattern = d.orderPattern || 'ไม่ระบุ';
@@ -1969,7 +1802,7 @@
                 }
             });
 
-            // Station Shortage Breakdown
+            // 5. สัดส่วน ขาดจำนวน ราย Station
             const shortageStationMap = {};
             fShortageBase.forEach(d => {
                 if (d.status === 'ขาดจำนวน' && d.station) {
@@ -2017,7 +1850,7 @@
                 }
             });
 
-            // Group Shortage Donut Chart
+            // [เพิ่มใหม่] คำนวณข้อมูลและแสดงผลกราฟโดนัท Group ขาดจำนวน (คอลัมน์ AA)
             const groupMap = {};
             shortageOrdersList.forEach(d => {
                 const g = d.shortageGroup || 'ไม่ระบุกลุ่ม';
@@ -2061,48 +1894,59 @@
                     }
                 }
             });
-
-            let totalNormalExcessSheets = 0;
-            let totalNormalExcessValue = 0;
-            let totalExcessSheets = 0;
-            let totalExcessValue = 0;
-            let totalCloseSheets = 0;
-            let totalCloseValue = 0;
-
-            fShortageBase.forEach(d => {
-                const rate = d.repairRate || 0;
-                const currentRepairWork = d.repairWork ? d.repairWork.trim() : '';
-
-                const normalExcessAmt = d.normalExcessSheets * -1;
-                totalNormalExcessSheets += normalExcessAmt;
-                totalNormalExcessValue += (normalExcessAmt * rate);
-
-                if (d.status === 'ขาดจำนวน') {
-                    if (currentRepairWork === 'ตัดจบซ่อม') {
-                        const sheetsAmt = d.sheets * -1;
-                        totalCloseSheets += sheetsAmt;
-                        totalCloseValue += (sheetsAmt * rate);
-                    } else {
-                        const excessAmt = d.excessSheets * -1;
-                        totalExcessSheets += excessAmt;
-                        totalExcessValue += (excessAmt * rate);
-                    }
-                }
-            });
-
-            if (Object.is(totalNormalExcessValue, -0)) totalNormalExcessValue = 0;
-            if (Object.is(totalExcessValue, -0)) totalExcessValue = 0;
-            if (Object.is(totalCloseValue, -0)) totalCloseValue = 0;
-
-            document.getElementById('shortage-kpi-normal-excess-sheets').textContent = totalNormalExcessSheets.toLocaleString() + ' แผ่น';
-            document.getElementById('shortage-kpi-normal-excess-value').textContent = 'มูลค่า: ' + totalNormalExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
-
-            document.getElementById('shortage-kpi-excess-sheets').textContent = totalExcessSheets.toLocaleString() + ' แผ่น';
-            document.getElementById('shortage-kpi-excess-value').textContent = 'มูลค่า: ' + totalExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
             
-            document.getElementById('shortage-kpi-close-sheets').textContent = totalCloseSheets.toLocaleString() + ' แผ่น';
-            document.getElementById('shortage-kpi-close-value').textContent = 'มูลค่า: ' + totalCloseValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+    // =========================================================================
+    // [แก้ไขรอบสมบูรณ์]: เปลี่ยนมาใช้วันลูป fShortageBase เพื่อคำนวณงานปกติจากออเดอร์ทั้งหมด
+    // =========================================================================
+    let totalNormalExcessSheets = 0;
+    let totalNormalExcessValue = 0;
+    let totalExcessSheets = 0;
+    let totalExcessValue = 0;
+    let totalCloseSheets = 0;
+    let totalCloseValue = 0;
 
+    // เปลี่ยนจาก shortageOrdersList เป็น fShortageBase เพื่อเก็บยอดแผ่นเกินงานปกติได้ครบถ้วน
+    fShortageBase.forEach(d => {
+        const rate = d.repairRate || 0;
+        const currentRepairWork = d.repairWork ? d.repairWork.trim() : '';
+
+        // 1. คำนวณส่วนของ "แผ่นเกินจากงานปกติ" ( Col AQ * -1 * Col AR ราคา) จากทุกออเดอร์ที่ผ่านฟิลเตอร์
+        const normalExcessAmt = d.normalExcessSheets * -1;
+        totalNormalExcessSheets += normalExcessAmt;
+        totalNormalExcessValue += (normalExcessAmt * rate);
+
+        // 2. ส่วนของงานซ่อมและตัดจบ ให้คำนวณเฉพาะออเดอร์ที่เป็นสถานะขาดจำนวนเท่านั้นตามเงื่อนไขเดิม
+        if (d.status === 'ขาดจำนวน') {
+            if (currentRepairWork === 'ตัดจบซ่อม') {
+                const sheetsAmt = d.sheets * -1;
+                totalCloseSheets += sheetsAmt;
+                totalCloseValue += (sheetsAmt * rate);
+            } else {
+                const excessAmt = d.excessSheets * -1;
+                totalExcessSheets += excessAmt;
+                totalExcessValue += (excessAmt * rate);
+            }
+        }
+    });
+
+    // ปรับแก้กรณีคำนวณเลขลบศูนย์ (-0) ให้เป็นเลข 0
+    if (Object.is(totalNormalExcessValue, -0)) totalNormalExcessValue = 0;
+    if (Object.is(totalExcessValue, -0)) totalExcessValue = 0;
+    if (Object.is(totalCloseValue, -0)) totalCloseValue = 0;
+
+    // สั่งพ่นค่าตัวเลขลงการ์ดทั้ง 3 ใบตามเดิม
+    document.getElementById('shortage-kpi-normal-excess-sheets').textContent = totalNormalExcessSheets.toLocaleString() + ' แผ่น';
+    document.getElementById('shortage-kpi-normal-excess-value').textContent = 'มูลค่า: ' + totalNormalExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+
+    document.getElementById('shortage-kpi-excess-sheets').textContent = totalExcessSheets.toLocaleString() + ' แผ่น';
+    document.getElementById('shortage-kpi-excess-value').textContent = 'มูลค่า: ' + totalExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+    
+    document.getElementById('shortage-kpi-close-sheets').textContent = totalCloseSheets.toLocaleString() + ' แผ่น';
+    document.getElementById('shortage-kpi-close-value').textContent = 'มูลค่า: ' + totalCloseValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+    // =========================================================================
+    // [สิ้นสุดจุดที่แก้ไขรอบสมบูรณ์]
+    // =========================================================================
+            // 6. Performance by Station List
             const stationShortagePerf = {};
             let shortageStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             
@@ -2153,7 +1997,7 @@
                 };
             });
 
-            document.getElementById('shortage-station-list').innerHTML = shortagePerfRanking.sort((a, b) => a.diff - b.diff).map((stData) => {
+            document.getElementById('shortage-station-list').innerHTML = shortagePerfRanking.sort((a, b) => a.diff - b.diff).map((stData, i) => {
                 const thumbsHtml = stData.ops.map((name, idx) => {
                     const imgUrl = masterOpList.get(name) || '';
                     const bgColor = colorPalette[idx % colorPalette.length];
@@ -2163,6 +2007,8 @@
                 const targetText = hasTarget ? `${stData.target.toFixed(2)}%` : `-`;
                 const diffText = hasTarget ? `${stData.diff > 0 ? '+' : ''}${stData.diff.toFixed(2)}%` : `-`;
                 const diffClass = hasTarget ? (stData.diff > 0 ? 'text-rose-500' : 'text-emerald-600') : 'text-slate-400';
+                const barWidth = hasTarget ? Math.min(100, Math.max(5, (stData.percent / (stData.target || 18)) * 50)) : Math.min(100, Math.max(5, stData.percent * 3));
+                const barColor = hasTarget ? (stData.diff > 0 ? '#fb7185' : '#34d399') : '#6366f1';
                 
                 return `
                     <div class="flex items-center gap-5">
@@ -2177,284 +2023,69 @@
                                     <span class="text-[11px] font-black text-indigo-600 block">${stData.shortageCount.toLocaleString()} ออเดอร์ (${stData.percent.toFixed(2)}%)</span>
                                     <div class="flex flex-col items-end">
                                         <span class="text-[9px] text-slate-400 font-bold italic">Target: ${targetText}</span>
-                                        <span class="text-[10px] font-black ${diffClass}">Diff: ${diffText}</span>
+                                        <span class="text-[10px] font-bold ${diffClass} italic">Diff: ${diffText}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                                <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(100, Math.max(5, stData.percent * 4))}%; background-color: ${stData.diff > 0 ? '#f43f5e' : '#10b981'}"></div>
+                            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+                                <div class="h-full rounded-full transition-all duration-1000" style="width: ${barWidth}%; background: ${barColor}"></div>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            document.getElementById('shortage-table-body').innerHTML = fShortageBase.slice(0, 100).map(d => {
+            // 7. Shortage Detailed Table
+            const fShortageTable = shortageOrdersList;
+            document.getElementById('shortage-table-body').innerHTML = fShortageTable.slice(0, 100).map(d => {
+                
+                // 1. ดึงเรทราคาจากคอลัมน์ AR (d.repairRate)
                 const rate = d.repairRate || 0;
+                
+                // 2. เช็คตัวแปร repairWork (ดึงมาจาก Col AS/AB) และลบช่องว่างออกเพื่อความแม่นยำ
                 const currentRepairWork = d.repairWork ? d.repairWork.trim() : '';
-                let val = currentRepairWork === 'ตัดจบซ่อม' ? (d.sheets * -1 * rate) : (d.excessSheets * -1 * rate);
-                if (Object.is(val, -0)) val = 0;
+                
+                let valueBaht = 0;
+
+                // 3. เงื่อนไข: ถ้าในส่วน Repair Work เป็น "ตัดจบซ่อม"
+                if (currentRepairWork === 'ตัดจบซ่อม') {
+                    // คำนวนจาก: จำนวนแผ่นขาด (d.sheets) * -1 * คอลัมน์ AR (rate)
+                    valueBaht = d.sheets * -1 * rate;
+                } else {
+                    // กรณีอื่นๆ (หรือถ้าต้องการให้เป็นรูปแบบเดิม): แผ่นเกินซ่อม * -1 * เรท
+                    valueBaht = d.excessSheets * -1 * rate;
+                }
+
+                // ดักกรณีคำนวณได้ลบศูนย์ (-0) ให้แสดงผลเป็น 0 บาทปกติ
+                if (Object.is(valueBaht, -0)) {
+                    valueBaht = 0;
+                }
 
                 return `
-                    <tr class="border-b hover:bg-slate-50 transition-colors">
-                        <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400 font-bold uppercase">กะ ${d.shift}</span></td>
-                        <td class="p-5 font-medium">${d.pdr}<br><span class="text-slate-400 text-[10px] uppercase font-bold">${d.customer}</span></td>
-                        <td class="p-5 bg-slate-50/50 font-mono text-[11px] text-slate-600">${d.colM || '-'}</td>
-                        <td class="p-5"><span class="text-blue-600 font-bold">${d.machine || '-'}</span><br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.station || '-'}</span></td>
-                        <td class="p-5">
-                            <span class="text-slate-700 font-medium block mb-1">${d.reason || '-'}</span>
-                            <div class="flex gap-2 text-[10px] font-bold">
-                                <span class="text-rose-500">ขาด: ${d.sheets} แผ่น</span>
-                                <span class="text-teal-600">เกิน: ${d.excessSheets} แผ่น</span>
-                                <span class="text-indigo-600">มูลค่า: ${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บ.</span>
-                            </div>
-                        </td>
-                        <td class="p-5 text-[10px]">
-                            <span class="font-bold text-slate-600 block">${d.stopStatus || '-'}</span>
-                            <span class="text-slate-400 font-medium block">${d.orderPattern || '-'}</span>
-                            <span class="text-amber-600 font-bold block">${d.repairWork || '-'}</span>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function updateSpeedUI() {
-            const s = document.getElementById('speed-start-date').value,
-                  e = document.getElementById('speed-end-date').value,
-                  mc = document.getElementById('speed-filter-mc').value,
-                  sh = document.getElementById('speed-filter-shift').value,
-                  st = document.getElementById('speed-filter-status').value,
-                  pt = document.getElementById('speed-filter-pattern').value,
-                  chosenSpeedColor = document.getElementById('speed-chart-color').value;
-
-            const fSpeed = speedData.filter(d => 
-                (!s || d.isoDate >= s) &&
-                (!e || d.isoDate <= e) &&
-                (!mc || cleanStr(d.machine) === cleanStr(mc)) &&
-                (!sh || cleanStr(d.shift) === cleanStr(sh)) &&
-                (!st || cleanStr(d.status) === cleanStr(st)) &&
-                (!pt || cleanStr(d.orderPattern) === cleanStr(pt))
-            );
-
-            // 1. Plan Card
-            const planItems = fSpeed.filter(d => cleanStr(d.status) !== 'งานนอกแผน');
-            const planOrdersCount = planItems.length;
-            const planMeters = planItems.reduce((acc, curr) => acc + curr.planMeters, 0);
-            const planDuration = fSpeed.reduce((acc, curr) => acc + curr.planDuration, 0);
-            const planSpeed = planDuration > 0 ? (planMeters / planDuration) : 0;
-
-            document.getElementById('speed-plan-orders').textContent = Math.round(planOrdersCount).toLocaleString();
-            document.getElementById('speed-plan-meters').textContent = Math.round(planMeters).toLocaleString();
-            document.getElementById('speed-plan-time').textContent = Math.round(planDuration).toLocaleString() + ' นาที';
-            document.getElementById('speed-plan-val').innerHTML = `${Math.round(planSpeed).toLocaleString()} <span class="text-xs font-normal">ม./นาที</span>`;
-
-            // 2. Production Card
-            const actItems = fSpeed.filter(d => cleanStr(d.status) !== 'งานค้างแผน');
-            const actOrdersCount = actItems.length;
-            const actMeters = actItems.reduce((acc, curr) => acc + curr.actMeters, 0);
-            const actRuntime = actItems.reduce((acc, curr) => acc + curr.actDuration, 0);
-            const actLost = actItems.reduce((acc, curr) => acc + curr.lostDuration, 0);
-            const netOperatingTime = Math.max(0, actRuntime - actLost);
-            const actSpeed = netOperatingTime > 0 ? (actMeters / netOperatingTime) : 0;
-
-            const unplanItems = fSpeed.filter(d => cleanStr(d.status).includes('นอกแผน'));
-            const unplanOrders = unplanItems.length;
-            const unplanMeters = unplanItems.reduce((acc, curr) => acc + curr.actMeters, 0);
-            const unplanRuntime = unplanItems.reduce((acc, curr) => acc + curr.actDuration, 0);
-            const unplanLost = unplanItems.reduce((acc, curr) => acc + curr.lostDuration, 0);
-
-            const diffOrders = actOrdersCount - planOrdersCount;
-            const diffMeters = actMeters - planMeters;
-            const diffRuntime = actRuntime - planDuration;
-            const diffSpeed = actSpeed - planSpeed;
-
-            document.getElementById('speed-act-orders').textContent = Math.round(actOrdersCount).toLocaleString();
-            document.getElementById('speed-act-orders-unplan').textContent = `นอกแผน: ${Math.round(unplanOrders).toLocaleString()}`;
-            const diffOrdEl = document.getElementById('speed-diff-orders');
-            diffOrdEl.textContent = `Diff: ${diffOrders > 0 ? '+' : ''}${Math.round(diffOrders).toLocaleString()}`;
-            diffOrdEl.className = `text-[10px] font-black mt-1 ${diffOrders >= 0 ? 'text-emerald-600' : 'text-rose-500'}`;
-
-            document.getElementById('speed-act-meters').textContent = Math.round(actMeters).toLocaleString();
-            document.getElementById('speed-act-meters-unplan').textContent = `นอกแผน: ${Math.round(unplanMeters).toLocaleString()}`;
-            const diffMetEl = document.getElementById('speed-diff-meters');
-            diffMetEl.textContent = `Diff: ${diffMeters > 0 ? '+' : ''}${Math.round(diffMeters).toLocaleString()}`;
-            diffMetEl.className = `text-[10px] font-black mt-1 ${diffMeters >= 0 ? 'text-emerald-600' : 'text-rose-500'}`;
-
-            document.getElementById('speed-act-runtime').textContent = Math.round(actRuntime).toLocaleString() + ' น.';
-            document.getElementById('speed-act-runtime-unplan').textContent = `นอกแผน: ${Math.round(unplanRuntime).toLocaleString()} น.`;
-            const diffRunEl = document.getElementById('speed-diff-runtime');
-            diffRunEl.textContent = `Diff: ${diffRuntime > 0 ? '+' : ''}${Math.round(diffRuntime).toLocaleString()} น.`;
-            diffRunEl.className = `text-[10px] font-black mt-1 ${diffRuntime <= 0 ? 'text-emerald-600' : 'text-amber-600'}`;
-
-            document.getElementById('speed-act-lost').textContent = Math.round(actLost).toLocaleString() + ' น.';
-            document.getElementById('speed-act-lost-unplan').textContent = `นอกแผน: ${Math.round(unplanLost).toLocaleString()} น.`;
-            document.getElementById('speed-act-nettime').textContent = Math.round(netOperatingTime).toLocaleString() + ' นาที';
-
-            document.getElementById('speed-act-val').innerHTML = `${Math.round(actSpeed).toLocaleString()} <span class="text-xs font-normal">ม./นาที</span>`;
-            const diffSpdEl = document.getElementById('speed-diff-speed');
-            diffSpdEl.textContent = `Diff: ${diffSpeed > 0 ? '+' : ''}${Math.round(diffSpeed).toLocaleString()} ม./นาที`;
-            diffSpdEl.className = `text-xs font-black mt-0.5 ${diffSpeed >= 0 ? 'text-emerald-600' : 'text-rose-500'}`;
-
-            // 3. Backlog Card (งานค้างแผน)
-            const pendingItems = fSpeed.filter(d => cleanStr(d.status) === 'งานค้างแผน');
-            const pendingOrders = pendingItems.length;
-            const pendingMeters = pendingItems.reduce((acc, curr) => acc + (curr.actMeters || curr.planMeters || 0), 0);
-            const pendingTime = pendingItems.reduce((acc, curr) => acc + (curr.planDuration || curr.actDuration || 0), 0);
-
-            const pendingHours = Math.floor(pendingTime / 60);
-            const pendingMins = Math.round(pendingTime % 60);
-
-            document.getElementById('speed-pending-orders').textContent = Math.round(pendingOrders).toLocaleString();
-            document.getElementById('speed-pending-meters').textContent = Math.round(pendingMeters).toLocaleString();
-            document.getElementById('speed-pending-time').textContent = `${pendingHours} ชม. ${pendingMins} นาที`;
-            document.getElementById('speed-pending-time-sub').textContent = `(${Math.round(pendingTime).toLocaleString()} นาที)`;
-
-            // Trend Chart
-            const trendPlanMeters = {}, trendPlanTime = {}, trendActMeters = {}, trendActNetTime = {};
-            fSpeed.forEach(d => {
-                let k = speedTrendMode === 'daily' ? d.isoDate : (speedTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
-                if (cleanStr(d.status) !== 'งานนอกแผน') {
-                    trendPlanMeters[k] = (trendPlanMeters[k] || 0) + d.planMeters;
-                    trendPlanTime[k] = (trendPlanTime[k] || 0) + d.planDuration;
-                }
-                if (cleanStr(d.status) !== 'งานค้างแผน') {
-                    trendActMeters[k] = (trendActMeters[k] || 0) + d.actMeters;
-                    trendActNetTime[k] = (trendActNetTime[k] || 0) + Math.max(0, d.actDuration - d.lostDuration);
-                }
-            });
-
-            const allIntervalKeys = Array.from(new Set([...Object.keys(trendPlanTime), ...Object.keys(trendActNetTime)])).sort();
-            const planSpeedsList = allIntervalKeys.map(k => (trendPlanTime[k] > 0 ? (trendPlanMeters[k] / trendPlanTime[k]) : 0));
-            const actSpeedsList = allIntervalKeys.map(k => (trendActNetTime[k] > 0 ? (trendActMeters[k] / trendActNetTime[k]) : 0));
-
-            const pointColors = actSpeedsList.map((act, idx) => {
-                const plan = planSpeedsList[idx] || 0;
-                return act >= plan ? '#10b981' : '#f43f5e';
-            });
-
-            drawChart('speedTrendChart', {
-                type: 'line',
-                data: {
-                    labels: allIntervalKeys.map(l => (speedTrendMode === 'daily' ? (speedData.find(d => d.isoDate === l)?.date || l) : l)),
-                    datasets: [
-                        {
-                            label: 'Speed ผลิตจริง (ม./นาที)',
-                            data: actSpeedsList,
-                            borderColor: chosenSpeedColor,
-                            borderWidth: 3,
-                            pointBackgroundColor: pointColors,
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            fill: true,
-                            backgroundColor: chosenSpeedColor + '1A',
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Speed วางแผน (ม./นาที)',
-                            data: planSpeedsList,
-                            borderColor: '#64748b',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 3,
-                            pointBackgroundColor: '#64748b',
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        datalabels: {
-                            display: true,
-                            formatter: (v) => v > 0 ? `${Math.round(v)}` : '',
-                            font: { size: 11, weight: 'bold' },
-                            color: function(context) {
-                                if (context.datasetIndex !== 0) return '#64748b';
-                                const idx = context.dataIndex;
-                                const act = context.dataset.data[idx] || 0;
-                                const plan = context.chart.data.datasets[1]?.data[idx] || 0;
-                                return act >= plan ? '#059669' : '#dc2626';
-                            },
-                            offset: 6,
-                            align: 'top'
-                        },
-                        legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } }
-                    },
-                    scales: { y: { beginAtZero: true, grace: '25%' } }
-                }
-            });
-
-            // Donut Charts
-            const patternMap = {};
-            fSpeed.forEach(d => { patternMap[d.orderPattern || 'ไม่ระบุ'] = (patternMap[d.orderPattern || 'ไม่ระบุ'] || 0) + 1; });
-            const patternEntries = Object.entries(patternMap).sort((a,b) => b[1] - a[1]);
-            const totalPatterns = patternEntries.reduce((a, b) => a + b[1], 0);
-
-            drawChart('speedPatternDonutChart', {
-                type: 'doughnut',
-                data: {
-                    labels: patternEntries.map(x => x[0]),
-                    datasets: [{ data: patternEntries.map(x => x[1]), backgroundColor: patternEntries.map((_, i) => colorPalette[i % colorPalette.length] + 'DD'), borderColor: '#ffffff', borderWidth: 2 }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 9 } } },
-                        datalabels: {
-                            color: '#ffffff', font: { size: 10, weight: 'bold' },
-                            formatter: (v) => v > 0 && totalPatterns > 0 ? `${Math.round(v)} ออเดอร์\n(${((v / totalPatterns) * 100).toFixed(1)}%)` : '',
-                            textAlign: 'center'
-                        }
-                    }
-                }
-            });
-
-            const fluteMap = {};
-            fSpeed.forEach(d => { fluteMap[d.flute || 'ไม่ระบุ'] = (fluteMap[d.flute || 'ไม่ระบุ'] || 0) + 1; });
-            const fluteEntries = Object.entries(fluteMap).sort((a,b) => b[1] - a[1]);
-            const totalFlutes = fluteEntries.reduce((a, b) => a + b[1], 0);
-
-            drawChart('speedFluteDonutChart', {
-                type: 'doughnut',
-                data: {
-                    labels: fluteEntries.map(x => x[0]),
-                    datasets: [{ data: fluteEntries.map(x => x[1]), backgroundColor: fluteEntries.map((_, i) => colorPalette[(i + 2) % colorPalette.length] + 'DD'), borderColor: '#ffffff', borderWidth: 2 }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 9 } } },
-                        datalabels: {
-                            color: '#ffffff', font: { size: 10, weight: 'bold' },
-                            formatter: (v) => v > 0 && totalFlutes > 0 ? `${Math.round(v)} ออเดอร์\n(${((v / totalFlutes) * 100).toFixed(1)}%)` : '',
-                            textAlign: 'center'
-                        }
-                    }
-                }
-            });
-
-            document.getElementById('speed-table-count').textContent = `${Math.round(fSpeed.length).toLocaleString()} รายการ`;
-            document.getElementById('speed-table-body').innerHTML = fSpeed.slice(0, 100).map(d => {
-                const pSpeed = d.planDuration > 0 ? (d.planMeters / d.planDuration) : 0;
-                const netTime = Math.max(0, d.actDuration - d.lostDuration);
-                const aSpeed = netTime > 0 ? (d.actMeters / netTime) : 0;
-                return `
-                    <tr class="border-b hover:bg-slate-50 transition-colors">
+                    <tr class="border-b hover:bg-indigo-50/30 transition-colors">
                         <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] uppercase font-bold text-slate-400">กะ ${d.shift}</span></td>
-                        <td class="p-5"><span class="text-blue-600 font-bold">${d.machine}</span><br><span class="text-[9px] font-bold text-slate-500 uppercase px-2 py-0.5 rounded bg-slate-100">${d.status}</span></td>
-                        <td class="p-5 font-bold text-slate-700">${d.orderPattern || '-'}<br><span class="text-[10px] text-indigo-600 font-bold uppercase">ลอน: ${d.flute || '-'}</span></td>
-                        <td class="p-5 text-center font-medium">แผน: ${Math.round(d.planMeters).toLocaleString()} ม.<br><span class="font-bold text-emerald-600">จริง: ${Math.round(d.actMeters).toLocaleString()} ม.</span></td>
-                        <td class="p-5 text-center text-slate-600">แผน: ${Math.round(d.planDuration)}น. / จริง: ${Math.round(d.actDuration)}น.<br><span class="text-[10px] text-rose-500 font-bold">เสีย: ${Math.round(d.lostDuration)}น.</span></td>
-                        <td class="p-5 text-right font-black">
-                            <span class="text-slate-400 text-[10px] block">แผน: ${Math.round(pSpeed)} ม./น.</span>
-                            <span class="text-emerald-600 text-sm">จริง: ${Math.round(aSpeed)} ม./น.</span>
+                        <td class="p-5 font-medium">PDR: ${d.pdr}<br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.customer}</span></td>
+                        <td class="p-5 bg-indigo-50/10 font-bold text-slate-700">${d.colM || '-'}</td>
+                        <td class="p-5 font-bold text-indigo-600">${d.machine}<br><span class="text-[9px] text-slate-400">${d.station}</span></td>
+                        <td class="p-5 font-medium">
+                            <span class="block text-slate-700">${d.reason || '-'}</span>
+                            <span class="text-xs font-bold text-rose-500 block">ขาด: ${d.sheets.toLocaleString()} แผ่น</span>
+                            <span class="text-xs font-bold text-emerald-600 block">เกินซ่อม: ${d.excessSheets.toLocaleString()} แผ่น</span>
+                            
+                            <span class="text-xs font-black text-indigo-600 block mt-0.5 bg-indigo-50 px-1.5 py-0.5 rounded w-max">
+                                มูลค่า: ${valueBaht.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท
+                            </span>
+                        </td>
+                        <td class="p-5 font-medium text-slate-600">
+                            ${d.stopStatus || '-'}<br>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase block">${d.orderPattern || '-'}</span>
+                            <span class="inline-block mt-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold uppercase">
+                                Repair Work: ${d.repairWork || '-'}
+                            </span>
                         </td>
                     </tr>
                 `;
-            }).join('');
+            }).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-400">ไม่พบข้อมูลออเดอร์ขาดจำนวนที่ตรงเงื่อนไข</td></tr>';
         }
 
         function updateStationAnalysisUI() {
@@ -2492,7 +2123,12 @@
             const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
             const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
 
-            const fShortageBase = shortageData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
+            const fShortageBase = shortageData.filter(d => 
+                (!s || d.isoDate >= s) && 
+                (!e || d.isoDate <= e) && 
+                (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
+                (!sh || cleanStr(d.shift) === cleanStr(sh))
+            );
             const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
             const totalBaseOrdersCount = baseValidOrders.length;
 
@@ -2604,6 +2240,7 @@
                     </div>
 
                     <div class="p-5 space-y-4 flex-1">
+                        
                         <div onclick="showStationDetail('${st}', 'downtime')" class="p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-sm ${isDtPassed ? 'border-emerald-100 bg-emerald-50/10 hover:border-emerald-300' : 'border-rose-100 bg-rose-50/10 hover:border-rose-300'}">
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-center gap-2">
@@ -2612,12 +2249,27 @@
                                     </span>
                                     <span class="text-xs font-black text-slate-700">Downtime</span>
                                 </div>
-                                <span class="text-xs font-black ${isDtPassed ? 'text-emerald-600' : 'text-rose-600'}">${dtPercent.toFixed(2)}%</span>
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isDtPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${isDtPassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
+                                </span>
                             </div>
-                            <div class="text-[11px] text-slate-500 space-y-0.5 mt-2 pt-2 border-t border-slate-100">
-                                <div class="flex justify-between"><span>เวลาสูญเสีย:</span><span class="font-bold text-slate-700">${dtDuration.toLocaleString()} น. (${dtStops} ครั้ง)</span></div>
-                                <div class="flex justify-between"><span>Target:</span><span>${dtTarget.toFixed(2)}% (${dtTargetMin.toLocaleString(undefined, {maximumFractionDigits:1})} น.)</span></div>
-                                <div class="flex justify-between font-bold ${isDtPassed ? 'text-emerald-600' : 'text-rose-600'}"><span>Diff:</span><span>${dtDiffPercent > 0 ? '+' : ''}${dtDiffPercent.toFixed(2)}% (${dtDiffMin > 0 ? '+' : ''}${dtDiffMin.toLocaleString(undefined, {maximumFractionDigits:1})} น.)</span></div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">จริง (Actual)</p>
+                                    <p class="font-extrabold text-slate-800 text-sm leading-tight">${dtDuration.toLocaleString()} น.</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">${dtStops} ครั้ง (${dtPercent.toFixed(2)}%)</span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">เป้าหมาย (Target)</p>
+                                    <p class="font-bold text-slate-600 text-sm leading-tight">${dtTarget.toFixed(2)}%</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${dtTargetMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)</span>
+                                </div>
+                            </div>
+                            <div class="text-[10px] font-bold flex justify-between items-center border-t border-slate-100/70 pt-1.5 mt-1.5">
+                                <span class="text-slate-400 uppercase tracking-wider">ส่วนต่าง (Diff)</span>
+                                <span class="font-black ${isDtPassed ? 'text-emerald-600' : 'text-rose-500'}">
+                                    ${dtDiffMin > 0 ? '+' : ''}${dtDiffMin.toLocaleString(undefined, {maximumFractionDigits: 1})} น. (${dtDiffPercent > 0 ? '+' : ''}${dtDiffPercent.toFixed(2)}%)
+                                </span>
                             </div>
                         </div>
 
@@ -2625,16 +2277,31 @@
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-center gap-2">
                                     <span class="p-1.5 rounded-lg ${isNcpPassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </span>
-                                    <span class="text-xs font-black text-slate-700">NCP Waste</span>
+                                    <span class="text-xs font-black text-slate-700">NCP</span>
                                 </div>
-                                <span class="text-xs font-black ${isNcpPassed ? 'text-emerald-600' : 'text-rose-600'}">${ncpPercent.toFixed(2)}%</span>
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isNcpPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${isNcpPassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
+                                </span>
                             </div>
-                            <div class="text-[11px] text-slate-500 space-y-0.5 mt-2 pt-2 border-t border-slate-100">
-                                <div class="flex justify-between"><span>น้ำหนักเสีย:</span><span class="font-bold text-slate-700">${weightNcp.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} kg</span></div>
-                                <div class="flex justify-between"><span>Target:</span><span>${ncpTarget.toFixed(2)}% (${ncpTargetWeight.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} kg)</span></div>
-                                <div class="flex justify-between font-bold ${isNcpPassed ? 'text-emerald-600' : 'text-rose-600'}"><span>Diff:</span><span>${ncpDiffPercent > 0 ? '+' : ''}${ncpDiffPercent.toFixed(2)}% (${ncpDiffWeight > 0 ? '+' : ''}${ncpDiffWeight.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} kg)</span></div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">จริง (Actual)</p>
+                                    <p class="font-extrabold text-slate-800 text-sm leading-tight">${weightNcp.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${ncpPercent.toFixed(2)}%)</span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">เป้าหมาย (Target)</p>
+                                    <p class="font-bold text-slate-600 text-sm leading-tight">${ncpTarget.toFixed(2)}%</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${ncpTargetWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.)</span>
+                                </div>
+                            </div>
+                            <div class="text-[10px] font-bold flex justify-between items-center border-t border-slate-100/70 pt-1.5 mt-1.5">
+                                <span class="text-slate-400 uppercase tracking-wider">ส่วนต่าง (Diff)</span>
+                                <span class="font-black ${isNcpPassed ? 'text-emerald-600' : 'text-rose-500'}">
+                                    ${ncpDiffWeight > 0 ? '+' : ''}${ncpDiffWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} กก. (${ncpDiffPercent > 0 ? '+' : ''}${ncpDiffPercent.toFixed(2)}%)
+                                </span>
                             </div>
                         </div>
 
@@ -2642,16 +2309,31 @@
                             <div class="flex justify-between items-center mb-1">
                                 <div class="flex items-center gap-2">
                                     <span class="p-1.5 rounded-lg ${isShortagePassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
                                     </span>
                                     <span class="text-xs font-black text-slate-700">ขาดจำนวน</span>
                                 </div>
-                                <span class="text-xs font-black ${isShortagePassed ? 'text-emerald-600' : 'text-rose-600'}">${shortagePercent.toFixed(2)}%</span>
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isShortagePassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                    ${isShortagePassed ? 'ตามเป้า ✅' : 'เกินเป้า 🚨'}
+                                </span>
                             </div>
-                            <div class="text-[11px] text-slate-500 space-y-0.5 mt-2 pt-2 border-t border-slate-100">
-                                <div class="flex justify-between"><span>ออเดอร์ขาด:</span><span class="font-bold text-slate-700">${shortageCount.toLocaleString()} / ${totalStationOrders.toLocaleString()}</span></div>
-                                <div class="flex justify-between"><span>Target:</span><span>${shortageTarget.toFixed(2)}%</span></div>
-                                <div class="flex justify-between font-bold ${isShortagePassed ? 'text-emerald-600' : 'text-rose-600'}"><span>Diff:</span><span>${shortageDiffPercent > 0 ? '+' : ''}${shortageDiffPercent.toFixed(2)}%</span></div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">จริง (Actual)</p>
+                                    <p class="font-extrabold text-slate-800 text-sm leading-tight">${shortageCount} ออเดอร์</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">(${shortagePercent.toFixed(2)}%)</span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase">เป้าหมาย (Target)</p>
+                                    <p class="font-bold text-slate-600 text-sm leading-tight">${shortageTarget.toFixed(2)}%</p>
+                                    <span class="text-[10px] text-slate-500 font-semibold">${totalStationOrders} ออเดอร์ทั้งหมด</span>
+                                </div>
+                            </div>
+                            <div class="text-[10px] font-bold flex justify-between items-center border-t border-slate-100/70 pt-1.5 mt-1.5">
+                                <span class="text-slate-400 uppercase tracking-wider">ส่วนต่าง (Diff)</span>
+                                <span class="font-black ${isShortagePassed ? 'text-emerald-600' : 'text-rose-500'}">
+                                    ${shortageDiffPercent > 0 ? '+' : ''}${shortageDiffPercent.toFixed(2)}%
+                                </span>
                             </div>
                         </div>
 
@@ -2659,102 +2341,138 @@
                 </div>`;
             });
 
-            const gridContainer = document.getElementById('station-analysis-cards-grid');
-            if (gridContainer) gridContainer.innerHTML = cardsHtml;
+            document.getElementById('station-analysis-cards-grid').innerHTML = cardsHtml;
         }
 
         function showStationDetail(stationName, type) {
+            const modal = document.getElementById('station-detail-modal');
+            const container = document.getElementById('station-detail-modal-container');
+            const titleEl = document.getElementById('modal-title');
+            const subtitleEl = document.getElementById('modal-subtitle');
+            const headerEl = document.getElementById('modal-table-header');
+            const bodyEl = document.getElementById('modal-table-body');
+            const emptyEl = document.getElementById('modal-empty-state');
+
             const s = document.getElementById('station-start-date').value;
             const e = document.getElementById('station-end-date').value;
             const mc = document.getElementById('station-filter-mc').value;
             const sh = document.getElementById('station-filter-shift').value;
             const cleanSt = cleanStr(stationName);
 
-            const modalTitle = document.getElementById('modal-title');
-            const modalSubtitle = document.getElementById('modal-subtitle');
-            const tableHeader = document.getElementById('modal-table-header');
-            const tableBody = document.getElementById('modal-table-body');
-            const emptyState = document.getElementById('modal-empty-state');
-
-            modalSubtitle.textContent = `สถานีงาน: ${stationName} (${type.toUpperCase()})`;
-
-            let rowsHtml = '';
-            let headerHtml = '';
+            let htmlHeader = '';
+            let htmlRows = '';
+            let hasData = false;
 
             if (type === 'downtime') {
-                modalTitle.textContent = `รายละเอียด Downtime`;
-                headerHtml = `<tr class="text-[10px] font-bold text-slate-400 uppercase">
-                    <th class="p-3">วันที่ / กะ</th>
-                    <th class="p-3">เครื่องจักร</th>
-                    <th class="p-3">ปัญหา / สาเหตุ</th>
-                    <th class="p-3 text-center">นาที</th>
-                    <th class="p-3">พนักงาน</th>
-                </tr>`;
-
-                const items = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh) && cleanStr(d.stationWaste) === cleanSt && d.factor.toUpperCase() !== 'PM');
-                rowsHtml = items.map(d => `<tr class="border-b hover:bg-slate-50 transition-colors">
-                    <td class="p-3"><b>${d.date}</b><br><span class="text-[9px] text-slate-400">กะ ${d.shift} ${d.time || ''}</span></td>
-                    <td class="p-3 font-bold text-blue-600">${d.machine}</td>
-                    <td class="p-3 text-slate-700">${d.problem}</td>
-                    <td class="p-3 text-center font-black text-rose-500">${d.duration}</td>
-                    <td class="p-3 text-[10px] text-slate-500 font-bold">${d.operator || '-'}</td>
-                </tr>`).join('');
+                titleEl.textContent = `รายละเอียด Downtime - ${stationName}`;
+                subtitleEl.textContent = 'วิเคราะห์ข้อมูลเวลาสูญเสียรายเหตุการณ์';
+                htmlHeader = `
+                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/50">
+                        <th class="p-4">วันที่</th>
+                        <th class="p-4">ปัญหา</th>
+                        <th class="p-4 text-center">นาที</th>
+                    </tr>
+                `;
+                const filtered = rawData.filter(d => 
+                    (!s || d.isoDate >= s) && 
+                    (!e || d.isoDate <= e) && 
+                    (!mc || d.machine === mc) && 
+                    (!sh || d.shift === sh) && 
+                    (d.factor.toUpperCase() !== 'PM') &&
+                    cleanStr(d.stationWaste) === cleanSt
+                );
+                
+                if (filtered.length > 0) {
+                    hasData = true;
+                    htmlRows = filtered.map(d => `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-bold text-slate-700">${d.date}</td>
+                            <td class="p-4 text-slate-600 leading-relaxed">${d.problem || '-'}</td>
+                            <td class="p-4 text-center font-black text-rose-500">${d.duration.toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                }
             } else if (type === 'ncp') {
-                modalTitle.textContent = `รายละเอียด NCP Waste`;
-                headerHtml = `<tr class="text-[10px] font-bold text-slate-400 uppercase">
-                    <th class="p-3">วันที่ / กะ</th>
-                    <th class="p-3">PDR / MC</th>
-                    <th class="p-3">ปัญหา / เหตุผล</th>
-                    <th class="p-3 text-center">กก.</th>
-                    <th class="p-3">พนักงาน</th>
-                </tr>`;
+                titleEl.textContent = `รายละเอียด NCP - ${stationName}`;
+                subtitleEl.textContent = 'วิเคราะห์ของเสียสะสมราย PDR';
+                htmlHeader = `
+                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/50">
+                        <th class="p-4">วันที่ / PDR</th>
+                        <th class="p-4">ปัญหา</th>
+                        <th class="p-4 text-center">Weight NCP (กก.)</th>
+                    </tr>
+                `;
+                const filtered = ncpData.filter(d => 
+                    (!s || d.isoDate >= s) && 
+                    (!e || d.isoDate <= e) && 
+                    (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
+                    (!sh || cleanStr(d.shift) === cleanStr(sh)) &&
+                    cleanStr(d.station) === cleanSt
+                );
 
-                const items = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && cleanStr(d.station) === cleanSt);
-                rowsHtml = items.map(d => `<tr class="border-b hover:bg-slate-50 transition-colors">
-                    <td class="p-3"><b>${d.date}</b><br><span class="text-[9px] text-slate-400">กะ ${d.shift}</span></td>
-                    <td class="p-3 font-medium">${d.pdr}<br><span class="text-indigo-600 font-bold">${d.machine}</span></td>
-                    <td class="p-3 text-slate-700">${d.reasonDesc || d.problem}</td>
-                    <td class="p-3 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    <td class="p-3 text-[10px] text-slate-500 font-bold">${d.ncpOpNames || '-'}</td>
-                </tr>`).join('');
+                if (filtered.length > 0) {
+                    hasData = true;
+                    htmlRows = filtered.map(d => `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4">
+                                <span class="font-bold text-slate-700">${d.date}</span><br>
+                                <span class="text-[10px] font-black text-indigo-600 uppercase">PDR: ${d.pdr}</span>
+                            </td>
+                            <td class="p-4 text-slate-600 leading-relaxed">${d.reasonDesc || d.problem || '-'}</td>
+                            <td class="p-4 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        </tr>
+                    `).join('');
+                }
             } else if (type === 'shortage') {
-                modalTitle.textContent = `รายละเอียด ขาดจำนวน`;
-                headerHtml = `<tr class="text-[10px] font-bold text-slate-400 uppercase">
-                    <th class="p-3">วันที่ / กะ</th>
-                    <th class="p-3">PDR / ลูกค้า</th>
-                    <th class="p-3">สาเหตุ</th>
-                    <th class="p-3 text-center">แผ่นขาด</th>
-                    <th class="p-3 text-right">มูลค่า (บาท)</th>
-                </tr>`;
+                titleEl.textContent = `รายละเอียด ขาดจำนวน - ${stationName}`;
+                subtitleEl.textContent = 'วิเคราะห์ข้อมูลออเดอร์ขาดจำนวน';
+                htmlHeader = `
+                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/50">
+                        <th class="p-4">วันที่</th>
+                        <th class="p-4">PDR / ชื่อลูกค้า</th>
+                        <th class="p-4 text-center">สาเหตุ / จำนวนแผ่น</th>
+                    </tr>
+                `;
+                const fShortageBase = shortageData.filter(d => 
+                    (!s || d.isoDate >= s) && 
+                    (!e || d.isoDate <= e) && 
+                    (!mc || cleanStr(d.machine) === cleanStr(mc)) && 
+                    (!sh || cleanStr(d.shift) === cleanStr(sh))
+                );
+                const filtered = fShortageBase.filter(d => 
+                    cleanStr(d.station) === cleanSt && 
+                    d.status === 'ขาดจำนวน'
+                );
 
-                const items = shortageData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && cleanStr(d.station) === cleanSt && d.status === 'ขาดจำนวน');
-                rowsHtml = items.map(d => {
-                    const rate = d.repairRate || 0;
-                    const currentRepairWork = d.repairWork ? d.repairWork.trim() : '';
-                    let valueBaht = currentRepairWork === 'ตัดจบซ่อม' ? (d.sheets * -1 * rate) : (d.excessSheets * -1 * rate);
-                    if (Object.is(valueBaht, -0)) valueBaht = 0;
-
-                    return `<tr class="border-b hover:bg-slate-50 transition-colors">
-                        <td class="p-3"><b>${d.date}</b><br><span class="text-[9px] text-slate-400">กะ ${d.shift}</span></td>
-                        <td class="p-3 font-medium">${d.pdr}<br><span class="text-[9px] text-slate-400 font-bold uppercase">${d.customer}</span></td>
-                        <td class="p-3 text-slate-700">${d.reason || '-'}</td>
-                        <td class="p-3 text-center font-black text-rose-500">${d.sheets.toLocaleString()}</td>
-                        <td class="p-3 text-right font-black text-indigo-600">${valueBaht.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    </tr>`;
-                }).join('');
+                if (filtered.length > 0) {
+                    hasData = true;
+                    htmlRows = filtered.map(d => `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-bold text-slate-700">${d.date}</td>
+                            <td class="p-4">
+                                <span class="font-bold text-indigo-600 uppercase">PDR: ${d.pdr}</span><br>
+                                <span class="text-[10px] font-bold text-slate-450">${d.customer || '-'}</span>
+                            </td>
+                            <td class="p-4 text-center">
+                                <span class="font-medium text-slate-600 leading-relaxed block">${d.reason || '-'}</span>
+                                <span class="text-[10px] font-black text-rose-500 block mt-0.5">${d.sheets.toLocaleString()} แผ่น</span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
             }
 
-            tableHeader.innerHTML = headerHtml;
-            if (rowsHtml) {
-                tableBody.innerHTML = rowsHtml;
-                emptyState.classList.add('hidden');
+            headerEl.innerHTML = htmlHeader;
+            bodyEl.innerHTML = htmlRows;
+
+            if (hasData) {
+                emptyEl.classList.add('hidden');
+                headerEl.parentElement.classList.remove('hidden');
             } else {
-                tableBody.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                emptyEl.classList.remove('hidden');
+                headerEl.parentElement.classList.add('hidden');
             }
 
-            const modal = document.getElementById('station-detail-modal');
-            const container = document.getElementById('station-detail-modal-container');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
@@ -2771,19 +2489,53 @@
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-            }, 200);
+            }, 300);
         }
 
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeStationDetailModal();
+            }
+        });
+
+        function updateOperatorUI() { 
+            const n = document.getElementById('op-select').value, s = document.getElementById('op-start-date').value, e = document.getElementById('op-end-date').value, img = document.getElementById('op-profile-img'), ph = document.getElementById('op-img-placeholder'); if (!n) return; 
+            const f = rawData.filter(d => d.operator === n && (!s || d.isoDate >= s) && (!e || d.isoDate <= e)); 
+            document.getElementById('op-info-mc').textContent = getMode(f.map(d => d.machine)); document.getElementById('op-info-station').textContent = getMode(f.map(d => d.station)); document.getElementById('op-info-shift').textContent = f.length ? f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date)))[0].shift : "-"; 
+            const url = f.length ? f.find(d => d.imgUrl && d.imgUrl.includes('google'))?.imgUrl : ""; 
+            if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); } 
+            document.getElementById('op-kpi-time').textContent = f.reduce((a,b)=>a+b.duration,0).toLocaleString(); document.getElementById('op-kpi-count').textContent = f.reduce((a,b)=>a+b.stops,0).toLocaleString(); 
+            document.getElementById('op-table-body').innerHTML = f.sort((a,b)=>new Date(formatToISO(b.date))-new Date(formatToISO(a.date))).map(d => `<tr><td class="p-5 font-bold text-slate-700">${d.date}</td><td class="p-5">${d.station}</td><td class="p-5 text-slate-600">${d.problem}</td><td class="p-5 text-center font-black text-rose-500">${d.duration}</td><td class="p-5"><span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] uppercase font-bold text-slate-500">${d.factor}</span></td></tr>`).join(''); 
+            const trend = {}; f.forEach(d => { let k = opTrendMode === 'daily' ? d.date : (opTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); if(!trend[k]) trend[k] = { t:0, c:0 }; trend[k].t += d.duration; trend[k].c += d.stops; }); 
+            const labs = Object.keys(trend).sort((a,b) => opTrendMode === 'daily' ? new Date(formatToISO(a)) - new Date(formatToISO(b)) : a.localeCompare(b)); 
+            drawChart('opTrendChart', { type: 'line', data: { labels: labs, datasets: [{ data: labs.map(l=>trend[l].t), borderColor: 'rgba(37, 99, 235, 1)', custom: labs.map(l=>trend[l].c) }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', formatter: (v,ctx)=>`${v.toLocaleString()}น. / ${ctx.dataset.custom[ctx.dataIndex].toLocaleString()}ค.`, font: { size: 10, weight: 600 }, color: '#334155', offset: 8 } }, scales: { y: { beginAtZero: true, grace: '25%' } } } }); 
+        }
+        function getMode(arr) { if(!arr.length) return "-"; const m = {}; let max = arr[0], c = 1; arr.forEach(x => { m[x] = (m[x]||0)+1; if(m[x]>c){ max=x; c=m[x]; } }); return max; }
+        function setMainTrendMode(m) { mainTrendMode = m; document.querySelectorAll('#btn-main-trend-daily, #btn-main-trend-weekly, #btn-main-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-main-trend-${m}`)); updateMainUI(); }
+        function setOpTrendMode(m) { opTrendMode = m; document.querySelectorAll('#btn-op-trend-daily, #btn-op-trend-weekly, #btn-op-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-op-trend-${m}`)); updateOperatorUI(); }
+        function setNcpTrendMode(m) { ncpTrendMode = m; document.querySelectorAll('#btn-ncp-trend-daily, #btn-ncp-trend-weekly, #btn-ncp-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-ncp-trend-${m}`)); updateNCPUI(); }
+        function setShortageTrendMode(m) { shortageTrendMode = m; document.querySelectorAll('#btn-shortage-trend-daily, #btn-shortage-trend-weekly, #btn-shortage-trend-monthly').forEach(b => b.classList.toggle('active', b.id === `btn-shortage-trend-${m}`)); updateShortageUI(); }
+        
+        window.onload = () => { setDefaultDates(); syncData(); };
+
+        // ==========================================
+        // 📌 ฟังก์ชันควบคุม Factor Modal
+        // ==========================================
+
+        /**
+         * ฟังก์ชันเปิด Modal และดึงรายการ Downtime แยกตามปัจจัย
+         */
         function openFactorModal(factorKey) {
-            const factorNames = {
-                'man': 'MAN/METHOD',
-                'man/method': 'MAN/METHOD',
+            const factorMap = {
+                'man': 'MAN / METHOD',
                 'machine': 'MACHINE',
                 'material': 'MATERIAL',
                 'other': 'OTHER'
             };
-            const targetName = factorNames[cleanStr(factorKey)] || factorKey.toUpperCase();
-            
+
+            const factorName = factorMap[factorKey] || factorKey.toUpperCase();
+
+            // ดึงค่าการกรองปัจจุบันจากหน้า Dashboard
             const s = document.getElementById('main-start-date').value;
             const e = document.getElementById('main-end-date').value;
             const mc = document.getElementById('main-filter-mc').value;
@@ -2791,194 +2543,85 @@
             const sh = document.getElementById('main-filter-shift').value;
             const sr = document.getElementById('main-filter-search').value.toLowerCase();
 
-            const filtered = rawData.filter(d => 
-                (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && 
+            // กรองข้อมูลรายการเฉพาะปัจจัยที่เลือก
+            const filteredData = rawData.filter(d => 
+                (!s || d.isoDate >= s) && 
+                (!e || d.isoDate <= e) && 
                 (!mc || d.machine === mc) && 
                 (!selectedStation || cleanStr(d.stationWaste) === cleanStr(selectedStation)) &&
                 (!sh || d.shift === sh) && 
-                cleanStr(d.factor) === cleanStr(targetName) &&
                 (d.factor.toUpperCase() !== 'PM') && 
+                cleanStr(d.factor) === cleanStr(factorName) &&
                 (!sr || d.problem.toLowerCase().includes(sr) || d.operator.toLowerCase().includes(sr) || d.station.toLowerCase().includes(sr) || d.stationWaste.toLowerCase().includes(sr))
             );
 
-            document.getElementById('modal-factor-title').textContent = `รายละเอียด Downtime: ${targetName}`;
-            document.getElementById('modal-factor-subtitle').textContent = `รายการประวัติการหยุดเครื่องทั้งหมดของปัจจัย ${targetName}`;
+            // อัปเดต Title ใน Modal
+            document.getElementById('modal-factor-title').textContent = `รายละเอียด Downtime: ${factorName}`;
+            document.getElementById('modal-factor-subtitle').textContent = `รายการเหตุการณ์หยุดเครื่องทั้งหมดในช่วงเวลาที่เลือก`;
 
-            const totalMin = filtered.reduce((a, b) => a + b.duration, 0);
-            const totalStops = filtered.reduce((a, b) => a + b.stops, 0);
+            // สร้าง ตารางรายการ
+            const tableBody = document.getElementById('modal-factor-table-body');
+            let totalMins = 0;
+            let totalStops = 0;
 
-            document.getElementById('modal-factor-summary').textContent = `รวม ${filtered.length} รายการ (${totalStops} ครั้ง) | เสียเวลารวม ${totalMin.toLocaleString()} นาที`;
-
-            const tbody = document.getElementById('modal-factor-table-body');
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-normal">ไม่พบรายการข้อมูลประวัติการหยุดเครื่องในช่วงเวลานี้</td></tr>`;
+            if (filteredData.length > 0) {
+                tableBody.innerHTML = filteredData.map(d => {
+                    totalMins += d.duration;
+                    totalStops += d.stops;
+                    return `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-2.5 px-3">
+                                <span class="font-bold text-slate-800">${d.date}</span>
+                                <span class="text-[10px] text-slate-400 block">กะ ${d.shift} (${d.time || '-'})</span>
+                            </td>
+                            <td class="py-2.5 px-3 font-semibold text-blue-600">${d.machine || '-'}</td>
+                            <td class="py-2.5 px-3">
+                                <span class="font-bold text-slate-700 block">${d.station || '-'}</span>
+                                <span class="text-[10px] text-slate-400 block">${d.stationWaste || '-'}</span>
+                            </td>
+                            <td class="py-2.5 px-3">
+                                <span class="text-slate-800 block">${d.problem || '-'}</span>
+                                <span class="text-[10px] text-slate-400 block">ผู้แจ้ง/คุม: ${d.operator || '-'}</span>
+                            </td>
+                            <td class="py-2.5 px-3 text-center font-bold text-slate-600">${d.stops}</td>
+                            <td class="py-2.5 px-3 text-right font-black text-rose-500">${d.duration.toLocaleString()} น.</td>
+                        </tr>
+                    `;
+                }).join('');
             } else {
-                tbody.innerHTML = filtered.map(d => `
-                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                        <td class="py-2.5 px-3"><b>${d.date}</b><br><span class="text-[9px] text-slate-400">กะ ${d.shift} ${d.time || ''}</span></td>
-                        <td class="py-2.5 px-3 font-bold text-blue-600">${d.machine}</td>
-                        <td class="py-2.5 px-3">${d.station}<br><span class="text-[9px] text-slate-400 font-bold">${d.stationWaste || '-'}</span></td>
-                        <td class="py-2.5 px-3 text-slate-700">${d.problem}</td>
-                        <td class="py-2.5 px-3 text-center font-bold">${d.stops}</td>
-                        <td class="py-2.5 px-3 text-right font-black text-rose-500">${d.duration.toLocaleString()}</td>
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 italic">
+                            ไม่พบรายการหยุดเครื่องสำหรับปัจจัยนี้ในช่วงเวลาที่เลือก
+                        </td>
                     </tr>
-                `).join('');
+                `;
             }
 
+            // แสดงสรุปผลท้ายตาราง
+            document.getElementById('modal-factor-summary').textContent = 
+                `รวม ${filteredData.length.toLocaleString()} รายการ (${totalStops.toLocaleString()} ครั้ง) | เสียเวลารวม ${totalMins.toLocaleString()} นาที`;
+
+            // แสดง Modal
             const modal = document.getElementById('factor-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
 
+        /**
+         * ฟังก์ชันปิด Factor Modal
+         */
         function closeFactorModal() {
             const modal = document.getElementById('factor-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
 
-        function getMode(arr) { if(!arr.length) return "-"; const m = {}; let max = arr[0], c = 1; arr.forEach(x => { m[x] = (m[x]||0)+1; if(m[x]>c){ max=x; c=m[x]; } }); return max; }
-
-        function updateOperatorUI() {
-            const opName = document.getElementById('op-select').value;
-            const s = document.getElementById('op-start-date').value;
-            const e = document.getElementById('op-end-date').value;
-            
-            const profileImg = document.getElementById('op-profile-img');
-            const imgPlaceholder = document.getElementById('op-img-placeholder');
-
-            if (!opName) {
-                profileImg.classList.add('hidden');
-                imgPlaceholder.classList.remove('hidden');
-                document.getElementById('op-info-mc').textContent = '-';
-                document.getElementById('op-info-station').textContent = '-';
-                document.getElementById('op-info-shift').textContent = '-';
-                document.getElementById('op-kpi-time').textContent = '0';
-                document.getElementById('op-kpi-count').textContent = '0';
-                document.getElementById('op-table-body').innerHTML = '<tr><td colspan="5" class="p-5 text-center text-slate-400">กรุณาเลือกพนักงานเพื่อดูข้อมูล</td></tr>';
-                if (charts['opTrendChart']) charts['opTrendChart'].destroy();
-                return;
+        // เพิ่ม Event Listener ปิด Modal เมื่อกดปุ่ม ESC
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFactorModal();
             }
-
-            const cleanOpName = cleanStr(opName);
-            const opData = rawData.filter(d => cleanStr(d.operator) === cleanOpName && (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (d.factor.toUpperCase() !== 'PM'));
-
-            const imgUrl = resolveOperatorImage(opName, '', '', '');
-            if (imgUrl) {
-                profileImg.src = imgUrl;
-                profileImg.classList.remove('hidden');
-                imgPlaceholder.classList.add('hidden');
-            } else {
-                profileImg.classList.add('hidden');
-                imgPlaceholder.classList.remove('hidden');
-            }
-
-            const opMasters = masterOperators.filter(o => cleanStr(o.name) === cleanOpName);
-            const mainMc = opMasters.length > 0 ? [...new Set(opMasters.map(o => o.machine))].join(', ') : (opData.length > 0 ? getMode(opData.map(d => d.machine)) : '-');
-            const mainStation = opMasters.length > 0 ? [...new Set(opMasters.map(o => o.stationWaste || o.station))].join(', ') : (opData.length > 0 ? getMode(opData.map(d => d.station)) : '-');
-            const lastShift = opData.length > 0 ? opData[0].shift : (opMasters.length > 0 ? opMasters[0].shift : '-');
-
-            document.getElementById('op-info-mc').textContent = mainMc;
-            document.getElementById('op-info-station').textContent = mainStation;
-            document.getElementById('op-info-shift').textContent = lastShift;
-
-            const totalTime = opData.reduce((sum, d) => sum + d.duration, 0);
-            const totalStops = opData.reduce((sum, d) => sum + d.stops, 0);
-
-            document.getElementById('op-kpi-time').textContent = totalTime.toLocaleString();
-            document.getElementById('op-kpi-count').textContent = totalStops.toLocaleString();
-
-            document.getElementById('op-table-body').innerHTML = opData.slice(0, 100).map(d => `
-                <tr class="border-b hover:bg-slate-50 transition-colors">
-                    <td class="p-5"><b>${d.date}</b><br><span class="text-[9px] text-slate-400">กะ ${d.shift}</span></td>
-                    <td class="p-5 font-bold text-blue-600">${d.station}</td>
-                    <td class="p-5 text-slate-700">${d.problem}</td>
-                    <td class="p-5 text-center font-black text-rose-500">${d.duration}</td>
-                    <td class="p-5 text-slate-500 font-bold">${d.factor}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="5" class="p-5 text-center text-slate-400">ไม่พบรายการหยุดเครื่อง</td></tr>';
-
-            const opTrendMap = {};
-            opData.forEach(d => {
-                let k = opTrendMode === 'daily' ? d.date : (opTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`);
-                opTrendMap[k] = (opTrendMap[k] || 0) + d.duration;
-            });
-
-            const labs = Object.keys(opTrendMap).sort((a,b) => opTrendMode === 'daily' ? new Date(formatToISO(a))-new Date(formatToISO(b)) : a.localeCompare(b));
-            drawChart('opTrendChart', {
-                type: 'line',
-                data: {
-                    labels: labs,
-                    datasets: [{
-                        label: 'เวลาสูญเสีย (นาที)',
-                        data: labs.map(l => opTrendMap[l]),
-                        borderColor: '#3b82f6',
-                        borderWidth: 3,
-                        fill: true,
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        datalabels: {
-                            anchor: 'end', align: 'top', font: { size: 10, weight: 'bold' }, color: '#1e293b',
-                            formatter: (v) => `${v.toLocaleString()} น.`
-                        }
-                    },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-        }
-
-        function setMainTrendMode(mode) {
-            mainTrendMode = mode;
-            ['daily', 'weekly', 'monthly'].forEach(m => {
-                const btn = document.getElementById(`btn-main-trend-${m}`);
-                if (btn) btn.classList.toggle('active', m === mode);
-            });
-            updateMainUI();
-        }
-
-        function setNcpTrendMode(mode) {
-            ncpTrendMode = mode;
-            ['daily', 'weekly', 'monthly'].forEach(m => {
-                const btn = document.getElementById(`btn-ncp-trend-${m}`);
-                if (btn) btn.classList.toggle('active', m === mode);
-            });
-            updateNCPUI();
-        }
-
-        function setShortageTrendMode(mode) {
-            shortageTrendMode = mode;
-            ['daily', 'weekly', 'monthly'].forEach(m => {
-                const btn = document.getElementById(`btn-shortage-trend-${m}`);
-                if (btn) btn.classList.toggle('active', m === mode);
-            });
-            updateShortageUI();
-        }
-
-        function setSpeedTrendMode(mode) {
-            speedTrendMode = mode;
-            ['daily', 'weekly', 'monthly'].forEach(m => {
-                const btn = document.getElementById(`btn-speed-trend-${m}`);
-                if (btn) btn.classList.toggle('active', m === mode);
-            });
-            updateSpeedUI();
-        }
-
-        function setOpTrendMode(mode) {
-            opTrendMode = mode;
-            ['daily', 'weekly', 'monthly'].forEach(m => {
-                const btn = document.getElementById(`btn-op-trend-${m}`);
-                if (btn) btn.classList.toggle('active', m === mode);
-            });
-            updateOperatorUI();
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            setDefaultDates();
-            syncData();
         });
     </script>
 </body>
