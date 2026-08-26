@@ -281,16 +281,8 @@
             <div class="lg:col-span-3"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ช่วงวันที่</label><div class="flex gap-2"><input type="date" id="ncp-start-date" class="w-full"><input type="date" id="ncp-end-date" class="w-full"></div></div>
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เครื่องจักร</label><select id="ncp-filter-mc"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Station Waste</label><select id="ncp-filter-station"><option value="">ทั้งหมด</option></select></div>
-            <div class="lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
+            <div class="lg:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">กะ (Shift)</label><select id="ncp-filter-shift"><option value="">ทั้งหมด</option></select></div>
             <div class="lg:col-span-3">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล</label>
-                <div class="multi-select-container">
-                    <div id="ncp-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
-                    <input type="text" id="ncp-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาปัญหา..." class="w-full" onfocus="toggleNcpReasonDropdown(true)" oninput="filterNcpReasonOptions(this.value)">
-                    <div id="ncp-reason-dropdown" class="multi-select-dropdown"></div>
-                </div>
-            </div>
-            <div class="lg:col-span-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">สีเส้นกราฟ</label>
                 <div class="flex items-center gap-1.5">
                     <input type="color" id="ncp-chart-color" value="#6366f1" class="h-[42px] w-12 p-1 cursor-pointer rounded-xl border border-slate-200">
@@ -301,6 +293,22 @@
                             <button type="button" class="w-4 h-4 rounded-full bg-[#10b981] border border-white shadow hover:scale-110 transition-transform" onclick="setPresetColor('ncp', '#10b981')" title="สีเขียว"></button>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="lg:col-span-6">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ค้นหาปัญหา/เหตุผล</label>
+                <div class="multi-select-container">
+                    <div id="ncp-reason-chips" class="flex flex-wrap gap-1 mb-1"></div>
+                    <input type="text" id="ncp-filter-reason-input" placeholder="พิมพ์เพื่อค้นหาปัญหา..." class="w-full" onfocus="toggleNcpReasonDropdown(true)" oninput="filterNcpReasonOptions(this.value)">
+                    <div id="ncp-reason-dropdown" class="multi-select-dropdown"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-6">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Combination</label>
+                <div class="multi-select-container">
+                    <div id="ncp-comb-chips" class="flex flex-wrap gap-1 mb-1"></div>
+                    <input type="text" id="ncp-filter-comb-input" placeholder="พิมพ์เพื่อค้นหา Combination..." class="w-full" onfocus="toggleNcpCombDropdown(true)" oninput="filterNcpCombOptions(this.value)">
+                    <div id="ncp-comb-dropdown" class="multi-select-dropdown"></div>
                 </div>
             </div>
         </div>
@@ -319,6 +327,11 @@
                 <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">สัดส่วน NCP ราย Station (น้ำหนัก / %NCP)</h3>
                 <div class="chart-container"><canvas id="ncpStationWeightChart"></canvas></div>
             </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-[0.2em]">Top 10 Combination ที่มีน้ำหนักของเสียสูงสุด (น้ำหนัก / %NCP)</h3>
+            <div class="chart-container !h-[450px]"><canvas id="ncpTopCombinationChart"></canvas></div>
         </div>
 
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100"><h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-8 tracking-widest">NCP Performance by Station (น้ำหนัก / %NCP / Target / Diff)</h3><div id="ncp-station-list" class="space-y-6"></div></div>
@@ -800,8 +813,8 @@
     <script>
         Chart.register(ChartDataLabels);
         let rawData = [], ncpData = [], shortageData = [], speedData = [], masterOpList = new Map(), stationTargetsFromSheet = new Map(), stationOperatorsMap = new Map(), masterOperators = [], charts = {}, mainTrendMode = 'daily', opTrendMode = 'daily', ncpTrendMode = 'daily', shortageTrendMode = 'daily', speedTrendMode = 'daily';
-        let ncpSelectedReasons = new Set();
-        let ncpAllReasonOptions = [];
+        let ncpSelectedReasons = new Set(), ncpSelectedCombinations = new Set();
+        let ncpAllReasonOptions = [], ncpAllCombinationOptions = [];
         let shortageSelectedCustomers = new Set();
         let shortageAllCustomerOptions = [];
         let shortageSelectedReasons = new Set();
@@ -1062,7 +1075,8 @@
                     weightNcp: c[24] ? parseNum(cl(c[24])) : 0, consumption: c[35] ? parseNum(cl(c[35])) : 0, 
                     ncpOpNames: c[34] ? cl(c[34]) : '', isoDate: iso, date: cl(c[27]), reasonDesc: c[20] ? cl(c[20]) : '', 
                     year: dObj.getFullYear(), month: dObj.getMonth()+1, weekNum: getSunWeek(dObj),
-                    shortageVal: valAL, excessVal: valAN, hasShortage: valAL !== 0, hasExcess: valAN !== 0
+                    shortageVal: valAL, excessVal: valAN, hasShortage: valAL !== 0, hasExcess: valAN !== 0,
+                    combination: c[36] ? cl(c[36]) : ''
                 }; 
             }).filter(d => d); 
         }
@@ -1170,10 +1184,13 @@
             renderShortageGroupOptions("");
 
             ncpAllReasonOptions = getU(ncpData, 'reasonDesc'); renderNcpReasonOptions("");
-            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#shortage-filter-customer-input):not(#shortage-filter-reason-input):not(#shortage-filter-group-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
+            ncpAllCombinationOptions = getU(ncpData, 'combination'); renderNcpCombOptions("");
+
+            document.querySelectorAll('input:not(#ncp-filter-reason-input):not(#ncp-filter-comb-input):not(#shortage-filter-customer-input):not(#shortage-filter-reason-input):not(#shortage-filter-group-input), select').forEach(el => el.addEventListener('change', updateCurrentPage));
             document.addEventListener('click', (e) => { 
                 if (!e.target.closest('.multi-select-container')) {
                     toggleNcpReasonDropdown(false); 
+                    toggleNcpCombDropdown(false);
                     toggleShortageCustDropdown(false);
                     toggleShortageReasonDropdown(false);
                     toggleShortageGroupDropdown(false); 
@@ -1195,6 +1212,17 @@
         }
         function toggleNcpReasonSelection(opt) { if (ncpSelectedReasons.has(opt)) ncpSelectedReasons.delete(opt); else ncpSelectedReasons.add(opt); renderNcpReasonChips(); renderNcpReasonOptions(document.getElementById('ncp-filter-reason-input').value); updateNCPUI(); }
         function renderNcpReasonChips() { const container = document.getElementById('ncp-reason-chips'); container.innerHTML = Array.from(ncpSelectedReasons).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleNcpReasonSelection('${opt}')">×</button></span>`).join(''); }
+
+        function toggleNcpCombDropdown(show) { const dropdown = document.getElementById('ncp-comb-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
+        function filterNcpCombOptions(searchText) { renderNcpCombOptions(searchText); toggleNcpCombDropdown(true); }
+        function renderNcpCombOptions(searchText) {
+            const dropdown = document.getElementById('ncp-comb-dropdown');
+            const cleanSearch = searchText.toLowerCase();
+            const filtered = ncpAllCombinationOptions.filter(opt => opt.toLowerCase().includes(cleanSearch));
+            dropdown.innerHTML = filtered.map(opt => `<div class="multi-select-option" onclick="toggleNcpCombSelection('${opt}')"><input type="checkbox" ${ncpSelectedCombinations.has(opt) ? 'checked' : ''} class="mr-2"><span class="${ncpSelectedCombinations.has(opt) ? 'font-bold text-blue-600' : ''}">${opt}</span></div>`).join('') || '<div class="p-4 text-xs text-slate-400">ไม่พบข้อมูล...</div>';
+        }
+        function toggleNcpCombSelection(opt) { if (ncpSelectedCombinations.has(opt)) ncpSelectedCombinations.delete(opt); else ncpSelectedCombinations.add(opt); renderNcpCombChips(); renderNcpCombOptions(document.getElementById('ncp-filter-comb-input').value); updateNCPUI(); }
+        function renderNcpCombChips() { const container = document.getElementById('ncp-comb-chips'); container.innerHTML = Array.from(ncpSelectedCombinations).map(opt => `<span class="multi-select-chip">${opt}<button onclick="event.stopPropagation(); toggleNcpCombSelection('${opt}')">×</button></span>`).join(''); }
 
         function toggleShortageCustDropdown(show) { const dropdown = document.getElementById('shortage-customer-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterShortageCustOptions(searchText) { renderShortageCustOptions(searchText); toggleShortageCustDropdown(true); }
@@ -1565,10 +1593,11 @@
             const s = document.getElementById('ncp-start-date').value, e = document.getElementById('ncp-end-date').value, mc = document.getElementById('ncp-filter-mc').value, st = document.getElementById('ncp-filter-station').value, sh = document.getElementById('ncp-filter-shift').value;
             const chosenNcpColor = document.getElementById('ncp-chart-color').value;
             const hasSelectedReasons = ncpSelectedReasons.size > 0;
+            const hasSelectedCombinations = ncpSelectedCombinations.size > 0;
             const fForConRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
             const uniqueConMap = {}; fForConRaw.forEach(d => { const key = `${d.isoDate}_${d.shift}_${d.machine}`; if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption; });
             const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
-            const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && (!hasSelectedReasons || ncpSelectedReasons.has(d.reasonDesc)));
+            const fForNCP = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!st || cleanStr(d.station) === cleanStr(st)) && (!sh || cleanStr(d.shift) === cleanStr(sh)) && (!hasSelectedReasons || ncpSelectedReasons.has(d.reasonDesc)) && (!hasSelectedCombinations || ncpSelectedCombinations.has(d.combination)));
             const totalNCP = fForNCP.reduce((acc, curr) => acc + curr.weightNcp, 0);
             const actualPercent = totalConsumption > 0 ? (totalNCP / totalConsumption) * 100 : 0;
             const targetVal = ncpTargets[cleanStr(st)] || 2.00; const diffVal = actualPercent - targetVal;
@@ -1601,6 +1630,13 @@
             const sortedStationsByWeight = Object.entries(stationWeightMap).sort((a,b) => b[1] - a[1]);
             drawChart('ncpStationWeightChart', {
                 type: 'bar', data: { labels: sortedStationsByWeight.map(x => x[0]), datasets: [{ data: sortedStationsByWeight.map(x => x[1]), backgroundColor: sortedStationsByWeight.map((_, i) => colorPalette[(i+2) % colorPalette.length] + 'CC'), borderColor: sortedStationsByWeight.map((_, i) => colorPalette[(i+2) % colorPalette.length]), borderWidth: 2, borderRadius: 8, barThickness: 28, customPercents: sortedStationsByWeight.map(x => totalConsumption > 0 ? (x[1] / totalConsumption * 100) : 0) }] },
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', textAlign: 'center', color: '#334155', font: { size: 10, weight: 'bold' }, formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`, padding: 4 } }, scales: { x: { beginAtZero: true, grace: '50%', grid: { display: false }, ticks: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#475569' } } } }
+            });
+
+            const combMap = {}; fForNCP.forEach(d => { const c = d.combination || "ไม่ระบุ"; combMap[c] = (combMap[c] || 0) + d.weightNcp; });
+            const topCombinations = Object.entries(combMap).sort((a,b) => b[1] - a[1]).slice(0, 10);
+            drawChart('ncpTopCombinationChart', {
+                type: 'bar', data: { labels: topCombinations.map(x => x[0]), datasets: [{ data: topCombinations.map(x => x[1]), backgroundColor: topCombinations.map((_, i) => colorPalette[i % colorPalette.length] + 'CC'), borderColor: topCombinations.map((_, i) => colorPalette[i % colorPalette.length]), borderWidth: 2, borderRadius: 8, barThickness: 20, customPercents: topCombinations.map(x => totalConsumption > 0 ? (x[1] / totalConsumption * 100) : 0) }] },
                 options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', textAlign: 'center', color: '#334155', font: { size: 10, weight: 'bold' }, formatter: (v, ctx) => `${v.toLocaleString(undefined, {maximumFractionDigits:1})} kg\n(${ctx.dataset.customPercents[ctx.dataIndex].toFixed(2)}%)`, padding: 4 } }, scales: { x: { beginAtZero: true, grace: '50%', grid: { display: false }, ticks: { display: false } }, y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#475569' } } } }
             });
 
@@ -1646,7 +1682,7 @@
             fForNCP.forEach(d => { let k = ncpTrendMode === 'daily' ? d.isoDate : (ncpTrendMode === 'weekly' ? `${d.year}-W${d.weekNum.toString().padStart(2,'0')}` : `${d.year}-${d.month.toString().padStart(2,'0')}`); trendWaste[k] = (trendWaste[k] || 0) + d.weightNcp; });
             const labs = Object.keys(trendConFinal).sort(); const actualWeights = labs.map(l => (trendWaste[l] || 0)); const actualPercents = labs.map(l => (trendConFinal[l] > 0 ? (trendWaste[l] || 0)/trendConFinal[l]*100 : 0));
             const datasets = [{ label: 'Actual % NCP', data: actualPercents, customWeights: actualWeights, borderColor: chosenNcpColor, borderWidth: 3, fill: true, backgroundColor: chosenNcpColor + '1A', tension: 0.4 }];
-            if (!hasSelectedReasons) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
+            if (!hasSelectedReasons && !hasSelectedCombinations) datasets.push({ label: `Target (${targetVal.toFixed(2)}%)`, data: labs.map(() => targetVal), borderColor: 'rgba(100, 116, 139, 0.6)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, datalabels: { display: false } });
             drawChart('ncpTrendChart', { type: 'line', data: { labels: labs.map(l => (ncpTrendMode === 'daily' ? (ncpData.find(d => d.isoDate === l)?.date || l) : l)), datasets }, options: { maintainAspectRatio: false, plugins: { datalabels: { formatter: (v, ctx) => ctx.datasetIndex === 0 ? `${v.toFixed(2)}%\n${ctx.dataset.customWeights[ctx.dataIndex].toLocaleString(undefined, {maximumFractionDigits:1})}kg` : '', textAlign: 'center', font: { size: 11, weight: 'bold' }, color: '#1e293b', offset: 8, align: 'top' }, legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 10 } } } }, scales: { y: { beginAtZero: true, grace: '25%' } } } });
         }
 
