@@ -555,6 +555,10 @@
                         <p id="speed-plan-meters" class="text-xl font-black text-slate-800">0</p>
                     </div>
                     <div>
+                        <p class="text-[10px] text-slate-400 font-bold">น้ำหนักแผน</p>
+                        <p id="speed-plan-weight" class="text-xl font-black text-slate-800">0 กก.</p>
+                    </div>
+                    <div>
                         <p class="text-[10px] text-slate-400 font-bold">เวลาเดินงาน</p>
                         <p id="speed-plan-runtime" class="text-xl font-black text-slate-800">0 นาที</p>
                         <p id="speed-plan-deduction" class="text-[10px] font-bold text-rose-500">(หัก 6.25%: -0 น.)</p>
@@ -586,6 +590,12 @@
                         <p id="speed-diff-meters" class="text-[10px] font-bold mt-0.5">Diff: 0</p>
                     </div>
                     <div>
+                        <p class="text-[10px] text-slate-400 font-bold">น้ำหนักผลิต</p>
+                        <p id="speed-act-weight" class="text-lg font-black text-slate-800">0 กก.</p>
+                        <p id="speed-offplan-weight" class="text-[10px] font-bold text-amber-600">(นอกแผน: 0 กก.)</p>
+                        <p id="speed-diff-weight" class="text-[10px] font-bold mt-0.5">Diff: 0 กก.</p>
+                    </div>
+                    <div>
                         <p class="text-[10px] text-slate-400 font-bold">เวลาเดินงาน / สูญเสีย</p>
                         <p id="speed-act-runtime" class="text-base font-black text-slate-800">0 / 0 นาที</p>
                         <p id="speed-offplan-runtime" class="text-[10px] font-bold text-amber-600">(นอกแผน: 0/0 น.)</p>
@@ -613,6 +623,10 @@
                     <div class="flex justify-between items-center border-b border-slate-50 pb-1.5">
                         <span class="text-slate-500 font-bold">จำนวนเมตรค้าง</span>
                         <span id="speed-pending-meters" class="text-lg font-black text-slate-800">0</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-50 pb-1.5">
+                        <span class="text-slate-500 font-bold">น้ำหนักค้าง</span>
+                        <span id="speed-pending-weight" class="text-lg font-black text-slate-800">0 กก.</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-slate-500 font-bold">เวลางานค้าง</span>
@@ -1137,7 +1151,7 @@
                     planMeters: c[11] ? parseNum(cl(c[11])) : 0,  
                     actMeters: c[12] ? parseNum(cl(c[12])) : 0,   
                     orderPattern: c[13] ? cl(c[13]) : '',               
-                    planRuntime: c[16] ? parseNum(cl(c[16])) : 0, // ผลรวมตัวเลขโดยตรงจากคอลัมน์ Q
+                    planRuntime: c[16] ? parseNum(cl(c[16])) : 0,
                     actRuntime: c[17] ? parseNum(cl(c[17])) : 0,  
                     lossTime: c[19] ? parseNum(cl(c[19])) : 0,    
                     status: c[20] ? cl(c[20]) : '',                     
@@ -1147,7 +1161,9 @@
                     isoDate: iso,
                     year: dObj.getFullYear(),
                     month: dObj.getMonth() + 1,
-                    weekNum: getSunWeek(dObj)
+                    weekNum: getSunWeek(dObj),
+                    planWeight: c[24] ? parseNum(cl(c[24])) : 0,
+                    actWeight: c[25] ? parseNum(cl(c[25])) : 0
                 };
             }).filter(d => d);
         }
@@ -2347,22 +2363,24 @@
                 (!ot || cleanStr(d.orderPattern) === cleanStr(ot))
             );
 
-            // 1. การ์ด วางแผน (หักเวลา 6.25% ก่อนคำนวณ Speed)
+            // 1. การ์ด วางแผน
             const planList = filteredSpeed.filter(d => cleanStr(d.status) !== 'งานนอกแผน');
             const planOrders = planList.length;
             const planMeters = planList.reduce((sum, d) => sum + d.planMeters, 0);
             const planRuntime = planList.reduce((sum, d) => sum + d.planRuntime, 0);
-            const planDeduction = planRuntime * 0.0625; // คำนวณเวลาที่ต้องหักออก 6.25%
-            const netPlanRuntime = Math.max(0, planRuntime - planDeduction); // เวลาเดินงานสุทธิหลังหัก 6.25%
+            const planWeight = planList.reduce((sum, d) => sum + d.planWeight, 0);
+            const planDeduction = planRuntime * 0.0625;
+            const netPlanRuntime = Math.max(0, planRuntime - planDeduction);
             const planSpeed = netPlanRuntime > 0 ? (planMeters / netPlanRuntime) : 0;
 
             document.getElementById('speed-plan-orders').textContent = planOrders.toLocaleString();
             document.getElementById('speed-plan-meters').textContent = planMeters.toLocaleString(undefined, {maximumFractionDigits: 1});
+            document.getElementById('speed-plan-weight').textContent = planWeight.toLocaleString(undefined, {maximumFractionDigits: 1}) + ' กก.';
             document.getElementById('speed-plan-runtime').textContent = planRuntime.toLocaleString(undefined, {maximumFractionDigits: 1}) + ' นาที';
             document.getElementById('speed-plan-deduction').textContent = `(หัก 6.25%: -${planDeduction.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
             document.getElementById('speed-plan-speed').textContent = planSpeed.toFixed(1) + ' ม./นาที';
 
-            // 2. การ์ด ผลิต (ยกเว้น งานค้างแผน)
+            // 2. การ์ด ผลิต
             const actList = filteredSpeed.filter(d => cleanStr(d.status) !== 'งานค้างแผน');
             const offPlanList = filteredSpeed.filter(d => cleanStr(d.status) === 'งานนอกแผน');
 
@@ -2374,6 +2392,8 @@
             const offPlanRuntime = offPlanList.reduce((sum, d) => sum + d.actRuntime, 0);
             const actLossTime = actList.reduce((sum, d) => sum + d.lossTime, 0);
             const offPlanLossTime = offPlanList.reduce((sum, d) => sum + d.lossTime, 0);
+            const actWeight = actList.reduce((sum, d) => sum + d.actWeight, 0);
+            const offPlanWeight = offPlanList.reduce((sum, d) => sum + d.actWeight, 0);
 
             const netActTime = Math.max(0, actRuntime - actLossTime);
             const actSpeed = netActTime > 0 ? (actMeters / netActTime) : 0;
@@ -2382,6 +2402,7 @@
             const diffMeters = actMeters - planMeters;
             const diffRuntime = actRuntime - planRuntime;
             const diffSpeed = actSpeed - planSpeed;
+            const diffWeight = actWeight - planWeight;
 
             document.getElementById('speed-act-orders').textContent = actOrders.toLocaleString();
             document.getElementById('speed-offplan-orders').textContent = `(นอกแผน: ${offPlanOrders.toLocaleString()})`;
@@ -2397,6 +2418,13 @@
             diffMetersEl.textContent = `Diff: ${diffMeters >= 0 ? '+' : ''}${diffMeters.toLocaleString(undefined, {maximumFractionDigits: 1})}`;
             diffMetersEl.className = `text-[10px] font-bold mt-0.5 ${diffMeters >= 0 ? 'text-emerald-600' : 'text-rose-500'}`;
 
+            document.getElementById('speed-act-weight').textContent = actWeight.toLocaleString(undefined, {maximumFractionDigits: 1}) + ' กก.';
+            document.getElementById('speed-offplan-weight').textContent = `(นอกแผน: ${offPlanWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.)`;
+            
+            const diffWeightEl = document.getElementById('speed-diff-weight');
+            diffWeightEl.textContent = `Diff: ${diffWeight >= 0 ? '+' : ''}${diffWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.`;
+            diffWeightEl.className = `text-[10px] font-bold mt-0.5 ${diffWeight >= 0 ? 'text-emerald-600' : 'text-rose-500'}`;
+
             document.getElementById('speed-act-runtime').textContent = `${actRuntime.toLocaleString(undefined, {maximumFractionDigits: 1})} / ${actLossTime.toLocaleString(undefined, {maximumFractionDigits: 1})} นาที`;
             document.getElementById('speed-offplan-runtime').textContent = `(นอกแผน: ${offPlanRuntime.toLocaleString(undefined, {maximumFractionDigits: 1})}/${offPlanLossTime.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
             
@@ -2410,14 +2438,16 @@
             diffSpeedEl.textContent = `Diff: ${diffSpeed >= 0 ? '+' : ''}${diffSpeed.toFixed(1)} ม./นาที`;
             diffSpeedEl.className = `text-[11px] font-black mt-1 ${diffSpeed >= 0 ? 'text-emerald-600' : 'text-rose-500'}`;
 
-            // 3. การ์ด งานค้างแผน (เฉพาะ status = งานค้างแผน)
+            // 3. การ์ด งานค้างแผน
             const pendingList = filteredSpeed.filter(d => cleanStr(d.status) === 'งานค้างแผน');
             const pendingOrders = pendingList.length;
             const pendingMeters = pendingList.reduce((sum, d) => sum + d.planMeters, 0); 
+            const pendingWeight = pendingList.reduce((sum, d) => sum + d.planWeight, 0);
             const pendingTime = pendingList.reduce((sum, d) => sum + d.planRuntime, 0);   
 
             document.getElementById('speed-pending-orders').textContent = pendingOrders.toLocaleString();
             document.getElementById('speed-pending-meters').textContent = pendingMeters.toLocaleString(undefined, {maximumFractionDigits: 1});
+            document.getElementById('speed-pending-weight').textContent = pendingWeight.toLocaleString(undefined, {maximumFractionDigits: 1}) + ' กก.';
             document.getElementById('speed-pending-time').textContent = pendingTime.toLocaleString(undefined, {maximumFractionDigits: 1}) + ' นาที';
 
             // 4. กราฟแนวโน้ม Speed แผน เทียบ Speed ผลิต
