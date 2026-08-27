@@ -557,6 +557,7 @@
                     <div>
                         <p class="text-[10px] text-slate-400 font-bold">เวลาเดินงาน</p>
                         <p id="speed-plan-runtime" class="text-xl font-black text-slate-800">0 นาที</p>
+                        <p id="speed-plan-deduction" class="text-[10px] font-bold text-rose-500">(หัก 6.25%: -0 น.)</p>
                     </div>
                     <div>
                         <p class="text-[10px] text-slate-400 font-bold">Speed แผน</p>
@@ -2346,16 +2347,19 @@
                 (!ot || cleanStr(d.orderPattern) === cleanStr(ot))
             );
 
-            // 1. การ์ด วางแผน (บวกค่าตัวเลขจากคอลัมน์ Q ตรงๆ)
+            // 1. การ์ด วางแผน (หักเวลา 6.25% ก่อนคำนวณ Speed)
             const planList = filteredSpeed.filter(d => cleanStr(d.status) !== 'งานนอกแผน');
             const planOrders = planList.length;
             const planMeters = planList.reduce((sum, d) => sum + d.planMeters, 0);
             const planRuntime = planList.reduce((sum, d) => sum + d.planRuntime, 0);
-            const planSpeed = planRuntime > 0 ? (planMeters / planRuntime) : 0;
+            const planDeduction = planRuntime * 0.0625; // คำนวณเวลาที่ต้องหักออก 6.25%
+            const netPlanRuntime = Math.max(0, planRuntime - planDeduction); // เวลาเดินงานสุทธิหลังหัก 6.25%
+            const planSpeed = netPlanRuntime > 0 ? (planMeters / netPlanRuntime) : 0;
 
             document.getElementById('speed-plan-orders').textContent = planOrders.toLocaleString();
             document.getElementById('speed-plan-meters').textContent = planMeters.toLocaleString(undefined, {maximumFractionDigits: 1});
             document.getElementById('speed-plan-runtime').textContent = planRuntime.toLocaleString(undefined, {maximumFractionDigits: 1}) + ' นาที';
+            document.getElementById('speed-plan-deduction').textContent = `(หัก 6.25%: -${planDeduction.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
             document.getElementById('speed-plan-speed').textContent = planSpeed.toFixed(1) + ' ม./นาที';
 
             // 2. การ์ด ผลิต (ยกเว้น งานค้างแผน)
@@ -2434,7 +2438,11 @@
             });
 
             const labs = Array.from(new Set([...Object.keys(trendPlanTime), ...Object.keys(trendActNetTime)])).sort();
-            const planSpeeds = labs.map(l => (trendPlanTime[l] || 0) > 0 ? (trendPlanMeters[l] || 0) / trendPlanTime[l] : 0);
+            const planSpeeds = labs.map(l => {
+                const totalRuntime = trendPlanTime[l] || 0;
+                const netRuntime = totalRuntime * 0.9375; // หักเวลา 6.25%
+                return netRuntime > 0 ? (trendPlanMeters[l] || 0) / netRuntime : 0;
+            });
             const actSpeeds = labs.map(l => (trendActNetTime[l] || 0) > 0 ? (trendActMeters[l] || 0) / trendActNetTime[l] : 0);
 
             drawChart('speedTrendChart', {
