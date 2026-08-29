@@ -83,7 +83,7 @@
     <input type="hidden" id="speed-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRpcfsLHJyxdCjLpBauiSomTDqTIRPbmW75bSVEsYpWjw5ObdlTBQg3B3zDbpmk-Ohu4XrrnyYnLtmC/pub?gid=243648935&single=true&output=csv">
 
     <div class="max-w-7xl mx-auto mb-8 flex flex-wrap bg-white p-2 rounded-2xl shadow-sm gap-2">
-        <button onclick="switchPage('executive')" id="btn-executive" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">👑 ภาพรวมผู้บริหาร</button>
+        <button onclick="switchPage('executive')" id="btn-executive" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">👑 ภาพรวมทั้งหมด</button>
         <button onclick="switchPage('main')" id="btn-main" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม DOWNTIME</button>
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('shortage')" id="btn-shortage" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวมขาดจำนวน</button>
@@ -92,7 +92,7 @@
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
     </div>
 
-    <!-- 0. PAGE: ภาพรวมผู้บริหาร (Executive Overview) -->
+    <!-- 0. PAGE: ภาพรวมทั้งหมด (Overall & Executive Overview) -->
     <div id="page-executive" class="max-w-7xl mx-auto space-y-6">
         <!-- 1. Executive Filters & Date Presets -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -128,35 +128,73 @@
             </div>
         </div>
 
-        <!-- 2. Plant Health Scorecard Banner -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+        <!-- 2. Plant Health Scorecard & OEE Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden space-y-6">
             <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -left-10 -top-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             
-            <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <div class="space-y-2 max-w-2xl">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2.5 flex-wrap">
                         <span class="px-3 py-1 bg-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-400/30">Executive Summary</span>
                         <span id="exec-health-badge" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-400/30 flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span>สถานะภาพรวม: ดีเยี่ยม</span>
                         </span>
+                        <span id="exec-oee-badge" class="px-3 py-1 bg-blue-500/20 text-blue-300 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-400/30 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                            <span>OEE Benchmark: กำลังคำนวณ</span>
+                        </span>
                     </div>
-                    <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Smart Production Executive Health Overview</h2>
+                    <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Smart Production Overall & OEE Overview</h2>
                     <p id="exec-headline-summary" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-                        กำลังประมวลผลข้อมูลสุขภาพการผลิต 4 เสาหลัก...
+                        กำลังประมวลผลข้อมูลสุขภาพการผลิต 4 เสาหลัก และประสิทธิผลโดยรวม OEE...
                     </p>
                 </div>
 
-                <div class="flex items-center gap-4 bg-white/5 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 flex-shrink-0 self-stretch md:self-auto justify-between md:justify-center">
-                    <div class="text-right">
+                <div class="flex flex-wrap sm:flex-nowrap items-center gap-6 bg-white/5 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 flex-shrink-0 self-stretch lg:self-auto justify-between lg:justify-center">
+                    <!-- OEE Master Box -->
+                    <div class="text-left sm:text-right pr-6 border-r border-white/10">
+                        <p class="text-[10px] font-bold text-blue-300 uppercase tracking-widest">OEE Overall</p>
+                        <p class="text-[9px] text-slate-400">ประสิทธิผลโดยรวม</p>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span id="exec-oee-score" class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-teal-200">0.0%</span>
+                        </div>
+                    </div>
+                    <!-- Plant Health Index Box -->
+                    <div class="text-left sm:text-right">
                         <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-widest">Plant Health Index</p>
-                        <p id="exec-health-grade" class="text-xs font-semibold text-slate-400">ดัชนีชี้วัดประสิทธิภาพโรงงาน</p>
+                        <p id="exec-health-grade" class="text-[9px] text-slate-400">ดัชนีชี้วัดโรงงาน</p>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span id="exec-health-score" class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-emerald-300">0</span>
+                            <span class="text-xs font-bold text-slate-400">/100</span>
+                        </div>
                     </div>
-                    <div class="flex items-baseline gap-1">
-                        <span id="exec-health-score" class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-indigo-200 to-emerald-300">0</span>
-                        <span class="text-sm font-bold text-slate-400">/100</span>
+                </div>
+            </div>
+
+            <!-- OEE 3 Components (A, P, Q) Sub-Bar inside Banner -->
+            <div class="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-white/10">
+                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">1. Availability (A) ความพร้อมเครื่องจักร</span>
+                        <span class="text-[9px] text-slate-400">Operating Time / Plan (เป้า ≥ 93.75%)</span>
                     </div>
+                    <span id="exec-oee-a" class="text-lg sm:text-xl font-black text-blue-300">0.0%</span>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-teal-200 uppercase tracking-wider block">2. Performance (P) ประสิทธิภาพความเร็ว</span>
+                        <span class="text-[9px] text-slate-400">Speed จริง / Speed แผน (เป้า ≥ 100%)</span>
+                    </div>
+                    <span id="exec-oee-p" class="text-lg sm:text-xl font-black text-teal-300">0.0%</span>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-emerald-200 uppercase tracking-wider block">3. Quality (Q) อัตราคุณภาพชิ้นงาน</span>
+                        <span class="text-[9px] text-slate-400">Good Output / Total (เป้า ≥ 98.0%)</span>
+                    </div>
+                    <span id="exec-oee-q" class="text-lg sm:text-xl font-black text-emerald-300">0.0%</span>
                 </div>
             </div>
         </div>
@@ -1824,7 +1862,37 @@
             const pendingList = filteredSpeed.filter(d => cleanStr(d.status) === 'งานค้างแผน');
             const pendingOrders = pendingList.length;
 
-            // 5. Plant Health Score (0 - 100)
+            // 5. OEE (Overall Equipment Effectiveness) Calculations
+            const availability = totalRuntime > 0 ? Math.max(0, Math.min(100, ((totalRuntime - totalDtMinutes) / totalRuntime) * 100)) : 100.0;
+            const performance = planSpeed > 0 ? Math.max(0, Math.min(100, (actSpeed / planSpeed) * 100)) : (actSpeed > 0 ? 100.0 : 0.0);
+            const quality = totalConsumption > 0 ? Math.max(0, Math.min(100, ((totalConsumption - totalNcpWeight) / totalConsumption) * 100)) : 100.0;
+            const oeeScore = (availability / 100) * (performance / 100) * (quality / 100) * 100;
+
+            document.getElementById('exec-oee-score').textContent = oeeScore.toFixed(1) + '%';
+            document.getElementById('exec-oee-a').textContent = availability.toFixed(1) + '%';
+            document.getElementById('exec-oee-p').textContent = performance.toFixed(1) + '%';
+            document.getElementById('exec-oee-q').textContent = quality.toFixed(1) + '%';
+
+            let oeeBadgeText = 'OEE Benchmark: มาตรฐานดี';
+            let oeeBadgeClass = 'bg-blue-500/20 border-blue-400/30 text-blue-300';
+            if (oeeScore >= 85.0) {
+                oeeBadgeText = 'OEE Benchmark: World-Class (≥ 85%) 🏆';
+                oeeBadgeClass = 'bg-emerald-500/20 border-emerald-400/30 text-emerald-300';
+            } else if (oeeScore >= 75.0) {
+                oeeBadgeText = 'OEE Benchmark: มาตรฐานดี (75-84%) 👍';
+                oeeBadgeClass = 'bg-blue-500/20 border-blue-400/30 text-blue-300';
+            } else if (oeeScore >= 65.0) {
+                oeeBadgeText = 'OEE Benchmark: เฝ้าระวัง (65-74%) ⚠️';
+                oeeBadgeClass = 'bg-amber-500/20 border-amber-400/30 text-amber-300';
+            } else {
+                oeeBadgeText = 'OEE Benchmark: ต้องเร่งปรับปรุง (< 65%) 🚨';
+                oeeBadgeClass = 'bg-rose-500/20 border-rose-400/30 text-rose-300';
+            }
+            const oeeBadgeEl = document.getElementById('exec-oee-badge');
+            oeeBadgeEl.className = `px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border flex items-center gap-1.5 ${oeeBadgeClass}`;
+            oeeBadgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-current"></span><span>${oeeBadgeText}</span>`;
+
+            // 6. Plant Health Score (0 - 100)
             let healthScore = 100;
             if (dtPercent > dtTarget) {
                 const overRatio = (dtPercent - dtTarget) / dtTarget;
@@ -1922,7 +1990,7 @@
             document.getElementById('exec-speed-meters').textContent = `${actMeters.toLocaleString(undefined, {maximumFractionDigits: 1})} เมตร`;
             document.getElementById('exec-speed-pending').textContent = `${pendingOrders} ออเดอร์`;
 
-            // 6. Station Bottleneck Matrix (5 Stations)
+            // 7. Station Bottleneck Matrix (5 Stations) with Specific Clickable Elements
             const targetStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
             const matrixRows = targetStations.map(st => {
                 const cleanSt = cleanStr(st);
@@ -1985,10 +2053,10 @@
                 }
 
                 return `
-                    <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="showStationDetail('${st}', 'downtime')">
+                    <tr class="hover:bg-slate-50/80 transition-colors">
                         <td class="p-4 font-black text-slate-800">
-                            <span class="text-sm">${st}</span>
-                            <span class="text-[9px] text-slate-400 block font-normal">คลิกดูเจาะลึก</span>
+                            <span class="text-sm block">${st}</span>
+                            <span class="text-[9px] text-slate-400 font-normal">คลิกดูแต่ละส่วนด้านขวา ➔</span>
                         </td>
                         <td class="p-4">
                             <div class="flex items-center gap-2">
@@ -1996,17 +2064,26 @@
                                 <span class="text-[11px] font-bold text-slate-600 truncate max-w-[120px]">${Array.from(ops).join(', ') || 'ไม่มีผู้รับผิดชอบ'}</span>
                             </div>
                         </td>
-                        <td class="p-4 text-center">
-                            <span class="font-black ${isStDtPass ? 'text-emerald-600' : 'text-rose-500'}">${stDtPercent.toFixed(2)}%</span>
+                        <td class="p-4 text-center cursor-pointer hover:bg-blue-50/80 rounded-xl transition-all group" onclick="showStationDetail('${st}', 'downtime', 'executive')" title="คลิกดูประวัติ Downtime ของ ${st}">
+                            <span class="font-black ${isStDtPass ? 'text-emerald-600' : 'text-rose-500'} group-hover:underline">${stDtPercent.toFixed(2)}%</span>
                             <span class="text-[10px] text-slate-400 block">เป้า ${stDtTarget.toFixed(2)}% (${dtDuration.toLocaleString()} น.)</span>
+                            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                🔍 ดู Downtime (${dtEntries.length})
+                            </span>
                         </td>
-                        <td class="p-4 text-center">
-                            <span class="font-black ${isStNcpPass ? 'text-emerald-600' : 'text-rose-500'}">${stNcpPercent.toFixed(2)}%</span>
+                        <td class="p-4 text-center cursor-pointer hover:bg-indigo-50/80 rounded-xl transition-all group" onclick="showStationDetail('${st}', 'ncp', 'executive')" title="คลิกดูของเสีย NCP ของ ${st}">
+                            <span class="font-black ${isStNcpPass ? 'text-emerald-600' : 'text-rose-500'} group-hover:underline">${stNcpPercent.toFixed(2)}%</span>
                             <span class="text-[10px] text-slate-400 block">เป้า ${stNcpTarget.toFixed(2)}% (${stNcpWeight.toLocaleString(undefined, {maximumFractionDigits:1})} กก.)</span>
+                            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full mt-1 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                🔍 ดู NCP (${ncpEntries.length})
+                            </span>
                         </td>
-                        <td class="p-4 text-center">
-                            <span class="font-black ${isStShortagePass ? 'text-emerald-600' : 'text-rose-500'}">${stShortagePercent.toFixed(2)}%</span>
+                        <td class="p-4 text-center cursor-pointer hover:bg-rose-50/80 rounded-xl transition-all group" onclick="showStationDetail('${st}', 'shortage', 'executive')" title="คลิกดูออเดอร์ขาดจำนวนของ ${st}">
+                            <span class="font-black ${isStShortagePass ? 'text-emerald-600' : 'text-rose-500'} group-hover:underline">${stShortagePercent.toFixed(2)}%</span>
                             <span class="text-[10px] text-slate-400 block">เป้า ${stShortageTarget.toFixed(2)}% (${stShortageCount} ออเดอร์)</span>
+                            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full mt-1 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                                🔍 ดูขาดจำนวน (${stShortageCount})
+                            </span>
                         </td>
                         <td class="p-4 text-center">
                             ${stationStatusHtml}
@@ -2017,7 +2094,7 @@
 
             document.getElementById('exec-station-matrix-body').innerHTML = matrixRows;
 
-            // 7. Executive Charts
+            // 8. Executive Charts
             // Chart 1: Top 5 Critical Impact Loss Issues (Downtime mins + NCP kg problems combined)
             const combinedIssuesMap = {};
             fDt.forEach(d => {
@@ -2105,8 +2182,12 @@
                 }
             });
 
-            // 8. Generate AI Executive Insights
+            // 9. Generate AI Executive Insights
             generateAIExecutiveInsights({
+                oeeScore,
+                availability,
+                performance,
+                quality,
                 healthScore,
                 gradeText,
                 totalRuntime,
@@ -2156,7 +2237,8 @@
 
             // 1. Headline Summary
             let passPillarsCount = (m.isDtPass ? 1 : 0) + (m.isNcpPass ? 1 : 0) + (m.isShortagePass ? 1 : 0) + (m.isSpeedPass ? 1 : 0);
-            let headlineText = `ภาพรวมการผลิตมีประสิทธิภาพระดับ <b>${m.healthScore}/100</b> บรรลุเป้าหมาย <b>${passPillarsCount} จาก 4 เสาหลัก</b> ยอดผลิตรวม <b>${m.actMeters.toLocaleString(undefined, {maximumFractionDigits:0})} เมตร</b> (เวลาเดินงาน ${m.totalRuntime.toLocaleString()} นาที)`;
+            let oeeSummary = `ค่าประสิทธิผลโดยรวม <b>OEE ${m.oeeScore ? m.oeeScore.toFixed(1) : '0.0'}%</b> (ความพร้อมเครื่อง A: ${m.availability ? m.availability.toFixed(1) : '0.0'}% | ความเร็ว P: ${m.performance ? m.performance.toFixed(1) : '0.0'}% | คุณภาพ Q: ${m.quality ? m.quality.toFixed(1) : '0.0'}%)`;
+            let headlineText = `ภาพรวมการผลิตมีประสิทธิภาพระดับ <b>${m.healthScore}/100</b> [${oeeSummary}] บรรลุเป้าหมาย <b>${passPillarsCount} จาก 4 เสาหลัก</b> ยอดผลิตรวม <b>${m.actMeters.toLocaleString(undefined, {maximumFractionDigits:0})} เมตร</b> (เวลาเดินงาน ${m.totalRuntime.toLocaleString()} นาที)`;
             if (passPillarsCount < 4) {
                 const issues = [];
                 if (!m.isDtPass) issues.push(`เวลาสูญเสียเกินเป้า (+${m.dtDiffPercent.toFixed(2)}%)`);
@@ -3910,7 +3992,7 @@
             document.getElementById('station-analysis-cards-grid').innerHTML = cardsHtml;
         }
 
-        function showStationDetail(stationName, type) {
+        function showStationDetail(stationName, type, context = 'station') {
             const modal = document.getElementById('station-detail-modal');
             const container = document.getElementById('station-detail-modal-container');
             const titleEl = document.getElementById('modal-title');
@@ -3919,24 +4001,32 @@
             const bodyEl = document.getElementById('modal-table-body');
             const emptyEl = document.getElementById('modal-empty-state');
 
-            const s = document.getElementById('station-start-date').value;
-            const e = document.getElementById('station-end-date').value;
-            const mc = document.getElementById('station-filter-mc').value;
-            const sh = document.getElementById('station-filter-shift').value;
+            // Detect whether called from Executive page or Station Analysis page
+            const isExec = (context === 'executive') || (document.querySelector('.nav-btn.active')?.id === 'btn-executive');
+            
+            const s = isExec ? document.getElementById('exec-start-date').value : document.getElementById('station-start-date').value;
+            const e = isExec ? document.getElementById('exec-end-date').value : document.getElementById('station-end-date').value;
+            const mc = isExec ? document.getElementById('exec-filter-mc').value : document.getElementById('station-filter-mc').value;
+            const sh = isExec ? document.getElementById('exec-filter-shift').value : document.getElementById('station-filter-shift').value;
             const cleanSt = cleanStr(stationName);
+
+            const filterLabel = `📅 ${s || 'แรกสุด'} ถึง ${e || 'ล่าสุด'} | 🏭 ${mc || 'ทุกเครื่องจักร'} | ⏱️ ${sh || 'ทุกกะ'}`;
 
             let htmlHeader = '';
             let htmlRows = '';
             let hasData = false;
 
             if (type === 'downtime') {
-                titleEl.textContent = `รายละเอียด Downtime - ${stationName}`;
-                subtitleEl.textContent = 'วิเคราะห์ข้อมูลเวลาสูญเสียรายเหตุการณ์';
+                titleEl.innerHTML = `⏱️ รายละเอียด Downtime — <span class="text-blue-600">${stationName}</span>`;
+                subtitleEl.innerHTML = `<span class="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg font-semibold text-xs inline-block mt-1">${filterLabel}</span>`;
                 htmlHeader = `
-                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/50">
+                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/70">
                         <th class="p-4">วันที่</th>
-                        <th class="p-4">ปัญหา</th>
-                        <th class="p-4 text-center">นาที</th>
+                        <th class="p-4">เครื่อง / กะ</th>
+                        <th class="p-4">ปัญหา / สาเหตุ</th>
+                        <th class="p-4">พนักงาน</th>
+                        <th class="p-4">ปัจจัย</th>
+                        <th class="p-4 text-center">เวลาสูญเสีย (นาที)</th>
                     </tr>
                 `;
                 const filtered = rawData.filter(d => 
@@ -3952,19 +4042,27 @@
                     hasData = true;
                     htmlRows = filtered.map(d => `
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4 font-bold text-slate-700">${d.date}</td>
-                            <td class="p-4 text-slate-600 leading-relaxed">${d.problem || '-'}</td>
-                            <td class="p-4 text-center font-black text-rose-500">${d.duration.toLocaleString()}</td>
+                            <td class="p-4 font-bold text-slate-700 whitespace-nowrap">${d.date}</td>
+                            <td class="p-4 whitespace-nowrap">
+                                <span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 block">${d.machine || '-'}</span>
+                                <span class="text-[9px] text-slate-400 font-semibold block mt-0.5">กะ ${d.shift || '-'}</span>
+                            </td>
+                            <td class="p-4 text-slate-700 leading-relaxed font-medium">${d.problem || '-'}</td>
+                            <td class="p-4 text-slate-600 text-xs font-semibold whitespace-nowrap">${d.operator || '-'}</td>
+                            <td class="p-4 whitespace-nowrap"><span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-[9px] uppercase font-bold">${d.factor || '-'}</span></td>
+                            <td class="p-4 text-center font-black text-rose-500 text-sm whitespace-nowrap">${d.duration.toLocaleString()} น.</td>
                         </tr>
                     `).join('');
                 }
             } else if (type === 'ncp') {
-                titleEl.textContent = `รายละเอียด NCP - ${stationName}`;
-                subtitleEl.textContent = 'วิเคราะห์ของเสียสะสมราย PDR';
+                titleEl.innerHTML = `🗑️ รายละเอียด ของเสีย NCP — <span class="text-indigo-600">${stationName}</span>`;
+                subtitleEl.innerHTML = `<span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg font-semibold text-xs inline-block mt-1">${filterLabel}</span>`;
                 htmlHeader = `
-                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/50">
+                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/70">
                         <th class="p-4">วันที่ / PDR</th>
-                        <th class="p-4">ปัญหา</th>
+                        <th class="p-4">เครื่อง / กะ</th>
+                        <th class="p-4">ปัญหา / สาเหตุ</th>
+                        <th class="p-4">พนักงาน</th>
                         <th class="p-4 text-center">Weight NCP (กก.)</th>
                     </tr>
                 `;
@@ -3980,23 +4078,31 @@
                     hasData = true;
                     htmlRows = filtered.map(d => `
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4">
-                                <span class="font-bold text-slate-700">${d.date}</span><br>
+                            <td class="p-4 whitespace-nowrap">
+                                <span class="font-bold text-slate-700 block">${d.date}</span>
                                 <span class="text-[10px] font-black text-indigo-600 uppercase">PDR: ${d.pdr}</span>
                             </td>
-                            <td class="p-4 text-slate-600 leading-relaxed">${d.reasonDesc || d.problem || '-'}</td>
-                            <td class="p-4 text-center font-black text-rose-500">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td class="p-4 whitespace-nowrap">
+                                <span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 block">${d.machine || '-'}</span>
+                                <span class="text-[9px] text-slate-400 font-semibold block mt-0.5">กะ ${d.shift || '-'}</span>
+                            </td>
+                            <td class="p-4 text-slate-700 leading-relaxed font-medium">${d.reasonDesc || d.problem || '-'}</td>
+                            <td class="p-4 text-slate-600 text-xs font-semibold whitespace-nowrap">${d.ncpOpNames || '-'}</td>
+                            <td class="p-4 text-center font-black text-rose-500 text-sm whitespace-nowrap">${d.weightNcp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} กก.</td>
                         </tr>
                     `).join('');
                 }
             } else if (type === 'shortage') {
-                titleEl.textContent = `รายละเอียด ขาดจำนวน - ${stationName}`;
-                subtitleEl.textContent = 'วิเคราะห์ข้อมูลออเดอร์ขาดจำนวน';
+                titleEl.innerHTML = `📦 รายละเอียด งานขาดจำนวน — <span class="text-rose-600">${stationName}</span>`;
+                subtitleEl.innerHTML = `<span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-lg font-semibold text-xs inline-block mt-1">${filterLabel}</span>`;
                 htmlHeader = `
-                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/50">
-                        <th class="p-4">วันที่</th>
-                        <th class="p-4">PDR / ชื่อลูกค้า</th>
-                        <th class="p-4 text-center">สาเหตุ / จำนวนแผ่น</th>
+                    <tr class="text-[10px] font-bold text-slate-400 uppercase bg-slate-50/70">
+                        <th class="p-4">วันที่ / PDR</th>
+                        <th class="p-4">เครื่อง / กะ</th>
+                        <th class="p-4">ชื่อลูกค้า</th>
+                        <th class="p-4">สาเหตุ / กลุ่มขาด</th>
+                        <th class="p-4 text-center">ขาด (แผ่น)</th>
+                        <th class="p-4 text-right">งานซ่อม / มูลค่า</th>
                     </tr>
                 `;
                 const fShortageBase = shortageData.filter(d => 
@@ -4012,19 +4118,45 @@
 
                 if (filtered.length > 0) {
                     hasData = true;
-                    htmlRows = filtered.map(d => `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4 font-bold text-slate-700">${d.date}</td>
-                            <td class="p-4">
-                                <span class="font-bold text-indigo-600 uppercase">PDR: ${d.pdr}</span><br>
-                                <span class="text-[10px] font-bold text-slate-450">${d.customer || '-'}</span>
-                            </td>
-                            <td class="p-4 text-center">
-                                <span class="font-medium text-slate-600 leading-relaxed block">${d.reason || '-'}</span>
-                                <span class="text-[10px] font-black text-rose-500 block mt-0.5">${d.sheets.toLocaleString()} แผ่น</span>
-                            </td>
-                        </tr>
-                    `).join('');
+                    htmlRows = filtered.map(d => {
+                        const rate = d.repairRate || 0;
+                        const work = d.repairWork ? d.repairWork.trim() : '';
+                        let repairVal = 0;
+                        if (work === 'ตัดจบซ่อม') {
+                            repairVal = (d.sheets * -1) * rate;
+                        } else {
+                            repairVal = (d.excessSheets * -1) * rate;
+                        }
+                        const displayVal = Math.max(0, repairVal);
+
+                        return `
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4 whitespace-nowrap">
+                                    <span class="font-bold text-slate-700 block">${d.date}</span>
+                                    <span class="text-[10px] font-black text-indigo-600 uppercase">PDR: ${d.pdr}</span>
+                                </td>
+                                <td class="p-4 whitespace-nowrap">
+                                    <span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 block">${d.machine || '-'}</span>
+                                    <span class="text-[9px] text-slate-400 font-semibold block mt-0.5">กะ ${d.shift || '-'}</span>
+                                </td>
+                                <td class="p-4 font-bold text-slate-700">${d.customer || '-'}</td>
+                                <td class="p-4">
+                                    <span class="font-medium text-slate-700 leading-relaxed block">${d.reason || '-'}</span>
+                                    <span class="text-[10px] text-slate-400 font-semibold block mt-0.5">กลุ่ม: ${d.shortageGroup || '-'}</span>
+                                </td>
+                                <td class="p-4 text-center whitespace-nowrap">
+                                    <span class="text-sm font-black text-rose-500 block">${d.sheets.toLocaleString()} แผ่น</span>
+                                    <span class="text-[9px] text-slate-400">สั่งผลิต: ${d.planOrder.toLocaleString()}</span>
+                                </td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${work === 'ตัดจบซ่อม' ? 'bg-amber-100 text-amber-700' : 'bg-teal-100 text-teal-700'} block">
+                                        ${work || 'ไม่ระบุ'}
+                                    </span>
+                                    <span class="text-[11px] font-black text-indigo-600 block mt-0.5">${displayVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บ.</span>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
                 }
             }
 
