@@ -65,6 +65,8 @@
         .multi-select-chip button { margin-left: 4px; color: #ef4444; }
 
         @media (max-width: 640px) { .profile-container { width: 140px; height: 140px; min-width: 140px; min-height: 140px; } .op-thumb { width: 44px; height: 44px; min-width: 44px; font-size: 12px; } .ncp-thumb-box { width: 140px; min-width: 140px; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin 4s linear infinite; }
     </style>
 </head>
 <body class="p-3 md:p-6 pb-20">
@@ -81,7 +83,8 @@
     <input type="hidden" id="speed-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRpcfsLHJyxdCjLpBauiSomTDqTIRPbmW75bSVEsYpWjw5ObdlTBQg3B3zDbpmk-Ohu4XrrnyYnLtmC/pub?gid=243648935&single=true&output=csv">
 
     <div class="max-w-7xl mx-auto mb-8 flex flex-wrap bg-white p-2 rounded-2xl shadow-sm gap-2">
-        <button onclick="switchPage('main')" id="btn-main" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม DOWNTIME</button>
+        <button onclick="switchPage('executive')" id="btn-executive" class="nav-btn active flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">👑 ภาพรวมผู้บริหาร</button>
+        <button onclick="switchPage('main')" id="btn-main" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม DOWNTIME</button>
         <button onclick="switchPage('ncp')" id="btn-ncp" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม NCP</button>
         <button onclick="switchPage('shortage')" id="btn-shortage" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวมขาดจำนวน</button>
         <button onclick="switchPage('speed')" id="btn-speed" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">ภาพรวม SPEED</button>
@@ -89,7 +92,311 @@
         <button onclick="switchPage('operator')" id="btn-operator" class="nav-btn flex-1 py-4 text-xs sm:text-sm uppercase tracking-wider">วิเคราะห์พนักงาน</button>
     </div>
 
-    <div id="page-main" class="max-w-7xl mx-auto space-y-6">
+    <!-- 0. PAGE: ภาพรวมผู้บริหาร (Executive Overview) -->
+    <div id="page-executive" class="max-w-7xl mx-auto space-y-6">
+        <!-- 1. Executive Filters & Date Presets -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">ช่วงวันที่วิเคราะห์ภาพรวม</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" id="exec-start-date">
+                        <input type="date" id="exec-end-date">
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">เครื่องจักร</label>
+                    <select id="exec-filter-mc"><option value="">ทุกเครื่องจักร (All Machines)</option></select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">กะการทำงาน (Shift)</label>
+                    <select id="exec-filter-shift"><option value="">ทุกกะ (All Shifts)</option></select>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                <div class="flex bg-slate-100 p-1 rounded-xl text-xs">
+                    <button type="button" onclick="setExecDatePreset('today')" id="btn-exec-preset-today" class="px-3 py-1.5 rounded-lg font-semibold text-slate-600 hover:text-blue-600 transition-colors">วันนี้</button>
+                    <button type="button" onclick="setExecDatePreset('7days')" id="btn-exec-preset-7days" class="px-3 py-1.5 rounded-lg font-semibold bg-white text-blue-600 shadow-sm transition-colors">7 วันล่าสุด</button>
+                    <button type="button" onclick="setExecDatePreset('month')" id="btn-exec-preset-month" class="px-3 py-1.5 rounded-lg font-semibold text-slate-600 hover:text-blue-600 transition-colors">เดือนนี้</button>
+                    <button type="button" onclick="setExecDatePreset('all')" id="btn-exec-preset-all" class="px-3 py-1.5 rounded-lg font-semibold text-slate-600 hover:text-blue-600 transition-colors">ทั้งหมด</button>
+                </div>
+                <button type="button" onclick="runAIAnalysisAnimation()" class="px-4 py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl shadow hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
+                    <svg class="w-4 h-4 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span>AI วิเคราะห์ใหม่</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. Plant Health Scorecard Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-10 -top-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="space-y-2 max-w-2xl">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-400/30">Executive Summary</span>
+                        <span id="exec-health-badge" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-400/30 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>สถานะภาพรวม: ดีเยี่ยม</span>
+                        </span>
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Smart Production Executive Health Overview</h2>
+                    <p id="exec-headline-summary" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+                        กำลังประมวลผลข้อมูลสุขภาพการผลิต 4 เสาหลัก...
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-4 bg-white/5 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 flex-shrink-0 self-stretch md:self-auto justify-between md:justify-center">
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-widest">Plant Health Index</p>
+                        <p id="exec-health-grade" class="text-xs font-semibold text-slate-400">ดัชนีชี้วัดประสิทธิภาพโรงงาน</p>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="exec-health-score" class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-indigo-200 to-emerald-300">0</span>
+                        <span class="text-sm font-bold text-slate-400">/100</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 4-Pillars Production Health Scorecard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Pillar 1: Downtime -->
+            <div id="exec-card-downtime" class="card-stat border-blue-500 space-y-3 cursor-pointer hover:border-blue-600 transition-all" onclick="switchPage('main')">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⏱️</span>
+                        <span class="text-xs font-black text-slate-800 uppercase tracking-wider">1. เวลาสูญเสีย (Downtime)</span>
+                    </div>
+                    <span id="exec-dt-status-tag" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">ตามเป้า ✅</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">% Downtime</p>
+                        <p id="exec-dt-percent" class="text-2xl font-black text-slate-800">0.00%</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 font-bold">Target: 6.25%</p>
+                        <p id="exec-dt-diff" class="text-xs font-black text-emerald-600">Diff: 0.00%</p>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-slate-50 text-xs space-y-1">
+                    <div class="flex justify-between text-slate-500">
+                        <span>เวลาเสียรวม:</span>
+                        <span id="exec-dt-minutes" class="font-bold text-slate-700">0 น. (0 ครั้ง)</span>
+                    </div>
+                    <div class="flex justify-between text-slate-500">
+                        <span>ปัจจัยสูญเสียสูงสุด:</span>
+                        <span id="exec-dt-top-factor" class="font-bold text-rose-500 truncate max-w-[130px]">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pillar 2: NCP Waste -->
+            <div id="exec-card-ncp" class="card-stat border-indigo-500 space-y-3 cursor-pointer hover:border-indigo-600 transition-all" onclick="switchPage('ncp')">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">🗑️</span>
+                        <span class="text-xs font-black text-slate-800 uppercase tracking-wider">2. ของเสีย (NCP Waste)</span>
+                    </div>
+                    <span id="exec-ncp-status-tag" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">ตามเป้า ✅</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">% NCP</p>
+                        <p id="exec-ncp-percent" class="text-2xl font-black text-slate-800">0.00%</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 font-bold">Target: 2.00%</p>
+                        <p id="exec-ncp-diff" class="text-xs font-black text-emerald-600">Diff: 0.00%</p>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-slate-50 text-xs space-y-1">
+                    <div class="flex justify-between text-slate-500">
+                        <span>น้ำหนักของเสีย:</span>
+                        <span id="exec-ncp-weight" class="font-bold text-slate-700">0 กก.</span>
+                    </div>
+                    <div class="flex justify-between text-slate-500">
+                        <span>สถานีของเสียสูงสุด:</span>
+                        <span id="exec-ncp-top-station" class="font-bold text-rose-500 truncate max-w-[130px]">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pillar 3: Shortage -->
+            <div id="exec-card-shortage" class="card-stat border-rose-500 space-y-3 cursor-pointer hover:border-rose-600 transition-all" onclick="switchPage('shortage')">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">📦</span>
+                        <span class="text-xs font-black text-slate-800 uppercase tracking-wider">3. ขาดจำนวน (Shortage)</span>
+                    </div>
+                    <span id="exec-shortage-status-tag" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">ตามเป้า ✅</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">% ขาดจำนวน</p>
+                        <p id="exec-shortage-percent" class="text-2xl font-black text-slate-800">0.00%</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 font-bold">Target: 18.00%</p>
+                        <p id="exec-shortage-diff" class="text-xs font-black text-emerald-600">Diff: 0.00%</p>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-slate-50 text-xs space-y-1">
+                    <div class="flex justify-between text-slate-500">
+                        <span>ขาด/ออเดอร์รวม:</span>
+                        <span id="exec-shortage-orders" class="font-bold text-slate-700">0 / 0 ออเดอร์</span>
+                    </div>
+                    <div class="flex justify-between text-slate-500">
+                        <span>มูลค่างานเกิน/ซ่อม:</span>
+                        <span id="exec-shortage-value" class="font-bold text-indigo-600 truncate max-w-[130px]">0.00 บาท</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pillar 4: Speed -->
+            <div id="exec-card-speed" class="card-stat border-emerald-500 space-y-3 cursor-pointer hover:border-emerald-600 transition-all" onclick="switchPage('speed')">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⚡</span>
+                        <span class="text-xs font-black text-slate-800 uppercase tracking-wider">4. ความเร็วและผลผลิต (Speed)</span>
+                    </div>
+                    <span id="exec-speed-status-tag" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">ตามแผน ✅</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Speed ผลิตจริง</p>
+                        <p id="exec-speed-actual" class="text-2xl font-black text-emerald-600">0 ม./น.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 font-bold">แผน: <span id="exec-speed-plan">0 ม./น.</span></p>
+                        <p id="exec-speed-diff" class="text-xs font-black text-emerald-600">Diff: 0 ม./น.</p>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-slate-50 text-xs space-y-1">
+                    <div class="flex justify-between text-slate-500">
+                        <span>เมตรผลิตจริง:</span>
+                        <span id="exec-speed-meters" class="font-bold text-slate-700">0 เมตร</span>
+                    </div>
+                    <div class="flex justify-between text-slate-500">
+                        <span>งานค้างแผน:</span>
+                        <span id="exec-speed-pending" class="font-bold text-amber-600">0 ออเดอร์</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 🤖 AI Executive Insights & Diagnosis Engine Section -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2">
+                            <span>AI วิเคราะห์ภาพรวมและวินิจฉัยปัญหาการผลิต</span>
+                            <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full uppercase tracking-wider">AI Executive Intelligence</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">ระบบสังเคราะห์ข้อมูลเชิงลึกอัตโนมัติจากทุกเสาหลักการผลิต</p>
+                    </div>
+                </div>
+                <span id="ai-last-updated" class="text-[10px] text-slate-400 font-semibold bg-slate-50 px-3 py-1 rounded-full self-start sm:self-auto">
+                    วิเคราะห์ล่าสุด: เมื่อสักครู่
+                </span>
+            </div>
+
+            <!-- AI Output Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Box 1: Critical Bottlenecks (จุดวิกฤต/คอขวด) -->
+                <div class="bg-rose-50/40 border border-rose-100/80 rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider border-b border-rose-100 pb-2">
+                        <span class="text-sm">🚨</span>
+                        <span>จุดวิกฤตและคอขวดหลัก (Critical Bottlenecks)</span>
+                    </div>
+                    <ul id="ai-bottlenecks-list" class="space-y-2.5 text-xs text-slate-700 leading-relaxed font-medium">
+                        <li class="flex items-start gap-2">
+                            <span class="text-rose-500 font-black">•</span>
+                            <span>กำลังประมวลผลจุดคอขวด...</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Box 2: Cross-Dimensional Correlation (วิเคราะห์ความเชื่อมโยงข้ามมิติ) -->
+                <div class="bg-indigo-50/40 border border-indigo-100/80 rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center gap-2 text-indigo-700 font-bold text-xs uppercase tracking-wider border-b border-indigo-100 pb-2">
+                        <span class="text-sm">🔗</span>
+                        <span>การเชื่อมโยงข้ามมิติของปัญหา (Cross-Impact Analysis)</span>
+                    </div>
+                    <ul id="ai-correlation-list" class="space-y-2.5 text-xs text-slate-700 leading-relaxed font-medium">
+                        <li class="flex items-start gap-2">
+                            <span class="text-indigo-500 font-black">•</span>
+                            <span>กำลังประมวลผลความเชื่อมโยงของข้อมูล...</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Box 3: Strategic Recommendations (ข้อเสนอแนะเชิงกลยุทธ์สำหรับผู้บริหาร) -->
+            <div class="bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-blue-50/40 border border-emerald-100/80 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider border-b border-emerald-100/60 pb-2">
+                    <span class="text-sm">💡</span>
+                    <span>ข้อเสนอแนะเชิงกลยุทธ์และแนวทางสั่งการ (Strategic Management Recommendations)</span>
+                </div>
+                <div id="ai-recommendations-box" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700">
+                    <!-- Dynamic Recommendation Cards -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Station Bottleneck Matrix -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-4 border-slate-100">
+                <div>
+                    <h3 class="text-sm sm:text-base font-bold text-slate-700 uppercase tracking-widest border-l-4 border-indigo-600 pl-3">
+                        ตารางประเมินสุขภาพสถานีผลิต (Station Bottleneck Matrix)
+                    </h3>
+                    <p class="text-xs text-slate-400 pl-4 mt-0.5">ภาพรวมประสิทธิภาพ 5 สถานีหลัก เปรียบเทียบ 3 มิติความสูญเสีย</p>
+                </div>
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-50 px-3 py-1 rounded-full">
+                    คลิกที่แถวเพื่อดูรายละเอียดเจาะลึก
+                </span>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b">
+                        <tr class="text-[10px] font-bold text-slate-400 uppercase">
+                            <th class="p-4">สถานีงาน (Station)</th>
+                            <th class="p-4">พนักงานคุมสถานี</th>
+                            <th class="p-4 text-center">Downtime (% / น.)</th>
+                            <th class="p-4 text-center">NCP ของเสีย (% / กก.)</th>
+                            <th class="p-4 text-center">ขาดจำนวน (% / ออเดอร์)</th>
+                            <th class="p-4 text-center">สถานะภาพรวม</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exec-station-matrix-body" class="text-xs text-slate-700 divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. Executive Charts Section (Top Loss Drivers & Factor Breakdown) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-6 tracking-[0.2em]">Top 5 ปัญหาที่ส่งผลกระทบสูงสุดรวมทุกมิติ (Top Consolidated Loss Drivers)</h3>
+                <div class="chart-container"><canvas id="execTopLossChart"></canvas></div>
+            </div>
+            
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-center text-[10px] font-bold text-slate-400 uppercase mb-6 tracking-[0.2em]">สัดส่วนเวลาสูญเสียแยกตามปัจจัยหลัก (Downtime Factor Distribution)</h3>
+                <div class="chart-container"><canvas id="execFactorDonutChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-main" class="max-w-7xl mx-auto space-y-6 hidden">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="card-stat border-blue-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">เวลาเดินงานรวม</p><p id="main-total-runtime" class="text-3xl font-black text-slate-800">0</p></div>
             <div class="card-stat border-amber-500"><p class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-wider">จำนวนครั้ง</p><p id="main-total-count" class="text-3xl font-black text-slate-800">0</p></div>
@@ -1170,6 +1477,8 @@
 
         function initFilters() {
             const getU = (arr, k) => [...new Set(arr.map(d => d[k]))].filter(x => x && x !== 'ไม่พบพนักงาน').sort();
+            fillSelect('exec-filter-mc', getU(rawData, 'machine'));
+            fillSelect('exec-filter-shift', getU(rawData, 'shift'));
             fillSelect('main-filter-mc', getU(rawData, 'machine')); 
             fillSelect('main-filter-station', getU(rawData, 'stationWaste')); 
             fillSelect('main-filter-factor', getU(rawData, 'factor')); 
@@ -1265,7 +1574,8 @@
 
         function updateCurrentPage() { 
             const activeBtn = document.querySelector('.nav-btn.active').id; 
-            if (activeBtn === 'btn-main') updateMainUI(); 
+            if (activeBtn === 'btn-executive') updateExecutiveUI();
+            else if (activeBtn === 'btn-main') updateMainUI(); 
             else if (activeBtn === 'btn-ncp') updateNCPUI(); 
             else if (activeBtn === 'btn-shortage') updateShortageUI(); 
             else if (activeBtn === 'btn-speed') updateSpeedUI(); 
@@ -1277,6 +1587,7 @@
         
         function setDefaultDates() { 
             const now = new Date(); const last7 = new Date(); last7.setDate(now.getDate()-7); const f = (d) => d.toISOString().split('T')[0]; 
+            document.getElementById('exec-start-date').value = f(last7); document.getElementById('exec-end-date').value = f(now);
             document.getElementById('main-start-date').value = f(last7); document.getElementById('main-end-date').value = f(now); 
             document.getElementById('op-start-date').value = f(last7); document.getElementById('op-end-date').value = f(now); 
             document.getElementById('ncp-start-date').value = f(last7); document.getElementById('ncp-end-date').value = f(now); 
@@ -1286,12 +1597,14 @@
         }
         
         function switchPage(p) { 
+            document.getElementById('page-executive').classList.toggle('hidden', p !== 'executive'); 
             document.getElementById('page-main').classList.toggle('hidden', p !== 'main'); 
             document.getElementById('page-ncp').classList.toggle('hidden', p !== 'ncp'); 
             document.getElementById('page-shortage').classList.toggle('hidden', p !== 'shortage'); 
             document.getElementById('page-speed').classList.toggle('hidden', p !== 'speed'); 
             document.getElementById('page-operator').classList.toggle('hidden', p !== 'operator'); 
             document.getElementById('page-station-analysis').classList.toggle('hidden', p !== 'station-analysis'); 
+            document.getElementById('btn-executive').classList.toggle('active', p === 'executive'); 
             document.getElementById('btn-main').classList.toggle('active', p === 'main'); 
             document.getElementById('btn-ncp').classList.toggle('active', p === 'ncp'); 
             document.getElementById('btn-shortage').classList.toggle('active', p === 'shortage'); 
@@ -1302,6 +1615,657 @@
         }
         
         function drawChart(id, config) { const canvas = document.getElementById(id); if (!canvas) return; const ctx = canvas.getContext('2d'); if (charts[id]) charts[id].destroy(); if (config.type === 'line' && config.data.datasets[0]) { const gradient = ctx.createLinearGradient(0, 0, 0, 400); gradient.addColorStop(0, config.data.datasets[0].borderColor.replace('1)', '0.3)')); gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); config.data.datasets[0].backgroundColor = gradient; config.data.datasets[0].fill = true; config.data.datasets[0].tension = 0.4; } charts[id] = new Chart(ctx, config); }
+
+        function setExecDatePreset(type) {
+            const now = new Date();
+            const f = (d) => d.toISOString().split('T')[0];
+            let startD = new Date();
+            let endD = new Date();
+
+            if (type === 'today') {
+                startD = now;
+                endD = now;
+            } else if (type === '7days') {
+                startD.setDate(now.getDate() - 7);
+                endD = now;
+            } else if (type === 'month') {
+                startD = new Date(now.getFullYear(), now.getMonth(), 1);
+                endD = now;
+            } else if (type === 'all') {
+                startD = new Date(2020, 0, 1);
+                endD = now;
+            }
+
+            document.getElementById('exec-start-date').value = f(startD);
+            document.getElementById('exec-end-date').value = f(endD);
+
+            ['today', '7days', 'month', 'all'].forEach(t => {
+                const btn = document.getElementById(`btn-exec-preset-${t}`);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = 'px-3 py-1.5 rounded-lg font-semibold bg-white text-blue-600 shadow-sm transition-colors';
+                    } else {
+                        btn.className = 'px-3 py-1.5 rounded-lg font-semibold text-slate-600 hover:text-blue-600 transition-colors';
+                    }
+                }
+            });
+
+            updateExecutiveUI();
+        }
+
+        function runAIAnalysisAnimation() {
+            const headlineEl = document.getElementById('exec-headline-summary');
+            const bottlenecksEl = document.getElementById('ai-bottlenecks-list');
+            const correlationEl = document.getElementById('ai-correlation-list');
+            const recsEl = document.getElementById('ai-recommendations-box');
+            const updatedEl = document.getElementById('ai-last-updated');
+
+            headlineEl.innerHTML = '<span class="inline-flex items-center gap-2"><svg class="w-4 h-4 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> AI กำลังประมวลผลข้อมูลและวิเคราะห์คอขวดเชิงลึก...</span>';
+            bottlenecksEl.innerHTML = '<li class="text-slate-400 italic">กำลังสแกนหาจุดวิกฤต...</li>';
+            correlationEl.innerHTML = '<li class="text-slate-400 italic">กำลังคำนวณความสัมพันธ์ข้ามมิติ...</li>';
+            recsEl.innerHTML = '<div class="col-span-3 text-center py-4 text-slate-400 italic">กำลังสร้างคำแนะนำเชิงกลยุทธ์...</div>';
+
+            setTimeout(() => {
+                updateExecutiveUI();
+                const now = new Date();
+                updatedEl.textContent = `วิเคราะห์ล่าสุด: ${now.toLocaleTimeString('th-TH')}`;
+            }, 300);
+        }
+
+        function updateExecutiveUI() {
+            const s = document.getElementById('exec-start-date').value,
+                  e = document.getElementById('exec-end-date').value,
+                  mc = document.getElementById('exec-filter-mc').value,
+                  sh = document.getElementById('exec-filter-shift').value;
+
+            // 1. Downtime Data Calculations
+            const machineShiftRuntime = {};
+            rawData.forEach(d => {
+                const key = `${d.isoDate}_${d.shift}_${d.machine}`;
+                if (!machineShiftRuntime[key] || d.runtime > machineShiftRuntime[key].runtime) {
+                    machineShiftRuntime[key] = { runtime: d.runtime, pmTarget: d.pmTarget };
+                }
+            });
+
+            function getNetRuntime(date, shift, machine) {
+                const key = `${date}_${shift}_${machine}`;
+                const info = machineShiftRuntime[key];
+                return info ? Math.max(0, info.runtime - info.pmTarget) : 0;
+            }
+
+            const fForRuntime = rawData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || d.machine === mc) && (!sh || d.shift === sh));
+            const uniqueRuntimeGroups = {};
+            fForRuntime.forEach(d => {
+                const key = `${d.isoDate}_${d.shift}_${d.machine}`;
+                if (!uniqueRuntimeGroups[key]) uniqueRuntimeGroups[key] = getNetRuntime(d.isoDate, d.shift, d.machine);
+            });
+            const totalRuntime = Object.values(uniqueRuntimeGroups).reduce((a, b) => a + b, 0);
+
+            const fDt = rawData.filter(d =>
+                (!s || d.isoDate >= s) && (!e || d.isoDate <= e) &&
+                (!mc || d.machine === mc) && (!sh || d.shift === sh) &&
+                (d.factor.toUpperCase() !== 'PM')
+            );
+            const totalDtMinutes = fDt.reduce((a, b) => a + b.duration, 0);
+            const totalDtCount = fDt.reduce((a, b) => a + b.stops, 0);
+            const dtPercent = totalRuntime > 0 ? (totalDtMinutes / totalRuntime) * 100 : 0;
+            const dtTarget = 6.25;
+            const dtDiffPercent = dtPercent - dtTarget;
+            const dtTargetMin = totalRuntime * (dtTarget / 100);
+            const dtDiffMin = totalDtMinutes - dtTargetMin;
+            const isDtPass = dtPercent <= dtTarget;
+
+            const factorMap = {};
+            fDt.forEach(d => {
+                const fKey = d.factor || 'OTHER';
+                factorMap[fKey] = (factorMap[fKey] || 0) + d.duration;
+            });
+            const sortedFactors = Object.entries(factorMap).sort((a, b) => b[1] - a[1]);
+            const topDtFactorName = sortedFactors.length > 0 ? sortedFactors[0][0] : '-';
+            const topDtFactorMins = sortedFactors.length > 0 ? sortedFactors[0][1] : 0;
+
+            // 2. NCP Waste Calculations
+            const fNcpRaw = ncpData.filter(d => (!s || d.isoDate >= s) && (!e || d.isoDate <= e) && (!mc || cleanStr(d.machine) === cleanStr(mc)) && (!sh || cleanStr(d.shift) === cleanStr(sh)));
+            const uniqueConMap = {};
+            fNcpRaw.forEach(d => {
+                const key = `${d.isoDate}_${d.shift}_${d.machine}`;
+                if (!uniqueConMap[key]) uniqueConMap[key] = d.consumption;
+            });
+            const totalConsumption = Object.values(uniqueConMap).reduce((a, b) => a + b, 0);
+            const totalNcpWeight = fNcpRaw.reduce((a, b) => a + b.weightNcp, 0);
+            const ncpPercent = totalConsumption > 0 ? (totalNcpWeight / totalConsumption) * 100 : 0;
+            const ncpTarget = 2.00;
+            const ncpDiffPercent = ncpPercent - ncpTarget;
+            const ncpTargetWeight = totalConsumption * (ncpTarget / 100);
+            const ncpDiffWeight = totalNcpWeight - ncpTargetWeight;
+            const isNcpPass = ncpPercent <= ncpTarget;
+
+            const ncpStMap = {};
+            const ncpReasonMap = {};
+            fNcpRaw.forEach(d => {
+                const st = d.station || 'ไม่ระบุ';
+                const r = d.reasonDesc || d.problem || 'ไม่ระบุ';
+                ncpStMap[st] = (ncpStMap[st] || 0) + d.weightNcp;
+                ncpReasonMap[r] = (ncpReasonMap[r] || 0) + d.weightNcp;
+            });
+            const sortedNcpStations = Object.entries(ncpStMap).sort((a, b) => b[1] - a[1]);
+            const topNcpStationName = sortedNcpStations.length > 0 ? sortedNcpStations[0][0] : '-';
+            const topNcpStationKg = sortedNcpStations.length > 0 ? sortedNcpStations[0][1] : 0;
+            const sortedNcpReasons = Object.entries(ncpReasonMap).sort((a, b) => b[1] - a[1]);
+            const topNcpReasonName = sortedNcpReasons.length > 0 ? sortedNcpReasons[0][0] : '-';
+            const topNcpReasonKg = sortedNcpReasons.length > 0 ? sortedNcpReasons[0][1] : 0;
+
+            // 3. Shortage Calculations
+            const fShortageBase = shortageData.filter(d =>
+                (!s || d.isoDate >= s) && (!e || d.isoDate <= e) &&
+                (!mc || cleanStr(d.machine) === cleanStr(mc)) &&
+                (!sh || cleanStr(d.shift) === cleanStr(sh))
+            );
+            const baseValidOrders = fShortageBase.filter(d => d.status === 'ครบจำนวน' || d.status === 'ขาดจำนวน');
+            const totalOrdersCount = baseValidOrders.length;
+            const shortageOrdersList = fShortageBase.filter(d => d.status === 'ขาดจำนวน');
+            const shortageOrdersCount = shortageOrdersList.length;
+            const shortagePercent = totalOrdersCount > 0 ? (shortageOrdersCount / totalOrdersCount) * 100 : 0;
+            const shortageTarget = 18.00;
+            const shortageDiffPercent = shortagePercent - shortageTarget;
+            const isShortagePass = shortagePercent <= shortageTarget;
+
+            let totalNormalExcessVal = 0, totalExcessVal = 0, totalCloseVal = 0;
+            fShortageBase.forEach(d => {
+                const rate = d.repairRate || 0;
+                const work = d.repairWork ? d.repairWork.trim() : '';
+                const normalAmt = d.normalExcessSheets * -1;
+                totalNormalExcessVal += normalAmt * rate;
+                if (d.status === 'ขาดจำนวน') {
+                    if (work === 'ตัดจบซ่อม') {
+                        totalCloseVal += (d.sheets * -1) * rate;
+                    } else {
+                        totalExcessVal += (d.excessSheets * -1) * rate;
+                    }
+                }
+            });
+            const totalRepairExcessValue = Math.max(0, totalExcessVal + totalCloseVal);
+
+            const shortageCustMap = {};
+            const shortageStMap = {};
+            shortageOrdersList.forEach(d => {
+                const cust = d.customer || 'ไม่ระบุ';
+                const st = d.station || 'ไม่ระบุ';
+                shortageCustMap[cust] = (shortageCustMap[cust] || 0) + 1;
+                shortageStMap[st] = (shortageStMap[st] || 0) + 1;
+            });
+            const sortedShortageCust = Object.entries(shortageCustMap).sort((a, b) => b[1] - a[1]);
+            const topShortageCustName = sortedShortageCust.length > 0 ? sortedShortageCust[0][0] : '-';
+            const topShortageCustOrders = sortedShortageCust.length > 0 ? sortedShortageCust[0][1] : 0;
+            const sortedShortageStations = Object.entries(shortageStMap).sort((a, b) => b[1] - a[1]);
+            const topShortageStationName = sortedShortageStations.length > 0 ? sortedShortageStations[0][0] : '-';
+
+            // 4. Speed Calculations
+            const filteredSpeed = speedData.filter(d =>
+                (!s || d.isoDate >= s) && (!e || d.isoDate <= e) &&
+                (!mc || cleanStr(d.machine) === cleanStr(mc)) &&
+                (!sh || cleanStr(d.shift) === cleanStr(sh))
+            );
+            const planList = filteredSpeed.filter(d => cleanStr(d.status) !== 'งานนอกแผน');
+            const planMeters = planList.reduce((sum, d) => sum + d.planMeters, 0);
+            const planRuntime = planList.reduce((sum, d) => sum + d.planRuntime, 0);
+            const netPlanRuntime = Math.max(0, planRuntime * 0.9375);
+            const planSpeed = netPlanRuntime > 0 ? (planMeters / netPlanRuntime) : 0;
+
+            const actList = filteredSpeed.filter(d => cleanStr(d.status) !== 'งานค้างแผน');
+            const actMeters = actList.reduce((sum, d) => sum + d.actMeters, 0);
+            const actRuntime = actList.reduce((sum, d) => sum + d.actRuntime, 0);
+            const actLossTime = actList.reduce((sum, d) => sum + d.lossTime, 0);
+            const netActTime = Math.max(0, actRuntime - actLossTime);
+            const actSpeed = netActTime > 0 ? (actMeters / netActTime) : 0;
+            const diffSpeed = actSpeed - planSpeed;
+            const isSpeedPass = actSpeed >= planSpeed || (planSpeed > 0 && actSpeed >= planSpeed * 0.95);
+
+            const pendingList = filteredSpeed.filter(d => cleanStr(d.status) === 'งานค้างแผน');
+            const pendingOrders = pendingList.length;
+
+            // 5. Plant Health Score (0 - 100)
+            let healthScore = 100;
+            if (dtPercent > dtTarget) {
+                const overRatio = (dtPercent - dtTarget) / dtTarget;
+                healthScore -= Math.min(25, Math.round(overRatio * 25));
+            }
+            if (ncpPercent > ncpTarget) {
+                const overRatio = (ncpPercent - ncpTarget) / ncpTarget;
+                healthScore -= Math.min(25, Math.round(overRatio * 25));
+            }
+            if (shortagePercent > shortageTarget) {
+                const overRatio = (shortagePercent - shortageTarget) / shortageTarget;
+                healthScore -= Math.min(25, Math.round(overRatio * 25));
+            }
+            if (planSpeed > 0 && actSpeed < planSpeed) {
+                const underRatio = (planSpeed - actSpeed) / planSpeed;
+                healthScore -= Math.min(25, Math.round(underRatio * 25));
+            }
+            healthScore = Math.max(10, Math.min(100, healthScore));
+
+            let gradeText = 'สถานะภาพรวม: ดีเยี่ยม';
+            let gradeBadgeClass = 'bg-emerald-500/20 border-emerald-400/30 text-emerald-300';
+            let gradeDotClass = 'bg-emerald-400';
+
+            if (healthScore >= 90) {
+                gradeText = 'สถานะภาพรวม: ดีเยี่ยม (Grade A 🏆)';
+                gradeBadgeClass = 'bg-emerald-500/20 border-emerald-400/30 text-emerald-300';
+                gradeDotClass = 'bg-emerald-400';
+            } else if (healthScore >= 80) {
+                gradeText = 'สถานะภาพรวม: ดีมาก (Grade B+ 👍)';
+                gradeBadgeClass = 'bg-blue-500/20 border-blue-400/30 text-blue-300';
+                gradeDotClass = 'bg-blue-400';
+            } else if (healthScore >= 70) {
+                gradeText = 'สถานะภาพรวม: เฝ้าระวังบางจุด (Grade B ⚠️)';
+                gradeBadgeClass = 'bg-amber-500/20 border-amber-400/30 text-amber-300';
+                gradeDotClass = 'bg-amber-400';
+            } else if (healthScore >= 60) {
+                gradeText = 'สถานะภาพรวม: ต้องเร่งปรับปรุง (Grade C 🚨)';
+                gradeBadgeClass = 'bg-rose-500/20 border-rose-400/30 text-rose-300';
+                gradeDotClass = 'bg-rose-400';
+            } else {
+                gradeText = 'สถานะภาพรวม: วิกฤต (Grade D 🔴)';
+                gradeBadgeClass = 'bg-rose-600/30 border-rose-500/50 text-rose-200';
+                gradeDotClass = 'bg-rose-500';
+            }
+
+            document.getElementById('exec-health-score').textContent = healthScore;
+            document.getElementById('exec-health-grade').textContent = `ดัชนีชี้วัดประสิทธิภาพโรงงาน`;
+            const healthBadgeEl = document.getElementById('exec-health-badge');
+            healthBadgeEl.className = `px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border flex items-center gap-1.5 ${gradeBadgeClass}`;
+            healthBadgeEl.innerHTML = `<span class="w-2 h-2 rounded-full ${gradeDotClass} animate-pulse"></span><span>${gradeText}</span>`;
+
+            // Update 4-Pillars Cards UI
+            // Pillar 1
+            document.getElementById('exec-dt-percent').textContent = dtPercent.toFixed(2) + '%';
+            const dtDiffEl = document.getElementById('exec-dt-diff');
+            dtDiffEl.textContent = `Diff: ${dtDiffPercent > 0 ? '+' : ''}${dtDiffPercent.toFixed(2)}%`;
+            dtDiffEl.className = `text-xs font-black ${isDtPass ? 'text-emerald-600' : 'text-rose-500'}`;
+            const dtTagEl = document.getElementById('exec-dt-status-tag');
+            dtTagEl.textContent = isDtPass ? 'ตามเป้า ✅' : 'เกินเป้า 🚨';
+            dtTagEl.className = `text-[9px] font-bold px-2 py-0.5 rounded-full ${isDtPass ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
+            document.getElementById('exec-dt-minutes').textContent = `${totalDtMinutes.toLocaleString(undefined, {maximumFractionDigits: 1})} น. (${totalDtCount} ครั้ง)`;
+            document.getElementById('exec-dt-top-factor').textContent = `${topDtFactorName} (${topDtFactorMins.toLocaleString(undefined, {maximumFractionDigits: 1})} น.)`;
+
+            // Pillar 2
+            document.getElementById('exec-ncp-percent').textContent = ncpPercent.toFixed(2) + '%';
+            const ncpDiffEl = document.getElementById('exec-ncp-diff');
+            ncpDiffEl.textContent = `Diff: ${ncpDiffPercent > 0 ? '+' : ''}${ncpDiffPercent.toFixed(2)}%`;
+            ncpDiffEl.className = `text-xs font-black ${isNcpPass ? 'text-emerald-600' : 'text-rose-500'}`;
+            const ncpTagEl = document.getElementById('exec-ncp-status-tag');
+            ncpTagEl.textContent = isNcpPass ? 'ตามเป้า ✅' : 'เกินเป้า 🚨';
+            ncpTagEl.className = `text-[9px] font-bold px-2 py-0.5 rounded-full ${isNcpPass ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
+            document.getElementById('exec-ncp-weight').textContent = `${totalNcpWeight.toLocaleString(undefined, {maximumFractionDigits: 1})} / ${totalConsumption.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.`;
+            document.getElementById('exec-ncp-top-station').textContent = `${topNcpStationName} (${topNcpStationKg.toLocaleString(undefined, {maximumFractionDigits: 1})} กก.)`;
+
+            // Pillar 3
+            document.getElementById('exec-shortage-percent').textContent = shortagePercent.toFixed(2) + '%';
+            const shortageDiffEl = document.getElementById('exec-shortage-diff');
+            shortageDiffEl.textContent = `Diff: ${shortageDiffPercent > 0 ? '+' : ''}${shortageDiffPercent.toFixed(2)}%`;
+            shortageDiffEl.className = `text-xs font-black ${isShortagePass ? 'text-emerald-600' : 'text-rose-500'}`;
+            const shortageTagEl = document.getElementById('exec-shortage-status-tag');
+            shortageTagEl.textContent = isShortagePass ? 'ตามเป้า ✅' : 'เกินเป้า 🚨';
+            shortageTagEl.className = `text-[9px] font-bold px-2 py-0.5 rounded-full ${isShortagePass ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
+            document.getElementById('exec-shortage-orders').textContent = `${shortageOrdersCount.toLocaleString()} / ${totalOrdersCount.toLocaleString()} ออเดอร์`;
+            document.getElementById('exec-shortage-value').textContent = `${totalRepairExcessValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท`;
+
+            // Pillar 4
+            document.getElementById('exec-speed-actual').textContent = `${actSpeed.toFixed(1)} ม./น.`;
+            document.getElementById('exec-speed-plan').textContent = `${planSpeed.toFixed(1)} ม./น.`;
+            const speedDiffEl = document.getElementById('exec-speed-diff');
+            speedDiffEl.textContent = `Diff: ${diffSpeed >= 0 ? '+' : ''}${diffSpeed.toFixed(1)} ม./น.`;
+            speedDiffEl.className = `text-xs font-black ${isSpeedPass ? 'text-emerald-600' : 'text-rose-500'}`;
+            const speedTagEl = document.getElementById('exec-speed-status-tag');
+            speedTagEl.textContent = isSpeedPass ? 'ตามแผน ✅' : 'ต่ำกว่าแผน 🚨';
+            speedTagEl.className = `text-[9px] font-bold px-2 py-0.5 rounded-full ${isSpeedPass ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
+            document.getElementById('exec-speed-meters').textContent = `${actMeters.toLocaleString(undefined, {maximumFractionDigits: 1})} เมตร`;
+            document.getElementById('exec-speed-pending').textContent = `${pendingOrders} ออเดอร์`;
+
+            // 6. Station Bottleneck Matrix (5 Stations)
+            const targetStations = ['Single C', 'Single B', 'Double', 'Dryend', 'Stacker'];
+            const matrixRows = targetStations.map(st => {
+                const cleanSt = cleanStr(st);
+                // Station Downtime
+                const dtEntries = fDt.filter(d => cleanStr(d.stationWaste) === cleanSt);
+                const dtDuration = dtEntries.reduce((sum, d) => sum + d.duration, 0);
+                const stDtPercent = totalRuntime > 0 ? (dtDuration / totalRuntime) * 100 : 0;
+                const stDtTarget = getStationDowntimeTarget(st) || 6.25;
+                const isStDtPass = stDtPercent <= stDtTarget;
+
+                // Station NCP
+                const ncpEntries = fNcpRaw.filter(d => cleanStr(d.station) === cleanSt);
+                const stNcpWeight = ncpEntries.reduce((sum, d) => sum + d.weightNcp, 0);
+                const stNcpPercent = totalConsumption > 0 ? (stNcpWeight / totalConsumption) * 100 : 0;
+                const stNcpTarget = ncpTargets[cleanSt] || 2.00;
+                const isStNcpPass = stNcpPercent <= stNcpTarget;
+
+                // Station Shortage
+                const stShortageList = baseValidOrders.filter(d => cleanStr(d.station) === cleanSt);
+                const stShortageCount = stShortageList.filter(d => d.status === 'ขาดจำนวน').length;
+                const stShortagePercent = totalOrdersCount > 0 ? (stShortageCount / totalOrdersCount) * 100 : 0;
+                const stShortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 18.00;
+                const isStShortagePass = stShortagePercent <= stShortageTarget;
+
+                // Operators
+                const ops = new Set();
+                dtEntries.forEach(d => {
+                    if (d.operator && d.operator !== 'ไม่พบพนักงาน') {
+                        d.operator.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => ops.add(name));
+                    }
+                });
+                ncpEntries.forEach(d => {
+                    if (d.ncpOpNames && d.ncpOpNames !== 'ไม่พบพนักงาน') {
+                        d.ncpOpNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n).forEach(name => ops.add(name));
+                    }
+                });
+                getFilteredOperatorsForStation(st, mc, sh).forEach(name => ops.add(name));
+                const resolvedOps = Array.from(ops).map(name => ({
+                    name,
+                    img: resolveOperatorImage(name, mc, sh, st)
+                }));
+
+                const thumbsHtml = resolvedOps.slice(0, 3).map((op, idx) => {
+                    const bgColor = colorPalette[idx % colorPalette.length];
+                    return op.img ? `
+                        <img src="${op.img}" class="w-7 h-7 rounded-full object-cover border-2 border-white shadow-sm inline-block -mr-2" crossorigin="anonymous" title="${op.name}" onerror="this.style.display='none';">
+                    ` : `
+                        <div class="w-7 h-7 rounded-full border-2 border-white shadow-sm inline-flex items-center justify-center text-[10px] text-white font-bold -mr-2" style="background-color: ${bgColor};" title="${op.name}">${op.name.charAt(0)}</div>
+                    `;
+                }).join('') || '<span class="text-slate-400 text-[10px]">-</span>';
+
+                const passCount = (isStDtPass ? 1 : 0) + (isStNcpPass ? 1 : 0) + (isStShortagePass ? 1 : 0);
+                let stationStatusHtml = '';
+                if (passCount === 3) {
+                    stationStatusHtml = '<span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">🟢 ปกติ</span>';
+                } else if (passCount === 2) {
+                    stationStatusHtml = '<span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-bold border border-amber-200">🟡 เฝ้าระวัง</span>';
+                } else {
+                    stationStatusHtml = '<span class="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-bold border border-rose-200">🔴 วิกฤต</span>';
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="showStationDetail('${st}', 'downtime')">
+                        <td class="p-4 font-black text-slate-800">
+                            <span class="text-sm">${st}</span>
+                            <span class="text-[9px] text-slate-400 block font-normal">คลิกดูเจาะลึก</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <div class="flex">${thumbsHtml}</div>
+                                <span class="text-[11px] font-bold text-slate-600 truncate max-w-[120px]">${Array.from(ops).join(', ') || 'ไม่มีผู้รับผิดชอบ'}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="font-black ${isStDtPass ? 'text-emerald-600' : 'text-rose-500'}">${stDtPercent.toFixed(2)}%</span>
+                            <span class="text-[10px] text-slate-400 block">เป้า ${stDtTarget.toFixed(2)}% (${dtDuration.toLocaleString()} น.)</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="font-black ${isStNcpPass ? 'text-emerald-600' : 'text-rose-500'}">${stNcpPercent.toFixed(2)}%</span>
+                            <span class="text-[10px] text-slate-400 block">เป้า ${stNcpTarget.toFixed(2)}% (${stNcpWeight.toLocaleString(undefined, {maximumFractionDigits:1})} กก.)</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="font-black ${isStShortagePass ? 'text-emerald-600' : 'text-rose-500'}">${stShortagePercent.toFixed(2)}%</span>
+                            <span class="text-[10px] text-slate-400 block">เป้า ${stShortageTarget.toFixed(2)}% (${stShortageCount} ออเดอร์)</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            ${stationStatusHtml}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('exec-station-matrix-body').innerHTML = matrixRows;
+
+            // 7. Executive Charts
+            // Chart 1: Top 5 Critical Impact Loss Issues (Downtime mins + NCP kg problems combined)
+            const combinedIssuesMap = {};
+            fDt.forEach(d => {
+                const p = d.problem ? `[Downtime] ${d.problem}` : null;
+                if (p) combinedIssuesMap[p] = (combinedIssuesMap[p] || 0) + d.duration;
+            });
+            fNcpRaw.forEach(d => {
+                const r = d.reasonDesc || d.problem;
+                if (r) {
+                    const p = `[NCP ของเสีย] ${r}`;
+                    combinedIssuesMap[p] = (combinedIssuesMap[p] || 0) + d.weightNcp;
+                }
+            });
+            const topConsolidatedIssues = Object.entries(combinedIssuesMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            drawChart('execTopLossChart', {
+                type: 'bar',
+                data: {
+                    labels: topConsolidatedIssues.map(x => x[0]),
+                    datasets: [{
+                        data: topConsolidatedIssues.map(x => x[1]),
+                        backgroundColor: topConsolidatedIssues.map((_, i) => colorPalette[i % colorPalette.length] + 'CC'),
+                        borderColor: topConsolidatedIssues.map((_, i) => colorPalette[i % colorPalette.length]),
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                        barThickness: 24
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'right',
+                            color: '#334155',
+                            font: { size: 10, weight: 'bold' },
+                            formatter: (v, ctx) => {
+                                const lbl = ctx.chart.data.labels[ctx.dataIndex];
+                                return lbl.startsWith('[Downtime]') ? `${v.toLocaleString()} นาที` : `${v.toLocaleString(undefined, {maximumFractionDigits:1})} กก.`;
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, grace: '40%', grid: { display: false }, ticks: { display: false } },
+                        y: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#475569' } }
+                    }
+                }
+            });
+
+            // Chart 2: Downtime Factor Distribution (Donut)
+            const factorEntries = sortedFactors.filter(x => x[1] > 0);
+            const totalFactorMins = factorEntries.reduce((sum, x) => sum + x[1], 0);
+
+            drawChart('execFactorDonutChart', {
+                type: 'doughnut',
+                data: {
+                    labels: factorEntries.map(x => x[0]),
+                    datasets: [{
+                        data: factorEntries.map(x => x[1]),
+                        backgroundColor: factorEntries.map((_, i) => colorPalette[(i + 1) % colorPalette.length] + 'DD'),
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                        datalabels: {
+                            display: true,
+                            color: '#ffffff',
+                            font: { size: 10, weight: 'bold' },
+                            formatter: (v) => {
+                                if (v > 0 && totalFactorMins > 0) {
+                                    const pct = ((v / totalFactorMins) * 100).toFixed(1);
+                                    return `${pct}%\n(${v}น.)`;
+                                }
+                                return '';
+                            },
+                            textAlign: 'center'
+                        }
+                    }
+                }
+            });
+
+            // 8. Generate AI Executive Insights
+            generateAIExecutiveInsights({
+                healthScore,
+                gradeText,
+                totalRuntime,
+                totalDtMinutes,
+                totalDtCount,
+                dtPercent,
+                dtTarget,
+                dtDiffPercent,
+                isDtPass,
+                topDtFactorName,
+                topDtFactorMins,
+                totalNcpWeight,
+                totalConsumption,
+                ncpPercent,
+                ncpTarget,
+                ncpDiffPercent,
+                isNcpPass,
+                topNcpStationName,
+                topNcpStationKg,
+                topNcpReasonName,
+                topNcpReasonKg,
+                totalOrdersCount,
+                shortageOrdersCount,
+                shortagePercent,
+                shortageTarget,
+                shortageDiffPercent,
+                isShortagePass,
+                topShortageCustName,
+                topShortageCustOrders,
+                topShortageStationName,
+                totalRepairExcessValue,
+                actSpeed,
+                planSpeed,
+                diffSpeed,
+                actMeters,
+                planMeters,
+                pendingOrders,
+                isSpeedPass
+            });
+        }
+
+        function generateAIExecutiveInsights(m) {
+            const headlineEl = document.getElementById('exec-headline-summary');
+            const bottlenecksEl = document.getElementById('ai-bottlenecks-list');
+            const correlationEl = document.getElementById('ai-correlation-list');
+            const recsEl = document.getElementById('ai-recommendations-box');
+
+            // 1. Headline Summary
+            let passPillarsCount = (m.isDtPass ? 1 : 0) + (m.isNcpPass ? 1 : 0) + (m.isShortagePass ? 1 : 0) + (m.isSpeedPass ? 1 : 0);
+            let headlineText = `ภาพรวมการผลิตมีประสิทธิภาพระดับ <b>${m.healthScore}/100</b> บรรลุเป้าหมาย <b>${passPillarsCount} จาก 4 เสาหลัก</b> ยอดผลิตรวม <b>${m.actMeters.toLocaleString(undefined, {maximumFractionDigits:0})} เมตร</b> (เวลาเดินงาน ${m.totalRuntime.toLocaleString()} นาที)`;
+            if (passPillarsCount < 4) {
+                const issues = [];
+                if (!m.isDtPass) issues.push(`เวลาสูญเสียเกินเป้า (+${m.dtDiffPercent.toFixed(2)}%)`);
+                if (!m.isNcpPass) issues.push(`ของเสีย NCP เกินเกณฑ์ (+${m.ncpDiffPercent.toFixed(2)}%)`);
+                if (!m.isShortagePass) issues.push(`งานขาดจำนวนสูง (+${m.shortageDiffPercent.toFixed(2)}%)`);
+                if (!m.isSpeedPass) issues.push(`ความเร็วผลิตต่ำกว่าแผน (${m.diffSpeed.toFixed(1)} ม./น.)`);
+                headlineText += ` โดยมีจุดต้องเฝ้าระวังหลักคือ <b>${issues.join(', ')}</b>`;
+            } else {
+                headlineText += ` โดยรักษามาตรฐานการควบคุมของเสีย Downtime และความเร็วผลิตได้ตามแผนงานอย่างสมบูรณ์แบบ`;
+            }
+            headlineEl.innerHTML = headlineText;
+
+            // 2. Critical Bottlenecks
+            const bottleneckItems = [];
+            if (!m.isDtPass || m.totalDtMinutes > 0) {
+                bottleneckItems.push(`
+                    <li class="flex items-start gap-2">
+                        <span class="text-rose-500 font-bold">•</span>
+                        <span><b>Downtime สูญเสียหลัก:</b> เกิดจากปัจจัย <b>${m.topDtFactorName}</b> สูงถึง <b>${m.topDtFactorMins.toLocaleString(undefined, {maximumFractionDigits:1})} นาที</b> (คิดเป็น ${m.totalDtMinutes > 0 ? ((m.topDtFactorMins/m.totalDtMinutes)*100).toFixed(1) : 0}% ของเวลาหยุดทั้งหมด)</span>
+                    </li>
+                `);
+            }
+            if (!m.isNcpPass || m.totalNcpWeight > 0) {
+                bottleneckItems.push(`
+                    <li class="flex items-start gap-2">
+                        <span class="text-rose-500 font-bold">•</span>
+                        <span><b>จุดกำเนิดของเสีย NCP สูงสุด:</b> อยู่ที่สถานี <b>${m.topNcpStationName}</b> น้ำหนักของเสีย <b>${m.topNcpStationKg.toLocaleString(undefined, {maximumFractionDigits:1})} กก.</b> สาเหตุหลักคือ <i>"${m.topNcpReasonName}"</i></span>
+                    </li>
+                `);
+            }
+            if (!m.isShortagePass || m.shortageOrdersCount > 0) {
+                bottleneckItems.push(`
+                    <li class="flex items-start gap-2">
+                        <span class="text-rose-500 font-bold">•</span>
+                        <span><b>งานขาดจำนวนกระทบลูกค้า:</b> พบออเดอร์ขาดสะสม <b>${m.shortageOrdersCount} ออเดอร์</b> (${m.shortagePercent.toFixed(2)}%) ลูกค้าที่ได้รับผลกระทบสูงสุดคือ <b>${m.topShortageCustName}</b> (${m.topShortageCustOrders} ออเดอร์) มูลค่างานเกิน/ซ่อมรวม <b>${m.totalRepairExcessValue.toLocaleString(undefined, {maximumFractionDigits:2})} บาท</b></span>
+                    </li>
+                `);
+            }
+            if (!m.isSpeedPass || m.pendingOrders > 0) {
+                bottleneckItems.push(`
+                    <li class="flex items-start gap-2">
+                        <span class="text-rose-500 font-bold">•</span>
+                        <span><b>ประสิทธิภาพความเร็วและงานค้าง:</b> Speed ผลิตทำได้ <b>${m.actSpeed.toFixed(1)} ม./น.</b> (เป้าหมายแผน ${m.planSpeed.toFixed(1)} ม./น.) และมีงานค้างแผนที่ต้องเร่งเคลียร์ <b>${m.pendingOrders} ออเดอร์</b></span>
+                    </li>
+                `);
+            }
+            bottlenecksEl.innerHTML = bottleneckItems.join('') || '<li class="text-emerald-600 font-bold">✨ ไม่พบจุดวิกฤตที่เกินเกณฑ์ควบคุมในการผลิตช่วงนี้</li>';
+
+            // 3. Cross-Dimensional Correlations
+            const correlationItems = [];
+            if (m.topNcpStationName !== '-' && m.topDtFactorName !== '-') {
+                correlationItems.push(`
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-500 font-bold">•</span>
+                        <span><b>ความสูญเสียสถานี ${m.topNcpStationName}:</b> ปัญหาของเสีย NCP ที่สถานี ${m.topNcpStationName} สัมพันธ์กับเวลาหยุดเครื่องจากปัจจัย ${m.topDtFactorName} ซึ่งส่งผลให้สูญเสียจังหวะเดินเครื่องต่อเนื่องและดึงค่า Speed เฉลี่ยลง</span>
+                    </li>
+                `);
+            }
+            if (m.shortageOrdersCount > 0) {
+                correlationItems.push(`
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-500 font-bold">•</span>
+                        <span><b>ความเชื่อมโยง NCP สู่ Shortage:</b> ปริมาณของเสียที่เกิดขึ้นในสายการผลิตทำให้เกิดการตัดจบงานก่อนกำหนด ส่งผลกระทบโดยตรงต่อออเดอร์ของ ${m.topShortageCustName} และก่อให้เกิดต้นทุนงานซ่อม</span>
+                    </li>
+                `);
+            }
+            if (m.diffSpeed < 0 && m.totalDtMinutes > 0) {
+                correlationItems.push(`
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-500 font-bold">•</span>
+                        <span><b>ผลกระทบต่อ Speed รวม:</b> เวลาสูญเสียรวม ${m.totalDtMinutes.toLocaleString()} นาที ส่งผลให้ความเร็วเฉลี่ยลดลง ${Math.abs(m.diffSpeed).toFixed(1)} ม./นาที เมื่อเทียบกับแผนงานที่ตั้งไว้</span>
+                    </li>
+                `);
+            }
+            correlationEl.innerHTML = correlationItems.join('') || '<li class="text-indigo-600 font-bold">✨ ทุกมิติของการผลิตทำงานสอดประสานกันอย่างมีประสิทธิภาพ</li>';
+
+            // 4. Strategic Recommendations Cards
+            recsEl.innerHTML = `
+                <div class="bg-white p-4 rounded-xl shadow-xs border border-emerald-100 space-y-2">
+                    <div class="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                        <span class="text-emerald-600">🛠️</span>
+                        <span>ฝ่ายซ่อมบำรุง & วิศวกรรม</span>
+                    </div>
+                    <p class="text-slate-600 text-[11px] leading-relaxed">
+                        ${m.topDtFactorName === 'MACHINE' ? `มุ่งเน้นตรวจสอบระบบกลไกและการสึกหรอของอะไหล่ที่ <b>${m.topNcpStationName}</b> เพื่อลดเวลาหยุดซ่อมฉุกเฉิน` : `กำหนดมาตรการตรวจสอบเชิงป้องกัน (PM) เพื่อควบคุมปัจจัย <b>${m.topDtFactorName}</b> ให้อยู่ในเป้าหมาย ${m.dtTarget}%`}
+                    </p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-xs border border-emerald-100 space-y-2">
+                    <div class="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                        <span class="text-blue-600">👥</span>
+                        <span>ฝ่ายผลิต & หัวหน้ากะ</span>
+                    </div>
+                    <p class="text-slate-600 text-[11px] leading-relaxed">
+                        เข้มงวดการควบคุมขั้นตอนการทำงานที่สถานี <b>${m.topNcpStationName}</b> เพื่อลดสาเหตุ <i>"${m.topNcpReasonName}"</i> และจัดอบรมทักษะพนักงานคุมเครื่องเพิ่มเติม
+                    </p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-xs border border-emerald-100 space-y-2">
+                    <div class="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                        <span class="text-purple-600">📋</span>
+                        <span>ฝ่ายวางแผน & จัดส่ง</span>
+                    </div>
+                    <p class="text-slate-600 text-[11px] leading-relaxed">
+                        ติดตามสถานะออเดอร์ของลูกค้า <b>${m.topShortageCustName}</b> อย่างใกล้ชิด พร้อมจัดสรรคิวผลิตเพื่อเคลียร์งานค้างแผนจำนวน <b>${m.pendingOrders} ออเดอร์</b> โดยเร็ว
+                    </p>
+                </div>
+            `;
+        }
 
         function updateMainUI() {
             const s = document.getElementById('main-start-date').value, 
