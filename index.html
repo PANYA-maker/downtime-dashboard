@@ -278,7 +278,7 @@
                         <p id="exec-shortage-percent" class="text-2xl font-black text-slate-800">0.00%</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-[10px] text-slate-400 font-bold">Target: 18.00%</p>
+                        <p class="text-[10px] text-slate-400 font-bold">Target: 15.00%</p>
                         <p id="exec-shortage-diff" class="text-xs font-black text-emerald-600">Diff: 0.00%</p>
                     </div>
                 </div>
@@ -709,7 +709,7 @@
                     <div class="text-right">
                         <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Target / Diff</p>
                         <div class="flex flex-col items-end">
-                            <span id="shortage-kpi-target" class="text-xs font-bold text-slate-500 italic">Target: 18.00%</span>
+                            <span id="shortage-kpi-target" class="text-xs font-bold text-slate-500 italic">Target: 15.00%</span>
                             <span id="shortage-kpi-diff" class="text-sm font-black">Diff: 0.00%</span>
                         </div>
                     </div>
@@ -1187,7 +1187,7 @@
         const ncpTargets = { "": 2.00, "single c": 0.70, "single b": 0.20, "double": 0.55, "dryend": 0.40, "stacker": 0.15 };
         const downtimeTargets = { "": 6.25, "machine": 2.50, "material": 0.90, "man/method": 1.60, "other": 1.25 };
         const downtimeStationTargets = { "single c": 0.63, "single b": 0.28, "double": 0.48, "dryend": 0.14, "stacker": 0.07 };
-        const shortageStationTargets = { "single c": 4.80, "single b": 1.50, "double": 4.80, "dryend": 5.00, "stacker": 1.70, "other": 0.20 };
+        const shortageStationTargets = { "": 15.00, "single c": 4.20, "single b": 1.00, "double": 4.20, "dryend": 4.40, "stacker": 1.10, "other": 0.10 };
 
         function toggleShortageGroupDropdown(show) { const dropdown = document.getElementById('shortage-group-dropdown'); dropdown.style.display = show ? 'block' : 'none'; }
         function filterShortageGroupOptions(searchText) { renderShortageGroupOptions(searchText); toggleShortageGroupDropdown(true); }
@@ -1472,6 +1472,7 @@
                     stopStatus: c[53] ? cl(c[53]) : '',        
                     orderPattern: c[54] ? cl(c[54]) : '',      
                     colM: c[12] ? cl(c[12]) : '',              
+                    planOrder: c[12] ? parseNum(cl(c[12])) : 0,
                     ah: c[33] ? cl(c[33]) : ''                 
                 };
             }).filter(d => d);
@@ -1804,7 +1805,7 @@
             const shortageOrdersList = fShortageBase.filter(d => d.status === 'ขาดจำนวน');
             const shortageOrdersCount = shortageOrdersList.length;
             const shortagePercent = totalOrdersCount > 0 ? (shortageOrdersCount / totalOrdersCount) * 100 : 0;
-            const shortageTarget = 18.00;
+            const shortageTarget = 15.00;
             const shortageDiffPercent = shortagePercent - shortageTarget;
             const isShortagePass = shortagePercent <= shortageTarget;
 
@@ -1857,7 +1858,7 @@
             const netActTime = Math.max(0, actRuntime - actLossTime);
             const actSpeed = netActTime > 0 ? (actMeters / netActTime) : 0;
             const diffSpeed = actSpeed - planSpeed;
-            const isSpeedPass = actSpeed >= planSpeed || (planSpeed > 0 && actSpeed >= planSpeed * 0.95);
+            const isSpeedPass = planSpeed > 0 ? (actSpeed >= planSpeed) : (actSpeed > 0);
 
             const pendingList = filteredSpeed.filter(d => cleanStr(d.status) === 'งานค้างแผน');
             const pendingOrders = pendingList.length;
@@ -2012,7 +2013,7 @@
                 const stShortageList = baseValidOrders.filter(d => cleanStr(d.station) === cleanSt);
                 const stShortageCount = stShortageList.filter(d => d.status === 'ขาดจำนวน').length;
                 const stShortagePercent = totalOrdersCount > 0 ? (stShortageCount / totalOrdersCount) * 100 : 0;
-                const stShortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 18.00;
+                const stShortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 15.00;
                 const isStShortagePass = stShortagePercent <= stShortageTarget;
 
                 // Operators
@@ -2786,7 +2787,7 @@
             const actualPercent = totalBaseOrdersCount > 0 ? (shortageOrdersCount / totalBaseOrdersCount) * 100 : 0;
             
             const hasTarget = !hasSelectedReasons; 
-            let targetVal = 18.00;
+            let targetVal = 15.00;
             if (st) {
                 const cleanSt = cleanStr(st);
                 if (shortageStationTargets[cleanSt] !== undefined) {
@@ -3809,7 +3810,7 @@
                 const totalStationOrders = stationShortageList.length;
                 const shortageCount = stationShortageList.filter(d => d.status === 'ขาดจำนวน').length;
                 const shortagePercent = totalBaseOrdersCount > 0 ? (shortageCount / totalBaseOrdersCount) * 100 : 0; 
-                const shortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 18.00;
+                const shortageTarget = shortageStationTargets[cleanSt] !== undefined ? shortageStationTargets[cleanSt] : 15.00;
                 const shortageDiffPercent = shortagePercent - shortageTarget;
                 const isShortagePassed = shortagePercent <= shortageTarget;
 
@@ -4145,8 +4146,8 @@
                                     <span class="text-[10px] text-slate-400 font-semibold block mt-0.5">กลุ่ม: ${d.shortageGroup || '-'}</span>
                                 </td>
                                 <td class="p-4 text-center whitespace-nowrap">
-                                    <span class="text-sm font-black text-rose-500 block">${d.sheets.toLocaleString()} แผ่น</span>
-                                    <span class="text-[9px] text-slate-400">สั่งผลิต: ${d.planOrder.toLocaleString()}</span>
+                                    <span class="text-sm font-black text-rose-500 block">${(d.sheets || 0).toLocaleString()} แผ่น</span>
+                                    <span class="text-[9px] text-slate-400">สั่งผลิต: ${(d.planOrder || d.colM || 0).toLocaleString()}</span>
                                 </td>
                                 <td class="p-4 text-right whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold ${work === 'ตัดจบซ่อม' ? 'bg-amber-100 text-amber-700' : 'bg-teal-100 text-teal-700'} block">
