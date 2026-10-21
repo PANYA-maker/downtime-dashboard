@@ -160,6 +160,10 @@
                         <div class="flex items-baseline gap-1 mt-0.5">
                             <span id="exec-oee-score" class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-teal-200">0.0%</span>
                         </div>
+                        <div class="flex items-center gap-1.5 mt-1.5 flex-wrap sm:justify-end">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-200 border border-blue-400/30">Target: <span id="exec-oee-target">91.88%</span></span>
+                            <span id="exec-oee-diff" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300">Diff: 0.00%</span>
+                        </div>
                     </div>
                     <!-- Plant Health Index Box -->
                     <div class="text-left sm:text-right">
@@ -175,26 +179,41 @@
 
             <!-- OEE 3 Components (A, P, Q) Sub-Bar inside Banner -->
             <div class="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-white/10">
-                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
-                    <div>
-                        <span class="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">1. Availability (A) ความพร้อมเครื่องจักร</span>
-                        <span class="text-[9px] text-slate-400">Operating Time / Plan (เป้า ≥ 93.75%)</span>
+                <div id="exec-oee-card-a" class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[11px] font-bold text-blue-200 uppercase tracking-wider block">1. Availability (A) ความพร้อมเครื่องจักร</span>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-200 border border-blue-400/30 text-[10px] font-bold">Target: 93.75%</span>
+                            <span id="exec-oee-a-diff" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300">Diff: 0.00%</span>
+                        </div>
                     </div>
-                    <span id="exec-oee-a" class="text-lg sm:text-xl font-black text-blue-300">0.0%</span>
+                    <div class="text-right pl-2">
+                        <span id="exec-oee-a" class="text-xl sm:text-2xl font-black text-blue-300">0.0%</span>
+                    </div>
                 </div>
-                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
-                    <div>
-                        <span class="text-[10px] font-bold text-teal-200 uppercase tracking-wider block">2. Performance (P) ประสิทธิภาพความเร็ว</span>
-                        <span class="text-[9px] text-slate-400">Speed จริง / Speed แผน (เป้า ≥ 100%)</span>
+                <div id="exec-oee-card-p" class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[11px] font-bold text-teal-200 uppercase tracking-wider block">2. Performance (P) ประสิทธิภาพความเร็ว</span>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="px-2 py-0.5 rounded bg-teal-500/20 text-teal-200 border border-teal-400/30 text-[10px] font-bold">Target: 100.0%</span>
+                            <span id="exec-oee-p-diff" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300">Diff: 0.00%</span>
+                        </div>
                     </div>
-                    <span id="exec-oee-p" class="text-lg sm:text-xl font-black text-teal-300">0.0%</span>
+                    <div class="text-right pl-2">
+                        <span id="exec-oee-p" class="text-xl sm:text-2xl font-black text-teal-300">0.0%</span>
+                    </div>
                 </div>
-                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
-                    <div>
-                        <span class="text-[10px] font-bold text-emerald-200 uppercase tracking-wider block">3. Quality (Q) อัตราคุณภาพชิ้นงาน</span>
-                        <span class="text-[9px] text-slate-400">Good Output / Total (เป้า ≥ 98.0%)</span>
+                <div id="exec-oee-card-q" class="bg-white/5 backdrop-blur-sm rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[11px] font-bold text-emerald-200 uppercase tracking-wider block">3. Quality (Q) อัตราคุณภาพชิ้นงาน</span>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-[10px] font-bold">Target: 98.00%</span>
+                            <span id="exec-oee-q-diff" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300">Diff: 0.00%</span>
+                        </div>
                     </div>
-                    <span id="exec-oee-q" class="text-lg sm:text-xl font-black text-emerald-300">0.0%</span>
+                    <div class="text-right pl-2">
+                        <span id="exec-oee-q" class="text-xl sm:text-2xl font-black text-emerald-300">0.0%</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1869,10 +1888,55 @@
             const quality = totalConsumption > 0 ? Math.max(0, Math.min(100, ((totalConsumption - totalNcpWeight) / totalConsumption) * 100)) : 100.0;
             const oeeScore = (availability / 100) * (performance / 100) * (quality / 100) * 100;
 
+            // Target OEE & Diff Calculation (Target รวม = AxPxQ)
+            const oeeTargetA = 93.75;
+            const oeeTargetP = 100.00;
+            const oeeTargetQ = 98.00;
+            const oeeTargetScore = (oeeTargetA / 100) * (oeeTargetP / 100) * (oeeTargetQ / 100) * 100; // 91.875%
+
+            const oeeDiff = oeeScore - oeeTargetScore;
+            const oeeDiffA = availability - oeeTargetA;
+            const oeeDiffP = performance - oeeTargetP;
+            const oeeDiffQ = quality - oeeTargetQ;
+
+            // OEE Overall
             document.getElementById('exec-oee-score').textContent = oeeScore.toFixed(1) + '%';
+            const execOeeTargetEl = document.getElementById('exec-oee-target');
+            if (execOeeTargetEl) execOeeTargetEl.textContent = oeeTargetScore.toFixed(2) + '%';
+            
+            const execOeeDiffEl = document.getElementById('exec-oee-diff');
+            if (execOeeDiffEl) {
+                const isOeePass = oeeScore >= oeeTargetScore;
+                execOeeDiffEl.textContent = `Diff: ${oeeDiff >= 0 ? '+' : ''}${oeeDiff.toFixed(2)}%`;
+                execOeeDiffEl.className = `text-[10px] font-black px-2 py-0.5 rounded-full ${isOeePass ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/50' : 'bg-rose-500/30 text-rose-300 border border-rose-400/50'}`;
+            }
+
+            // 1. Availability (A)
             document.getElementById('exec-oee-a').textContent = availability.toFixed(1) + '%';
+            const execOeeADiffEl = document.getElementById('exec-oee-a-diff');
+            if (execOeeADiffEl) {
+                const isAPass = availability >= oeeTargetA;
+                execOeeADiffEl.textContent = `Diff: ${oeeDiffA >= 0 ? '+' : ''}${oeeDiffA.toFixed(2)}%`;
+                execOeeADiffEl.className = `text-[10px] font-black px-2 py-0.5 rounded-full ${isAPass ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/50' : 'bg-rose-500/30 text-rose-300 border border-rose-400/50'}`;
+            }
+
+            // 2. Performance (P)
             document.getElementById('exec-oee-p').textContent = performance.toFixed(1) + '%';
+            const execOeePDiffEl = document.getElementById('exec-oee-p-diff');
+            if (execOeePDiffEl) {
+                const isPPass = performance >= oeeTargetP;
+                execOeePDiffEl.textContent = `Diff: ${oeeDiffP >= 0 ? '+' : ''}${oeeDiffP.toFixed(2)}%`;
+                execOeePDiffEl.className = `text-[10px] font-black px-2 py-0.5 rounded-full ${isPPass ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/50' : 'bg-rose-500/30 text-rose-300 border border-rose-400/50'}`;
+            }
+
+            // 3. Quality (Q)
             document.getElementById('exec-oee-q').textContent = quality.toFixed(1) + '%';
+            const execOeeQDiffEl = document.getElementById('exec-oee-q-diff');
+            if (execOeeQDiffEl) {
+                const isQPass = quality >= oeeTargetQ;
+                execOeeQDiffEl.textContent = `Diff: ${oeeDiffQ >= 0 ? '+' : ''}${oeeDiffQ.toFixed(2)}%`;
+                execOeeQDiffEl.className = `text-[10px] font-black px-2 py-0.5 rounded-full ${isQPass ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/50' : 'bg-rose-500/30 text-rose-300 border border-rose-400/50'}`;
+            }
 
             let oeeBadgeText = 'OEE Benchmark: มาตรฐานดี';
             let oeeBadgeClass = 'bg-blue-500/20 border-blue-400/30 text-blue-300';
